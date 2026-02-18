@@ -1,0 +1,41 @@
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/homeFragment">
+
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="com.idz.trailsync.ProfileFragment"
+        android:label="Personal Info"
+        tools:layout="@layout/fragment_profile" />
+
+    <fragment
+        android:id="@+id/chatbotFragment"
+        android:name="com.idz.trailsync.ChatbotFragment"
+        android:label="Chatbot" />
+
+    <fragment
+        android:id="@+id/createPostFragment"
+        android:name="com.idz.trailsync.CreatePostFragment"
+        android:label="Upsert post" >
+        <argument
+            android:name="postId"
+            app:argType="string"
+            app:nullable="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.idz.trailsync.HomeFragment"
+        android:label="Home"
+        tools:layout="@layout/fragment_home" />
+
+    <fragment
+        android:id="@+id/savedPostsFragment"
+        android:name="com.idz.trailsync.SavedPostsFragment"
+        android:label="Saved Posts"
+        tools:layout="@layout/fragment_saved_posts" />
+
+
+</navigation>
