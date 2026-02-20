@@ -17,7 +17,7 @@ class HomeActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_home)
 
-        val toolbar: Toolbar = findViewById(R.id.main_toolbar)
+        val toolbar: Toolbar = findViewById(R.id.top_app_bar)
         setSupportActionBar(toolbar)
 
         val navHostFragment: NavHostFragment? = supportFragmentManager.findFragmentById(R.id.main_nav_host) as? NavHostFragment
