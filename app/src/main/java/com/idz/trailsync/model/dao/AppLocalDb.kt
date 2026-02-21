@@ -3,12 +3,15 @@ package com.idz.trailsync.model.dao
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import com.idz.trailsync.base.MyApplication
+import com.idz.trailsync.model.Converters
 import com.idz.trailsync.model.Post
 import com.idz.trailsync.model.Comment
 import com.idz.trailsync.model.User
 
 @Database(entities = [User::class, Comment:: class, Post::class ], version = 5)
+@TypeConverters(Converters::class)
 abstract class AppLocalDbRepository: RoomDatabase(){
     abstract fun UserDao(): UserDao
 // TODO: Add PostDao and CommentDao when they are implemented

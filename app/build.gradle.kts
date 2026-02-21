@@ -64,4 +64,5 @@ dependencies {
     implementation(libs.room.runtime)
     kapt(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
+    implementation("com.google.code.gson:gson:2.10.1")
 }
