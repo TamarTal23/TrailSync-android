@@ -16,7 +16,9 @@ data class Post(
     val price: Int = 0,
     val createdAt: Date = Date(),
     val updatedAt: Date = Date(),
-    val mapLink: String = ""
+    val mapLink: String = "",
+    val commentsCount: Int = 0,
+    val savedCount: Int = 0
 ) {
     data class Location(
         val city: String = "",
@@ -40,6 +42,8 @@ data class Post(
         private const val CREATED_AT_KEY = "createdAt"
         private const val UPDATED_AT_KEY = "updatedAt"
         private const val MAP_LINK_KEY = "mapLink"
+        private const val COMMENTS_COUNT_KEY = "commentsCount"
+        private const val SAVED_COUNT_KEY = "savedCount"
 
         fun fromJSON(json: Map<String, Any>): Post {
             val id = json[ID_KEY] as? String ?: UUID.randomUUID().toString()
@@ -61,9 +65,11 @@ data class Post(
             val numberOfDays = (json[NUMBER_OF_DAYS_KEY] as? Number)?.toInt() ?: 0
             val photos = (json[PHOTOS_KEY] as? List<*>)?.filterIsInstance<String>() ?: emptyList()
             val price = (json[PRICE_KEY] as? Number)?.toInt() ?: 0
-            val createdAt = json[CREATED_AT_KEY] as? Date ?: Date()
-            val updatedAt = json[UPDATED_AT_KEY] as? Date ?: Date()
+            val createdAt = (json[CREATED_AT_KEY] as? com.google.firebase.Timestamp)?.toDate() ?: Date()
+            val updatedAt = (json[UPDATED_AT_KEY] as? com.google.firebase.Timestamp)?.toDate() ?: Date()
             val mapLink = json[MAP_LINK_KEY] as? String ?: ""
+            val commentsCount = (json[COMMENTS_COUNT_KEY] as? Number)?.toInt() ?: 0
+            val savedCount = (json[SAVED_COUNT_KEY] as? Number)?.toInt() ?: 0
 
             return Post(
                 id = id,
@@ -76,7 +82,9 @@ data class Post(
                 price = price,
                 createdAt = createdAt,
                 updatedAt = updatedAt,
-                mapLink = mapLink
+                mapLink = mapLink,
+                commentsCount = commentsCount,
+                savedCount = savedCount
             )
         }
     }
@@ -103,9 +111,11 @@ data class Post(
                 NUMBER_OF_DAYS_KEY to numberOfDays,
                 PHOTOS_KEY to photos,
                 PRICE_KEY to price,
-                CREATED_AT_KEY to createdAt,
-                UPDATED_AT_KEY to updatedAt,
-                MAP_LINK_KEY to mapLink
+                CREATED_AT_KEY to com.google.firebase.Timestamp(createdAt),
+                UPDATED_AT_KEY to com.google.firebase.Timestamp(updatedAt),
+                MAP_LINK_KEY to mapLink,
+                COMMENTS_COUNT_KEY to commentsCount,
+                SAVED_COUNT_KEY to savedCount
             )
         }
 }

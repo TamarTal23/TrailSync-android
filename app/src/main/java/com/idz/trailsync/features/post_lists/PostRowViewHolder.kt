@@ -35,9 +35,8 @@ class PostRowViewHolder(
         binding.postDays.text = "${post.numberOfDays} days"
         binding.postPrice.text = post.price.toString()
         
-        // Static values as requested earlier
-        binding.saveCount.text = "128"
-        binding.commentCount.text = "50"
+        binding.saveCount.text = post.savedCount.toString()
+        binding.commentCount.text = post.commentsCount.toString()
 
         // Load the first photo if it exists
         if (post.photos.isNotEmpty()) {

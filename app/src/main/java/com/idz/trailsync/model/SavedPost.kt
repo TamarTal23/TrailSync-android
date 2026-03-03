@@ -5,30 +5,25 @@ import androidx.room.PrimaryKey
 import java.util.*
 
 @Entity
-data class Comment(
-    @PrimaryKey val id: String,
-    val text: String,
-    val author: String,
+data class SavedPost(
+    @PrimaryKey val id: String = UUID.randomUUID().toString(),
     val postId: String,
+    val userId: String,
     val createdAt: Date = Date()
 ) {
-
     companion object {
-        const val SUB_COLLECTION = "comments"
-        private const val TEXT_KEY = "text"
-        private const val AUTHOR_KEY = "author"
+        const val COLLECTION = "savedPosts"
+        private const val POST_ID_KEY = "postId"
         private const val CREATED_AT_KEY = "createdAt"
 
-        fun fromJSON(json: Map<String, Any>, postId: String, docId: String): Comment {
-            val text = json[TEXT_KEY] as? String ?: ""
-            val author = json[AUTHOR_KEY] as? String ?: ""
+        fun fromJSON(json: Map<String, Any>, userId: String, docId: String): SavedPost {
+            val postId = json[POST_ID_KEY] as? String ?: ""
             val createdAt = (json[CREATED_AT_KEY] as? com.google.firebase.Timestamp)?.toDate() ?: Date()
 
-            return Comment(
+            return SavedPost(
                 id = docId,
-                text = text,
-                author = author,
                 postId = postId,
+                userId = userId,
                 createdAt = createdAt
             )
         }
@@ -37,8 +32,7 @@ data class Comment(
     val json: Map<String, Any>
         get() {
             return hashMapOf(
-                TEXT_KEY to text,
-                AUTHOR_KEY to author,
+                POST_ID_KEY to postId,
                 CREATED_AT_KEY to com.google.firebase.Timestamp(createdAt)
             )
         }
