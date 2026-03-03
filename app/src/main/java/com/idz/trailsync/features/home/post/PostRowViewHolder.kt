@@ -1,9 +1,9 @@
-package com.idz.trailsync.features.post_lists
+package com.idz.trailsync.features.home.post
 
+import android.R
 import android.net.Uri
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
-import com.idz.trailsync.R
 import com.idz.trailsync.databinding.PostListItemBinding
 import com.idz.trailsync.model.Post
 
@@ -34,11 +34,10 @@ class PostRowViewHolder(
         binding.postLocation.text = post.location?.name ?: "Unknown"
         binding.postDays.text = "${post.numberOfDays} days"
         binding.postPrice.text = post.price.toString()
-        
+
         binding.saveCount.text = post.savedCount.toString()
         binding.commentCount.text = post.commentsCount.toString()
 
-        // Load the first photo if it exists
         if (post.photos.isNotEmpty()) {
             val photoPath = post.photos[0]
             if (photoPath.startsWith("android.resource")) {
@@ -50,7 +49,7 @@ class PostRowViewHolder(
                 binding.postImage.setImageURI(Uri.parse(photoPath))
             }
         } else {
-            binding.postImage.setImageResource(android.R.drawable.ic_menu_gallery)
+            binding.postImage.setImageResource(R.drawable.ic_menu_gallery)
         }
 
         updateSaveButton()
@@ -59,11 +58,11 @@ class PostRowViewHolder(
     private fun updateSaveButton() {
         val context = itemView.context
         if (isSaved) {
-            binding.postSaveButton.setImageResource(R.drawable.ic_bookmark_filled)
-            binding.postSaveButton.setColorFilter(ContextCompat.getColor(context, R.color.orange))
+            binding.postSaveButton.setImageResource(com.idz.trailsync.R.drawable.ic_bookmark_filled)
+            binding.postSaveButton.setColorFilter(ContextCompat.getColor(context, com.idz.trailsync.R.color.orange))
         } else {
-            binding.postSaveButton.setImageResource(R.drawable.ic_bookmark_outline)
-            binding.postSaveButton.setColorFilter(ContextCompat.getColor(context, R.color.dark_neutral))
+            binding.postSaveButton.setImageResource(com.idz.trailsync.R.drawable.ic_bookmark_outline)
+            binding.postSaveButton.setColorFilter(ContextCompat.getColor(context, com.idz.trailsync.R.color.dark_neutral))
         }
     }
 }

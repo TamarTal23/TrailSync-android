@@ -27,7 +27,7 @@
 
     <fragment
         android:id="@+id/homeFragment"
-        android:name="com.idz.trailsync.HomeFragment"
+        android:name="com.idz.trailsync.features.home.HomeFragment"
         android:label="Home"
         tools:layout="@layout/fragment_home" />
 

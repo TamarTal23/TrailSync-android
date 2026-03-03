@@ -1,14 +1,15 @@
-package com.idz.trailsync.features.post_lists
+package com.idz.trailsync.features.home.post
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.idz.trailsync.databinding.PostListItemBinding
+import com.idz.trailsync.features.home.post.PostRowViewHolder
 import com.idz.trailsync.model.Post
 
 class PostsAdapter(
-    private val posts: List<Post>,
-    private val listener: OnPostClickListener? = null
+    var posts: List<Post>? = null,
+    var listener: OnPostClickListener? = null
 ) : RecyclerView.Adapter<PostRowViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostRowViewHolder {
@@ -23,8 +24,10 @@ class PostsAdapter(
     }
 
     override fun onBindViewHolder(holder: PostRowViewHolder, position: Int) {
-        holder.bind(posts[position])
+        posts?.get(position)?.let {
+            holder.bind(it)
+        }
     }
 
-    override fun getItemCount(): Int = posts.size
+    override fun getItemCount(): Int = posts?.size ?: 0
 }

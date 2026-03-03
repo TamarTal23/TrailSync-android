@@ -1,4 +1,4 @@
-package com.idz.trailsync.features.post_lists
+package com.idz.trailsync.features.home.post
 
 import com.idz.trailsync.model.Post
 
