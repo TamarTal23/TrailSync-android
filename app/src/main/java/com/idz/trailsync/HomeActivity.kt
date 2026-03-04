@@ -1,6 +1,7 @@
 package com.idz.trailsync
 
 import android.os.Bundle
+import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
@@ -25,13 +26,15 @@ class HomeActivity : AppCompatActivity() {
         val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottom_bar)
 
         navController?.let {
-            NavigationUI.setupActionBarWithNavController(
-                activity = this,
-                navController = it
-            )
-
             NavigationUI.setupWithNavController(bottomNavigationView, it)
 
+            it.addOnDestinationChangedListener { _, destination, _ ->
+                if (destination.id == R.id.postDetailsFragment) {
+                    supportActionBar?.hide()
+                } else {
+                    supportActionBar?.show()
+                }
+            }
 
             bottomNavigationView.setOnItemSelectedListener { item ->
                 it.popBackStack(it.graph.startDestinationId, false)
@@ -39,5 +42,9 @@ class HomeActivity : AppCompatActivity() {
                 true
             }
         }
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        return navController?.navigateUp() ?: super.onSupportNavigateUp()
     }
 }
