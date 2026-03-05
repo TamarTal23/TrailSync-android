@@ -1,11 +1,13 @@
 package com.idz.trailsync.model
 
+import android.util.Log
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.firestoreSettings
 import com.google.firebase.firestore.memoryCacheSettings
 import com.idz.trailsync.base.UsersCallback
 import com.idz.trailsync.base.Constants
+import com.idz.trailsync.base.UserCallback
 
 class FirebaseModel {
     private val database = Firebase.firestore
@@ -29,6 +31,16 @@ class FirebaseModel {
                         callback(users)
                     }
                     false -> callback(listOf())
+                }
+            }
+    }
+
+    fun getUserByEmail(email: String, callback: UserCallback) {
+        database.collection(Constants.COLLECTIONS.USERS).whereEqualTo("email",email).get()
+            .addOnSuccessListener { documents ->
+                for (document in documents) {
+                    val user : User = User.fromJSON(document.data ?: mapOf())
+                    callback(user)
                 }
             }
     }
