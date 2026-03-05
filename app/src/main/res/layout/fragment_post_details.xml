@@ -7,123 +7,77 @@
     android:background="@color/white">
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/headerLayout"
+        android:id="@+id/postToolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="56dp"
+        android:paddingHorizontal="16dp"
         app:layout_constraintTop_toTopOf="parent">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/globalBarReplacement"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:paddingHorizontal="16dp"
-            app:layout_constraintTop_toTopOf="parent">
+        <ImageView
+            android:id="@+id/backButton"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:padding="4dp"
+            android:src="@drawable/ic_chevron_left"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/dark_neutral" />
 
-            <ImageView
-                android:id="@+id/appLogo"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:src="@drawable/logo"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+        <TextView
+            android:id="@+id/toolbarTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="16dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="Post Title"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/saveIcon"
+            app:layout_constraintStart_toEndOf="@id/backButton"
+            app:layout_constraintTop_toTopOf="parent" />
 
-            <TextView
-                android:id="@+id/appName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:text="TrailSync"
-                android:textColor="@color/dark_neutral"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toEndOf="@id/appLogo"
-                app:layout_constraintTop_toTopOf="parent" />
+        <ImageView
+            android:id="@+id/saveIcon"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginEnd="6dp"
+            android:src="@drawable/ic_bookmark_outline"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/saveCount"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/dark_neutral" />
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <View
-            android:id="@+id/globalDivider"
-            android:layout_width="match_parent"
-            android:layout_height="0.5dp"
-            android:background="#C1C1C1"
-            app:layout_constraintTop_toBottomOf="@id/globalBarReplacement" />
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/postToolbar"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:paddingHorizontal="16dp"
-            app:layout_constraintTop_toBottomOf="@id/globalDivider">
-
-            <ImageView
-                android:id="@+id/backButton"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:padding="4dp"
-                android:src="@drawable/ic_chevron_left"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:tint="@color/dark_neutral" />
-
-            <TextView
-                android:id="@+id/toolbarTitle"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="16dp"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:text="Post Title"
-                android:textColor="@color/black"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/saveIcon"
-                app:layout_constraintStart_toEndOf="@id/backButton"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <ImageView
-                android:id="@+id/saveIcon"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_marginEnd="6dp"
-                android:src="@drawable/ic_bookmark_outline"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/saveCount"
-                app:layout_constraintTop_toTopOf="parent"
-                app:tint="@color/dark_neutral" />
-
-            <TextView
-                android:id="@+id/saveCount"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="128"
-                android:textColor="@color/dark_neutral"
-                android:textSize="14sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <View
-            android:id="@+id/postDivider"
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginHorizontal="16dp"
-            android:background="#EEEEEE"
-            app:layout_constraintTop_toBottomOf="@id/postToolbar" />
+        <TextView
+            android:id="@+id/saveCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="128"
+            android:textColor="@color/dark_neutral"
+            android:textSize="14sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <View
+        android:id="@+id/postDivider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginHorizontal="16dp"
+        android:background="#EEEEEE"
+        app:layout_constraintTop_toBottomOf="@id/postToolbar" />
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/headerLayout">
+        app:layout_constraintTop_toBottomOf="@id/postDivider">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -133,27 +87,30 @@
             <androidx.cardview.widget.CardView
                 android:id="@+id/mapContainer"
                 android:layout_width="match_parent"
-                android:layout_height="200dp"
+                android:layout_height="250dp"
                 android:layout_marginHorizontal="16dp"
                 android:layout_marginTop="16dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="2dp"
                 app:layout_constraintTop_toTopOf="parent">
 
-                <ImageView
+                <FrameLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:scaleType="centerCrop"
-                    android:src="@android:drawable/ic_dialog_map"
-                    android:alpha="0.3"
-                    android:background="#F5F5F5"/>
-                
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:text="Map View Placeholder"
-                    android:textColor="@color/gray_text" />
+                    android:layout_height="match_parent">
+
+                    <WebView
+                        android:id="@+id/mapWebView"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" />
+
+                    <ProgressBar
+                        android:id="@+id/mapProgressBar"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:visibility="gone" />
+                </FrameLayout>
+
             </androidx.cardview.widget.CardView>
 
             <androidx.recyclerview.widget.RecyclerView

@@ -1,9 +1,15 @@
 package com.idz.trailsync.features.home.post
 
+import android.content.Intent
+import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.WebResourceRequest
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
@@ -47,6 +53,79 @@ class PostDetailsFragment : Fragment() {
             binding.dotsIndicator
         )
         photoCarouselController.setupPhotos(post.photos)
+
+        setupMapView(post.mapLink)
+    }
+
+    private fun isGoogleMapsUrl(url: String): Boolean {
+        val lowerUrl = url.lowercase()
+        return lowerUrl.contains("google.com/maps") || 
+               lowerUrl.contains("maps.google.com") || 
+               lowerUrl.contains("goo.gl/maps") ||
+               lowerUrl.contains("maps.app.goo.gl") ||
+               lowerUrl.contains("google.co.il/maps")
+    }
+
+    private fun setupMapView(mapLink: String?) {
+        if (mapLink.isNullOrEmpty() || !isGoogleMapsUrl(mapLink)) {
+            binding.mapContainer.visibility = View.GONE
+            return
+        }
+
+        binding.mapWebView.apply {
+            settings.javaScriptEnabled = true
+            settings.loadWithOverviewMode = true
+            settings.useWideViewPort = true
+            settings.domStorageEnabled = true
+            
+            webViewClient = object : WebViewClient() {
+                override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+                    super.onPageStarted(view, url, favicon)
+                    binding.mapProgressBar.visibility = View.VISIBLE
+                }
+
+                override fun onPageFinished(view: WebView?, url: String?) {
+                    super.onPageFinished(view, url)
+                    binding.mapProgressBar.visibility = View.GONE
+                }
+
+                override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+                    val url = request?.url?.toString() ?: return false
+                    
+                    if (url.startsWith("http://") || url.startsWith("https://")) {
+                        return if (isGoogleMapsUrl(url)) {
+                            false
+                        } else {
+                            true
+                        }
+                    } else {
+                    }
+                    try {
+                        val intent = if (url.startsWith("intent://")) {
+                            Intent.parseUri(url, Intent.URI_INTENT_SCHEME)
+                        } else {
+                            Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        }
+
+                        val context = view?.context ?: return false
+
+                        val isMapIntent = intent.`package`?.contains("com.google.android.apps.maps") == true ||
+                                intent.action?.contains("geo") == true ||
+                                (intent.dataString?.let { isGoogleMapsUrl(it) } ?: false)
+
+                        if (isMapIntent && intent.resolveActivity(context.packageManager) != null) {
+                            context.startActivity(intent)
+                            return true
+                        }
+                    } catch (e: Exception) {
+                        return false
+                    }
+                    return true
+                }
+            }
+            
+            loadUrl(mapLink)
+        }
     }
 
     override fun onDestroyView() {

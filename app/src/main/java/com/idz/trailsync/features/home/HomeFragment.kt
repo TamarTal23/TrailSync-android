@@ -88,6 +88,7 @@ class HomeFragment : Fragment() {
                 location = Post.Location(name = "Karineside"),
                 numberOfDays = 5,
                 price = 800,
+                mapLink = "https://www.google.com/maps/d/embed?mid=101CRKWQbwExAnzfudZWBECB4XBGr8Qg&ehbc=2E312F",
                 photos = listOf(
                     "android.resource://$packageName/${R.drawable.pic1}",
                     "android.resource://$packageName/${R.drawable.pic2}",
@@ -104,6 +105,7 @@ class HomeFragment : Fragment() {
                 location = Post.Location(name = "Alps"),
                 numberOfDays = 3,
                 price = 450,
+                mapLink = "https://undraw.co/search",
                 photos = listOf("android.resource://$packageName/${R.drawable.pic2}"),
                 savedCount = 45,
                 commentsCount = 12
@@ -118,6 +120,7 @@ class HomeFragment : Fragment() {
                 price = 1200,
                 photos = listOf("android.resource://$packageName/${R.drawable.pic3}"),
                 savedCount = 230,
+                mapLink = "https://www.google.com/maps/place/%D7%A4%D7%A8%D7%99%D7%96,+%D7%A6%D7%A8%D7%A4%D7%AA%E2%80%AD/@48.8589385,2.429435,12z/data=!3m1!4b1!4m6!3m5!1s0x47e66e1f06e2b70f:0x40b82c3688c9460!8m2!3d48.8575475!4d2.3513765!16zL20vMDVxdGo?entry=ttu&g_ep=EgoyMDI2MDMwMy4wIKXMDSoASAFQAw%3D%3D",
                 commentsCount = 88
             )
         )
