@@ -11,11 +11,15 @@ import android.text.TextWatcher
 import android.util.Patterns
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import com.google.android.material.imageview.ShapeableImageView
+import android.graphics.Matrix
+import android.media.ExifInterface
 import com.idz.trailsync.model.FirebaseModel
 import com.idz.trailsync.model.Model
 import com.idz.trailsync.model.User
@@ -24,7 +28,7 @@ import com.squareup.picasso.Picasso
 class RegisterActivity : AppCompatActivity() {
     private var profilePictureUrl: String? = null
     private var profileBitmap: Bitmap? = null
-    private lateinit var imageView: ImageView
+    private lateinit var imageView: ShapeableImageView
     private lateinit var galleryLauncher: androidx.activity.result.ActivityResultLauncher<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,7 +42,7 @@ class RegisterActivity : AppCompatActivity() {
         val signUpButton: Button = findViewById(R.id.buttonSignUp)
         val auth = Firebase.auth
         imageView = findViewById(R.id.profileImageView)
-        val pickProfilePictureButton: Button = findViewById(R.id.buttonPickProfilePicture)
+        val pickProfilePictureButton: ImageButton = findViewById(R.id.buttonPickProfilePicture)
         val emailInputLayout =
             findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.emailInputLayout)
         val passwordInputLayout =
@@ -50,9 +54,21 @@ class RegisterActivity : AppCompatActivity() {
         galleryLauncher =
             registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.GetContent()) { uri: Uri? ->
                 if (uri != null) {
-                    Picasso.get().load(uri).resize(500, 500).centerCrop().into(imageView)
+                    val inputStream = contentResolver.openInputStream(uri)
+                    val exif = inputStream?.let { ExifInterface(it) }
                     val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, uri)
-                    profileBitmap = bitmap
+                    val orientation = exif?.getAttributeInt(
+                        ExifInterface.TAG_ORIENTATION,
+                        ExifInterface.ORIENTATION_NORMAL
+                    )
+                    val rotatedBitmap = when (orientation) {
+                        ExifInterface.ORIENTATION_ROTATE_90 -> rotateBitmap(bitmap, 90f)
+                        ExifInterface.ORIENTATION_ROTATE_180 -> rotateBitmap(bitmap, 180f)
+                        ExifInterface.ORIENTATION_ROTATE_270 -> rotateBitmap(bitmap, 270f)
+                        else -> bitmap
+                    }
+                    imageView.setImageBitmap(rotatedBitmap)
+                    profileBitmap = rotatedBitmap
                 }
             }
 
@@ -166,5 +182,11 @@ class RegisterActivity : AppCompatActivity() {
                     }
                 }
         }
+    }
+
+    private fun rotateBitmap(bitmap: Bitmap, degrees: Float): Bitmap {
+        val matrix = Matrix()
+        matrix.postRotate(degrees)
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
     }
 }
