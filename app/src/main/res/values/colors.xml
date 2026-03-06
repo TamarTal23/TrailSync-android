@@ -13,4 +13,5 @@
     <color name="gray_light">#F5F5F5</color>
     <color name="neutral_background">#F4F5F6</color>
     <color name="dark_text">#233D4D</color>
+    <color name="dark_gray_text">#57534E</color>
 </resources>

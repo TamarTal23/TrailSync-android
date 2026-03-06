@@ -1,7 +1,9 @@
 package com.idz.trailsync.model
 
+import android.graphics.Bitmap
 import android.os.Looper
 import androidx.core.os.HandlerCompat
+import com.idz.trailsync.base.BooleanCallback
 import com.idz.trailsync.base.UserCallback
 import com.idz.trailsync.model.dao.AppLocalDB
 import com.idz.trailsync.model.dao.AppLocalDbRepository
@@ -19,11 +21,19 @@ class Model private constructor() {
         val shared = Model()
     }
 
-    fun getAllUsers(callback: UsersCallback){
+    fun getAllUsers(callback: UsersCallback) {
         firebaseModel.getAllUsers(callback)
     }
 
     fun getUserByEmail(email: String, callback: UserCallback) {
         firebaseModel.getUserByEmail(email, callback)
     }
+
+    // todo handle image upload
+    fun upsertUser(user: User, callback: BooleanCallback) {
+        firebaseModel.upsertUser(user) { success ->
+            callback(success)
+        }
+    }
+
 }

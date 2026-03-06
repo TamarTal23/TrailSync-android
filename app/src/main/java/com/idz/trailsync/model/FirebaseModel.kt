@@ -5,6 +5,7 @@ import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.firestoreSettings
 import com.google.firebase.firestore.memoryCacheSettings
+import com.idz.trailsync.base.BooleanCallback
 import com.idz.trailsync.base.UsersCallback
 import com.idz.trailsync.base.Constants
 import com.idz.trailsync.base.UserCallback
@@ -42,6 +43,25 @@ class FirebaseModel {
                     val user : User = User.fromJSON(document.data ?: mapOf())
                     callback(user)
                 }
+            }
+    }
+
+    fun upsertUser(user: User, callback: BooleanCallback) {
+        database.collection(Constants.COLLECTIONS.USERS).whereEqualTo("email",user.email).get()
+            .addOnSuccessListener { documents ->
+                if(documents.size() == 0){
+                    database.collection(Constants.COLLECTIONS.USERS).document()
+                        .set(user.json).addOnSuccessListener{
+                            callback(true)
+                        }
+                }else{
+                    for (document in documents) {
+                        document.reference.update(user.json).addOnSuccessListener{
+                            callback(true)
+                        }
+                    }
+                }
+
             }
     }
 }

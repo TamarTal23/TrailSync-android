@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.Firebase
@@ -27,6 +28,12 @@ class MainActivity : AppCompatActivity() {
         val emailEditText: EditText = findViewById(R.id.editTextEmail)
         val passwordEditText: EditText = findViewById(R.id.editTextPassword)
         val loginButton: Button = findViewById(R.id.buttonLogin)
+        val signUpTextView: TextView = findViewById(R.id.textSignUp)
+
+        signUpTextView.setOnClickListener {
+            val intent = Intent(this, RegisterActivity::class.java)
+            startActivity(intent)
+        }
 
         loginButton.setOnClickListener {
             val email = emailEditText.text.toString()
@@ -47,7 +54,11 @@ class MainActivity : AppCompatActivity() {
                         startActivity(intent)
                         finish()
                     } else {
-                        Toast.makeText(this, "Authentication failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            this,
+                            "Authentication failed: ${task.exception?.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }
         } else {
