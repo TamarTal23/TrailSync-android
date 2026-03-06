@@ -92,4 +92,35 @@ class FirebaseModel {
             onError(exception)
         }
     }
+
+    fun upsertUserWithImage(
+        user: User,
+        profileBitmap: Bitmap?,
+        callback: BooleanCallback
+    ) {
+        if (profileBitmap == null) {
+            callback(false)
+            return
+        }
+        uploadImage(profileBitmap, "profilePictures", user.id ?: "", { url ->
+            val userWithPic = user.copy(profilePicture = url)
+            database.collection(Constants.COLLECTIONS.USERS).whereEqualTo("email", user.email).get()
+                .addOnSuccessListener { documents ->
+                    if (documents.size() == 0) {
+                        database.collection(Constants.COLLECTIONS.USERS).document()
+                            .set(userWithPic.json).addOnSuccessListener {
+                                callback(true)
+                            }
+                    } else {
+                        for (document in documents) {
+                            document.reference.update(userWithPic.json).addOnSuccessListener {
+                                callback(true)
+                            }
+                        }
+                    }
+                }
+        }, { _ ->
+            callback(false)
+        })
+    }
 }

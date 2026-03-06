@@ -1,6 +1,5 @@
 package com.idz.trailsync
 
-import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
@@ -12,7 +11,6 @@ import android.util.Patterns
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
-import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.Firebase
@@ -20,13 +18,11 @@ import com.google.firebase.auth.auth
 import com.google.android.material.imageview.ShapeableImageView
 import android.graphics.Matrix
 import android.media.ExifInterface
-import com.idz.trailsync.model.FirebaseModel
 import com.idz.trailsync.model.Model
 import com.idz.trailsync.model.User
-import com.squareup.picasso.Picasso
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
 
 class RegisterActivity : AppCompatActivity() {
-    private var profilePictureUrl: String? = null
     private var profileBitmap: Bitmap? = null
     private lateinit var imageView: ShapeableImageView
     private lateinit var galleryLauncher: androidx.activity.result.ActivityResultLauncher<String>
@@ -50,7 +46,6 @@ class RegisterActivity : AppCompatActivity() {
         val confirmPasswordInputLayout =
             findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.confirmPasswordInputLayout)
 
-        // Register gallery launcher
         galleryLauncher =
             registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.GetContent()) { uri: Uri? ->
                 if (uri != null) {
@@ -174,11 +169,20 @@ class RegisterActivity : AppCompatActivity() {
                             }
                         }
                     } else {
-                        Toast.makeText(
-                            this,
-                            "Registration failed: ${task.exception?.message}",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        val exception = task.exception
+                        if (exception is FirebaseAuthUserCollisionException) {
+                            Toast.makeText(
+                                this,
+                                "This email is already registered",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        } else {
+                            Toast.makeText(
+                                this,
+                                "Registration failed",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
                     }
                 }
         }

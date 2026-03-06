@@ -29,7 +29,6 @@ class Model private constructor() {
         firebaseModel.getUserByEmail(email, callback)
     }
 
-    // todo handle image upload
     fun upsertUser(user: User, picture: Bitmap?, callback: BooleanCallback) {
         val customCallback = { uri: String? ->
             if (!uri.isNullOrBlank()) {

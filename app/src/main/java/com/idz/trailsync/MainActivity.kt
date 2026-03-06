@@ -9,13 +9,13 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
-import com.idz.trailsync.model.Model
 
 class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val auth = Firebase.auth
+
         if (auth.currentUser != null) {
             val intent = Intent(this, HomeActivity::class.java)
             startActivity(intent)
@@ -23,6 +23,7 @@ class MainActivity : AppCompatActivity() {
             // todo - load user data from local db
             return
         }
+
         setContentView(R.layout.activity_login)
 
         val emailEditText: EditText = findViewById(R.id.editTextEmail)
@@ -48,7 +49,6 @@ class MainActivity : AppCompatActivity() {
             auth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this) { task ->
                     if (task.isSuccessful) {
-                        // todo - save user data to local db
                         Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show()
                         val intent = Intent(this, HomeActivity::class.java)
                         startActivity(intent)
@@ -56,7 +56,7 @@ class MainActivity : AppCompatActivity() {
                     } else {
                         Toast.makeText(
                             this,
-                            "Authentication failed: ${task.exception?.message}",
+                            "Login failed",
                             Toast.LENGTH_SHORT
                         ).show()
                     }
