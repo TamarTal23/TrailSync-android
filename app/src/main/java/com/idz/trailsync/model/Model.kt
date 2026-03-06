@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.os.Looper
 import androidx.core.os.HandlerCompat
 import com.idz.trailsync.base.BooleanCallback
+import com.idz.trailsync.base.Constants
 import com.idz.trailsync.base.UserCallback
 import com.idz.trailsync.model.dao.AppLocalDB
 import com.idz.trailsync.model.dao.AppLocalDbRepository
@@ -15,7 +16,6 @@ class Model private constructor() {
     private val firebaseModel = FirebaseModel()
 
     private val database: AppLocalDbRepository = AppLocalDB.database
-    private var mainHandler = HandlerCompat.createAsync(Looper.getMainLooper())
 
     companion object {
         val shared = Model()
@@ -30,9 +30,32 @@ class Model private constructor() {
     }
 
     // todo handle image upload
-    fun upsertUser(user: User, callback: BooleanCallback) {
+    fun upsertUser(user: User, picture: Bitmap?, callback: BooleanCallback) {
+        val customCallback = { uri: String? ->
+            if (!uri.isNullOrBlank()) {
+                val updatedUser = user.copy(profilePicture = uri)
+                firebaseModel.upsertUser(updatedUser) { success ->
+                    callback(success)
+
+                }
+            } else {
+                callback(false)
+            }
+        }
+
         firebaseModel.upsertUser(user) { success ->
-            callback(success)
+            if (success) {
+                picture?.let {
+                    firebaseModel.uploadImage(
+                        picture,
+                        Constants.STORAGE.PROFILE_PICTURES,
+                        user.id,
+                        customCallback
+                    ) { exception -> callback(false) }
+                } ?: callback(true)
+            } else {
+                callback(false)
+            }
         }
     }
 

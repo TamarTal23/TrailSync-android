@@ -13,4 +13,9 @@ object Constants {
         const val COMMENTS = "comments"
         const val POSTS = "posts"
     }
+
+    object STORAGE {
+        const val PROFILE_PICTURES = "profiles"
+        const val POSTS_PICTURES = "posts"
+    }
 }
