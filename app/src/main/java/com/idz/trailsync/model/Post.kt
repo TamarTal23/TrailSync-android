@@ -1,9 +1,12 @@
 package com.idz.trailsync.model
 
+import android.os.Parcelable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import kotlinx.parcelize.Parcelize
 import java.util.*
 
+@Parcelize
 @Entity
 data class Post(
     @PrimaryKey val id: String,
@@ -19,7 +22,8 @@ data class Post(
     val mapLink: String = "",
     val commentsCount: Int = 0,
     val savedCount: Int = 0
-) {
+) : Parcelable {
+    @Parcelize
     data class Location(
         val city: String = "",
         val country: String = "",
@@ -28,7 +32,7 @@ data class Post(
         val name: String = "",
         val placeId: String = "",
         val mapLink: String = ""
-    )
+    ) : Parcelable
 
     companion object {
         private const val ID_KEY = "id"
