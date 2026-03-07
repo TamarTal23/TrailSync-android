@@ -13,12 +13,15 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import com.google.android.material.imageview.ShapeableImageView
+import android.media.ExifInterface
+import android.graphics.Matrix
 
 
 class RegisterFragment : Fragment() {
@@ -29,10 +32,22 @@ class RegisterFragment : Fragment() {
     private val galleryLauncher =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             if (uri != null) {
+                val inputStream = requireContext().contentResolver.openInputStream(uri)
+                val exif = inputStream?.let { ExifInterface(it) }
                 val bitmap =
                     MediaStore.Images.Media.getBitmap(requireContext().contentResolver, uri)
-                imageView.setImageBitmap(bitmap)
-                profileBitmap = bitmap
+                val orientation = exif?.getAttributeInt(
+                    ExifInterface.TAG_ORIENTATION,
+                    ExifInterface.ORIENTATION_NORMAL
+                )
+                val rotatedBitmap = when (orientation) {
+                    ExifInterface.ORIENTATION_ROTATE_90 -> rotateBitmap(bitmap, 90f)
+                    ExifInterface.ORIENTATION_ROTATE_180 -> rotateBitmap(bitmap, 180f)
+                    ExifInterface.ORIENTATION_ROTATE_270 -> rotateBitmap(bitmap, 270f)
+                    else -> bitmap
+                }
+                imageView.setImageBitmap(rotatedBitmap)
+                profileBitmap = rotatedBitmap
             }
         }
 
@@ -41,13 +56,14 @@ class RegisterFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.activity_register, container, false)
+        val view = inflater.inflate(R.layout.fragment_register, container, false)
         imageView = view.findViewById(R.id.profileImageView)
         val emailEditText: EditText = view.findViewById(R.id.editTextEmail)
         val usernameEditText: EditText = view.findViewById(R.id.editTextUsername)
         val passwordEditText: EditText = view.findViewById(R.id.editTextPassword)
         val confirmPasswordEditText: EditText = view.findViewById(R.id.editTextConfirmPassword)
         val signUpButton: Button = view.findViewById(R.id.buttonSignUp)
+        val registerProgressBar: ProgressBar = view.findViewById(R.id.registerProgressBar)
         val pickProfilePictureButton: ImageButton = view.findViewById(R.id.buttonPickProfilePicture)
         val emailInputLayout =
             view.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.emailInputLayout)
@@ -104,6 +120,8 @@ class RegisterFragment : Fragment() {
         })
 
         signUpButton.setOnClickListener {
+            signUpButton.isEnabled = false
+            registerProgressBar.visibility = View.VISIBLE
             val email = emailEditText.text.toString().trim()
             val username = usernameEditText.text.toString().trim()
             val password = passwordEditText.text.toString()
@@ -112,6 +130,8 @@ class RegisterFragment : Fragment() {
             if (email.isEmpty() || username.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
                 Toast.makeText(requireContext(), "Please fill all fields", Toast.LENGTH_SHORT)
                     .show()
+                registerProgressBar.visibility = View.GONE
+                signUpButton.isEnabled = true
                 return@setOnClickListener
             }
             if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
@@ -121,6 +141,8 @@ class RegisterFragment : Fragment() {
                     Toast.LENGTH_SHORT
                 )
                     .show()
+                registerProgressBar.visibility = View.GONE
+                signUpButton.isEnabled = true
                 return@setOnClickListener
             }
             if (password.length < 6) {
@@ -130,11 +152,15 @@ class RegisterFragment : Fragment() {
                     Toast.LENGTH_SHORT
                 )
                     .show()
+                registerProgressBar.visibility = View.GONE
+                signUpButton.isEnabled = true
                 return@setOnClickListener
             }
             if (password != confirmPassword) {
                 Toast.makeText(requireContext(), "Passwords do not match", Toast.LENGTH_SHORT)
                     .show()
+                registerProgressBar.visibility = View.GONE
+                signUpButton.isEnabled = true
                 return@setOnClickListener
             }
             if (profileBitmap == null) {
@@ -143,6 +169,8 @@ class RegisterFragment : Fragment() {
                     "Please select a profile picture",
                     Toast.LENGTH_SHORT
                 ).show()
+                registerProgressBar.visibility = View.GONE
+                signUpButton.isEnabled = true
                 return@setOnClickListener
             }
 
@@ -150,11 +178,15 @@ class RegisterFragment : Fragment() {
         }
 
         authenticationViewModel.registrationResult.observe(viewLifecycleOwner, Observer { result ->
+            signUpButton.isEnabled = true
+            registerProgressBar.visibility = View.GONE
             when (result) {
                 is LoginResult.Success -> {
                     Toast.makeText(requireContext(), "Registration successful!", Toast.LENGTH_SHORT)
                         .show()
-                    requireActivity().onBackPressedDispatcher.onBackPressed()
+                    val intent = android.content.Intent(requireActivity(), HomeActivity::class.java)
+                    startActivity(intent)
+                    requireActivity().finish()
                 }
 
                 is LoginResult.Error -> {
@@ -169,5 +201,11 @@ class RegisterFragment : Fragment() {
         })
 
         return view
+    }
+
+    private fun rotateBitmap(bitmap: Bitmap, degrees: Float): Bitmap {
+        val matrix = Matrix()
+        matrix.postRotate(degrees)
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
     }
 }

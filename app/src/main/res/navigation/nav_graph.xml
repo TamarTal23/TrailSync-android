@@ -55,6 +55,6 @@
         android:id="@+id/registerFragment"
         android:name="com.idz.trailsync.RegisterFragment"
         android:label="Register"
-        tools:layout="@layout/activity_register" />
+        tools:layout="@layout/fragment_register" />
 
 </navigation>
