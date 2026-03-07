@@ -20,7 +20,8 @@ class HomeActivity : AppCompatActivity() {
         val toolbar: Toolbar = findViewById(R.id.top_app_bar)
         setSupportActionBar(toolbar)
 
-        val navHostFragment: NavHostFragment? = supportFragmentManager.findFragmentById(R.id.main_nav_host) as? NavHostFragment
+        val navHostFragment: NavHostFragment? =
+            supportFragmentManager.findFragmentById(R.id.main_nav_host) as? NavHostFragment
         navController = navHostFragment?.navController
         val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottom_bar)
 
@@ -32,6 +33,10 @@ class HomeActivity : AppCompatActivity() {
 
             NavigationUI.setupWithNavController(bottomNavigationView, it)
 
+            toolbar.navigationIcon = null
+            it.addOnDestinationChangedListener { _, _, _ ->
+                toolbar.navigationIcon = null
+            }
 
             bottomNavigationView.setOnItemSelectedListener { item ->
                 it.popBackStack(it.graph.startDestinationId, false)
