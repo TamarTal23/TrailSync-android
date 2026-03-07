@@ -12,6 +12,7 @@ object Constants {
         const val USERS = "users"
         const val COMMENTS = "comments"
         const val POSTS = "posts"
+        const val SAVED_POSTS = "savedPosts"
     }
 
     object STORAGE {

@@ -15,6 +15,7 @@ import java.io.ByteArrayOutputStream
 
 class FirebaseModel {
     private val database = Firebase.firestore
+    private val storage = FirebaseStorage.getInstance()
 
     init {
         val setting = firestoreSettings {
@@ -77,7 +78,7 @@ class FirebaseModel {
         onError: (Exception) -> Unit
     ) {
         val storageRef =
-            FirebaseStorage.getInstance().reference.child("$folder/${System.currentTimeMillis()}_$name.jpg")
+            storage.reference.child("$folder/${System.currentTimeMillis()}_$name.jpg")
         val baos = ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
         val data = baos.toByteArray()
