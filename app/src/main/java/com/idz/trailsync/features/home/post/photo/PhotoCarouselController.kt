@@ -1,7 +1,6 @@
 package com.idz.trailsync.features.home.post.photo
 
 import android.content.Context
-import android.content.res.Resources
 import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -16,6 +15,7 @@ class PhotoCarouselController(
     private val recyclerView: RecyclerView,
     private val dotsContainer: LinearLayout
 ) {
+
     private val adapter = PhotoAdapter()
     private val layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
     private val snapHelper = PagerSnapHelper()
@@ -23,6 +23,8 @@ class PhotoCarouselController(
     init {
         recyclerView.layoutManager = layoutManager
         recyclerView.adapter = adapter
+        recyclerView.clipToPadding = false
+
         snapHelper.attachToRecyclerView(recyclerView)
         setupScrollListener()
     }
@@ -35,68 +37,77 @@ class PhotoCarouselController(
         setupDotsIndicator(photos.size)
     }
 
-    private fun handlePhotoCentering(size: Int) {
-        if (size == 1) {
-            val screenWidth = Resources.getSystem().displayMetrics.widthPixels
-            val itemWidth = (290 * Resources.getSystem().displayMetrics.density).toInt()
-            val padding = (screenWidth - itemWidth) / 2
-            recyclerView.setPadding(padding, 0, padding, 0)
+    private fun handlePhotoCentering(photoCount: Int) {
+        val density = context.resources.displayMetrics.density
+
+        val padding = if (photoCount == 1) {
+            val screenWidth = context.resources.displayMetrics.widthPixels
+            val itemWidth = (290 * density).toInt()
+            (screenWidth - itemWidth) / 2
         } else {
-            val padding = (16 * Resources.getSystem().displayMetrics.density).toInt()
-            recyclerView.setPadding(padding, 0, padding, 0)
+            (16 * density).toInt()
         }
-        recyclerView.clipToPadding = false
+
+        recyclerView.setPadding(padding, 0, padding, 0)
     }
 
-    private fun setupDotsIndicator(size: Int) {
+    private fun setupDotsIndicator(photoCount: Int) {
         dotsContainer.removeAllViews()
-        if (size <= 1) {
+
+        if (photoCount <= 1) {
             dotsContainer.visibility = View.GONE
             return
         }
 
         dotsContainer.visibility = View.VISIBLE
+        val density = context.resources.displayMetrics.density
+        val margin = (8 * density).toInt()
+
         val params = LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.WRAP_CONTENT,
             LinearLayout.LayoutParams.WRAP_CONTENT
         ).apply {
-            setMargins(8, 0, 8, 0)
+            setMargins(margin, 0, margin, 0)
         }
 
-        for (i in 0 until size) {
+        for (i in 0 until photoCount) {
             val dot = ImageView(context).apply {
-                setImageDrawable(ContextCompat.getDrawable(context, R.drawable.dot_inactive))
+                setImageDrawable(
+                    ContextCompat.getDrawable(context, R.drawable.dot_inactive)
+                )
                 layoutParams = params
             }
+
             dotsContainer.addView(dot)
         }
+
         updateDots(0)
     }
 
     private fun updateDots(position: Int) {
-        val childCount = dotsContainer.childCount
-        for (i in 0 until childCount) {
-            val imageView = dotsContainer.getChildAt(i) as? ImageView
-            imageView?.setImageDrawable(
-                ContextCompat.getDrawable(
-                    context,
-                    if (i == position) R.drawable.dot_active else R.drawable.dot_inactive
-                )
-            )
+        for (i in 0 until dotsContainer.childCount) {
+            val dot = dotsContainer.getChildAt(i) as ImageView
+
+            val drawable = if (i == position) {
+                R.drawable.dot_active
+            } else {
+                R.drawable.dot_inactive
+            }
+
+            dot.setImageDrawable(ContextCompat.getDrawable(context, drawable))
         }
     }
 
     private fun setupScrollListener() {
         recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                super.onScrollStateChanged(recyclerView, newState)
-                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-                    val centerView = snapHelper.findSnapView(layoutManager)
-                    centerView?.let {
-                        val position = layoutManager.getPosition(it)
-                        updateDots(position)
-                    }
-                }
+                if (newState != RecyclerView.SCROLL_STATE_IDLE) return
+
+                val centerView = snapHelper.findSnapView(layoutManager) ?: return
+                val position = layoutManager.getPosition(centerView)
+
+                updateDots(position)
             }
         })
     }

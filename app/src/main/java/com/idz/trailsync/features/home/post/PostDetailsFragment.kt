@@ -89,40 +89,40 @@ class PostDetailsFragment : Fragment() {
                     binding.mapProgressBar.visibility = View.GONE
                 }
 
-                override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+                override fun shouldOverrideUrlLoading(
+                    view: WebView?,
+                    request: WebResourceRequest?
+                ): Boolean {
+
                     val url = request?.url?.toString() ?: return false
-                    
+
                     if (url.startsWith("http://") || url.startsWith("https://")) {
-                        return if (isGoogleMapsUrl(url)) {
-                            false
-                        } else {
-                            true
-                        }
-                    } else {
+                        return !isGoogleMapsUrl(url)
                     }
-                    try {
+
+                    val context = view?.context ?: return false
+
+                    return try {
                         val intent = if (url.startsWith("intent://")) {
                             Intent.parseUri(url, Intent.URI_INTENT_SCHEME)
                         } else {
                             Intent(Intent.ACTION_VIEW, Uri.parse(url))
                         }
 
-                        val context = view?.context ?: return false
-
-                        val isMapIntent = intent.`package`?.contains("com.google.android.apps.maps") == true ||
-                                intent.action?.contains("geo") == true ||
-                                (intent.dataString?.let { isGoogleMapsUrl(it) } ?: false)
+                        val isMapIntent =
+                            intent.`package`?.contains("com.google.android.apps.maps") == true ||
+                                    intent.action?.contains("geo") == true ||
+                                    intent.dataString?.let { isGoogleMapsUrl(it) } == true
 
                         if (isMapIntent && intent.resolveActivity(context.packageManager) != null) {
                             context.startActivity(intent)
-                            return true
                         }
+
+                        true
                     } catch (e: Exception) {
-                        return false
+                        false
                     }
-                    return true
-                }
-            }
+                }            }
             
             loadUrl(mapLink)
         }
