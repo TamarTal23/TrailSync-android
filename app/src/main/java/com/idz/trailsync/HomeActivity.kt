@@ -7,7 +7,6 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.NavigationUI
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import androidx.appcompat.widget.Toolbar
 
 class HomeActivity : AppCompatActivity() {
     var navController: NavController? = null
@@ -17,21 +16,12 @@ class HomeActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_home)
 
-        val toolbar: Toolbar = findViewById(R.id.top_app_bar)
-        setSupportActionBar(toolbar)
-
         val navHostFragment: NavHostFragment? = supportFragmentManager.findFragmentById(R.id.main_nav_host) as? NavHostFragment
         navController = navHostFragment?.navController
         val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottom_bar)
 
         navController?.let {
-            NavigationUI.setupActionBarWithNavController(
-                activity = this,
-                navController = it
-            )
-
             NavigationUI.setupWithNavController(bottomNavigationView, it)
-
 
             bottomNavigationView.setOnItemSelectedListener { item ->
                 it.popBackStack(it.graph.startDestinationId, false)
@@ -39,5 +29,9 @@ class HomeActivity : AppCompatActivity() {
                 true
             }
         }
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        return navController?.navigateUp() ?: super.onSupportNavigateUp()
     }
 }
