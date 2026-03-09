@@ -12,13 +12,13 @@ data class SavedPost(
     val createdAt: Date = Date()
 ) {
     companion object {
-        const val COLLECTION = "savedPosts"
         private const val POST_ID_KEY = "postId"
         private const val CREATED_AT_KEY = "createdAt"
 
         fun fromJSON(json: Map<String, Any>, userId: String, docId: String): SavedPost {
             val postId = json[POST_ID_KEY] as? String ?: ""
-            val createdAt = (json[CREATED_AT_KEY] as? com.google.firebase.Timestamp)?.toDate() ?: Date()
+            val createdAt =
+                (json[CREATED_AT_KEY] as? com.google.firebase.Timestamp)?.toDate() ?: Date()
 
             return SavedPost(
                 id = docId,
