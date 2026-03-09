@@ -29,7 +29,11 @@
         android:id="@+id/homeFragment"
         android:name="com.idz.trailsync.features.home.HomeFragment"
         android:label="Home"
-        tools:layout="@layout/fragment_home" />
+        tools:layout="@layout/fragment_home">
+        <action
+            android:id="@+id/action_homeFragment_to_postDetailsFragment"
+            app:destination="@+id/postDetailsFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/savedPostsFragment"
@@ -42,5 +46,21 @@
         android:name="com.idz.trailsync.EditProfileFragment"
         android:label="Edit Profile"
         tools:layout="@layout/fragment_edit_profile" />
+
+    <fragment>
+        android:id="@+id/postDetailsFragment"
+        android:name="com.idz.trailsync.features.home.post.PostDetailsFragment"
+        android:label="Post Details"
+        tools:layout="@layout/fragment_post_details">
+        <argument
+            android:name="post"
+            app:argType="com.idz.trailsync.model.Post" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/registerFragment"
+        android:name="com.idz.trailsync.RegisterFragment"
+        android:label="Register"
+        tools:layout="@layout/fragment_register" />
 
 </navigation>

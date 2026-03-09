@@ -3,11 +3,11 @@ package com.idz.trailsync
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.NavigationUI
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import androidx.appcompat.widget.Toolbar
 
 class HomeActivity : AppCompatActivity() {
     var navController: NavController? = null
@@ -26,11 +26,6 @@ class HomeActivity : AppCompatActivity() {
         val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottom_bar)
 
         navController?.let {
-            NavigationUI.setupActionBarWithNavController(
-                activity = this,
-                navController = it
-            )
-
             NavigationUI.setupWithNavController(bottomNavigationView, it)
 
             toolbar.navigationIcon = null
@@ -44,5 +39,9 @@ class HomeActivity : AppCompatActivity() {
                 true
             }
         }
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        return navController?.navigateUp() ?: super.onSupportNavigateUp()
     }
 }
