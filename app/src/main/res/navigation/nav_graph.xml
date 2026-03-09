@@ -18,7 +18,7 @@
     <fragment
         android:id="@+id/createPostFragment"
         android:name="com.idz.trailsync.CreatePostFragment"
-        android:label="Upsert post" >
+        android:label="Upsert post">
         <argument
             android:name="postId"
             app:argType="string"
@@ -37,5 +37,10 @@
         android:label="Saved Posts"
         tools:layout="@layout/fragment_saved_posts" />
 
+    <fragment
+        android:id="@+id/editProfileFragment"
+        android:name="com.idz.trailsync.EditProfileFragment"
+        android:label="Edit Profile"
+        tools:layout="@layout/fragment_edit_profile" />
 
 </navigation>
