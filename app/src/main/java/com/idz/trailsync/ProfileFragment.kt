@@ -9,6 +9,8 @@ import android.widget.TextView
 import com.google.android.material.imageview.ShapeableImageView
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.loadingindicator.LoadingIndicator
+import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.google.firebase.Firebase
 import com.squareup.picasso.Picasso
 import com.google.firebase.auth.FirebaseAuth
@@ -33,6 +35,7 @@ class ProfileFragment : Fragment() {
         val profileImageView: ShapeableImageView = view.findViewById(R.id.profileImageView)
         val profileNameTextView: TextView = view.findViewById(R.id.profileNameTextView)
         val editProfileButton: Button = view.findViewById(R.id.editProfileButton)
+        val circularProgress = view.findViewById<CircularProgressIndicator>(R.id.circular_progress)
 
         editProfileButton.setOnClickListener {
             findNavController().navigate(R.id.editProfileFragment)
@@ -45,16 +48,33 @@ class ProfileFragment : Fragment() {
                 userInfo = user
                 profileNameTextView.text = user?.username
                 val url = user?.profilePicture
+
+
                 if (!url.isNullOrBlank()) {
+                    circularProgress.visibility = View.VISIBLE
+                    profileImageView.visibility = View.GONE
+
                     Picasso.get()
                         .load(url)
-                        .resize(130, 130)
+                        .resize(120, 120)
                         .centerCrop()
-                        .placeholder(R.drawable.user_icon_small)
                         .error(R.drawable.user_icon_small)
-                        .into(profileImageView)
+                        .into(profileImageView, object : com.squareup.picasso.Callback {
+                            override fun onSuccess() {
+                                circularProgress.visibility = View.GONE
+                                profileImageView.visibility = View.VISIBLE
+
+                            }
+
+                            override fun onError(e: Exception?) {
+                                circularProgress.visibility = View.GONE
+                                profileImageView.visibility = View.VISIBLE
+                            }
+                        })
                 } else {
                     profileImageView.setImageResource(R.drawable.user_icon_small)
+                    circularProgress.visibility = View.GONE
+                    profileImageView.visibility = View.VISIBLE
                 }
             }
         }
