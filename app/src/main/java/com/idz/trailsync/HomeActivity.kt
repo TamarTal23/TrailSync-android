@@ -17,7 +17,7 @@ class HomeActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_home)
 
-        val toolbar: Toolbar = findViewById(R.id.top_app_bar)
+        val toolbar: Toolbar = findViewById(R.id.top_bar_container)
         setSupportActionBar(toolbar)
 
         val navHostFragment: NavHostFragment? =
@@ -33,6 +33,8 @@ class HomeActivity : AppCompatActivity() {
                 toolbar.navigationIcon = null
             }
 
+            setSupportActionBar(toolbar);
+            supportActionBar?.setDisplayShowTitleEnabled(false)
             bottomNavigationView.setOnItemSelectedListener { item ->
                 it.popBackStack(it.graph.startDestinationId, false)
                 NavigationUI.onNavDestinationSelected(item, it)

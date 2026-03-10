@@ -47,7 +47,7 @@
         android:label="Edit Profile"
         tools:layout="@layout/fragment_edit_profile" />
 
-    <fragment>
+    <fragment
         android:id="@+id/postDetailsFragment"
         android:name="com.idz.trailsync.features.home.post.PostDetailsFragment"
         android:label="Post Details"
