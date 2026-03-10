@@ -14,7 +14,14 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.model.AutocompletePrediction
+import com.google.android.libraries.places.api.model.Place
+import com.google.android.libraries.places.api.net.FetchPlaceRequest
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
+import com.google.android.libraries.places.api.net.PlacesClient
 import com.idz.trailsync.databinding.FragmentCreatePostBinding
+import com.idz.trailsync.features.home.createPost.location.LocationSuggestionsAdapter
 import com.idz.trailsync.features.home.post.photo.PhotoAdapter
 
 class CreatePostFragment : Fragment() {
@@ -25,6 +32,11 @@ class CreatePostFragment : Fragment() {
     private var currentDuration = 1
     private val selectedPhotos = mutableListOf<Uri>()
     private lateinit var photosAdapter: PhotoAdapter<Uri>
+    private var selectedPlace: Place? = null
+    
+    private lateinit var placesClient: PlacesClient
+    private lateinit var suggestionsAdapter: LocationSuggestionsAdapter
+    private var isSelectingFromSuggestions = false
 
     private val pickMultipleMedia = registerForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(10)) { uris ->
         if (uris.isNotEmpty()) {
@@ -47,17 +59,20 @@ class CreatePostFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentCreatePostBinding.inflate(inflater, container, false)
+        
+        placesClient = Places.createClient(requireContext())
+        
         setupUI()
         setupPhotosRecyclerView()
+        setupLocationAutocomplete()
+        
         return binding.root
     }
 
     private fun setupUI() {
-        // Initial values
         binding.durationEditText.setText(currentDuration.toString())
         binding.priceEditText.hint = "$ 0"
 
-        // Stepper logic
         binding.btnIncrement.setOnClickListener {
             currentDuration++
             updateDurationUI()
@@ -70,6 +85,7 @@ class CreatePostFragment : Fragment() {
             }
         }
 
+        // Manual input logic
         binding.durationEditText.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
@@ -91,10 +107,70 @@ class CreatePostFragment : Fragment() {
 
         binding.createPostButton.setOnClickListener {
             if (validateInput()) {
-                // Logic to save the post will go here later
                 Toast.makeText(context, "Post created successfully!", Toast.LENGTH_SHORT).show()
                 findNavController().popBackStack()
             }
+        }
+    }
+
+    private fun setupLocationAutocomplete() {
+        suggestionsAdapter = LocationSuggestionsAdapter { prediction ->
+            selectSuggestion(prediction)
+        }
+        
+        binding.locationSuggestionsRecyclerView.apply {
+            layoutManager = LinearLayoutManager(context)
+            adapter = suggestionsAdapter
+        }
+
+        binding.locationSearchEditText.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                if (isSelectingFromSuggestions) {
+                    isSelectingFromSuggestions = false
+                    return
+                }
+                val query = s.toString()
+                if (query.length >= 3) {
+                    fetchAutocompletePredictions(query)
+                } else {
+                    binding.locationSuggestionsRecyclerView.visibility = View.GONE
+                }
+            }
+        })
+    }
+
+    private fun fetchAutocompletePredictions(query: String) {
+        val request = FindAutocompletePredictionsRequest.builder()
+            .setQuery(query)
+            .build()
+
+        placesClient.findAutocompletePredictions(request)
+            .addOnSuccessListener { response ->
+                val predictions = response.autocompletePredictions
+                if (predictions.isNotEmpty()) {
+                    suggestionsAdapter.setSuggestions(predictions)
+                    binding.locationSuggestionsRecyclerView.visibility = View.VISIBLE
+                } else {
+                    binding.locationSuggestionsRecyclerView.visibility = View.GONE
+                }
+            }
+            .addOnFailureListener {
+                binding.locationSuggestionsRecyclerView.visibility = View.GONE
+            }
+    }
+
+    private fun selectSuggestion(prediction: AutocompletePrediction) {
+        isSelectingFromSuggestions = true
+        binding.locationSearchEditText.setText(prediction.getPrimaryText(null))
+        binding.locationSuggestionsRecyclerView.visibility = View.GONE
+        
+        val placeFields = listOf(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG, Place.Field.ADDRESS)
+        val request = FetchPlaceRequest.newInstance(prediction.placeId, placeFields)
+        
+        placesClient.fetchPlace(request).addOnSuccessListener { response ->
+            selectedPlace = response.place
         }
     }
 
@@ -129,6 +205,7 @@ class CreatePostFragment : Fragment() {
     private fun validateInput(): Boolean {
         val title = binding.tripTitleEditText.text.toString().trim()
         val mapLink = binding.googleMapsEditText.text.toString().trim()
+        val location = binding.locationSearchEditText.text.toString().trim()
         var isValid = true
 
         resetErrors()
@@ -143,6 +220,11 @@ class CreatePostFragment : Fragment() {
             isValid = false
         } else if (!isGoogleMapsUrl(mapLink)) {
             showGoogleMapsError("Please provide a valid Google Maps link")
+            isValid = false
+        }
+        
+        if (location.isEmpty()) {
+            Toast.makeText(context, "Location is required", Toast.LENGTH_SHORT).show()
             isValid = false
         }
 

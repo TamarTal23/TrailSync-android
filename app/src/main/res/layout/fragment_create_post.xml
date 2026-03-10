@@ -122,7 +122,6 @@
             app:layout_constraintStart_toStartOf="@id/googleMapsContainer"
             app:layout_constraintTop_toBottomOf="@id/googleMapsContainer" />
 
-        <!-- Choose a Location Placeholder -->
         <TextView
             android:id="@+id/locationLabel"
             android:layout_width="wrap_content"
@@ -136,7 +135,7 @@
             app:layout_constraintTop_toBottomOf="@id/googleMapsError" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/locationPlaceholder"
+            android:id="@+id/locationContainer"
             android:layout_width="0dp"
             android:layout_height="54dp"
             android:layout_marginTop="10dp"
@@ -156,19 +155,39 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:tint="@color/dark_neutral" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:text="Search everything"
-                android:textColor="@color/dark_neutral"
+            <EditText
+                android:id="@+id/locationSearchEditText"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="16dp"
+                android:background="@android:color/transparent"
+                android:hint="Search everything"
+                android:inputType="text"
+                android:maxLines="1"
+                android:paddingHorizontal="4dp"
                 android:textSize="14sp"
+                android:textColor="@color/black"
                 app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@id/locationIcon"
                 app:layout_constraintTop_toTopOf="parent" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <!-- Duration and Price -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/locationSuggestionsRecyclerView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:background="@drawable/edit_text_background"
+            android:elevation="4dp"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="@id/locationContainer"
+            app:layout_constraintStart_toStartOf="@id/locationContainer"
+            app:layout_constraintTop_toBottomOf="@id/locationContainer"
+            tools:listitem="@android:layout/simple_list_item_1" />
+
+
         <TextView
             android:id="@+id/durationLabel"
             android:layout_width="wrap_content"
@@ -179,7 +198,7 @@
             android:textSize="16sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/locationPlaceholder" />
+            app:layout_constraintTop_toBottomOf="@+id/locationContainer" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/durationContainer"

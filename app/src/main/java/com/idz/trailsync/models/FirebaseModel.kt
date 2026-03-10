@@ -66,4 +66,36 @@ class FirebaseModel {
 
             }
     }
+
+    fun upsertPost(post: Post, callback: BooleanCallback) {
+        database.collection(Constants.COLLECTIONS.POSTS)
+            .whereEqualTo("id", post.id)
+            .get()
+            .addOnSuccessListener { documents ->
+                if (documents.isEmpty) {
+                    database.collection(Constants.COLLECTIONS.POSTS)
+                        .document()
+                        .set(post.json)
+                        .addOnSuccessListener {
+                            callback(true)
+                        }
+                        .addOnFailureListener {
+                            callback(false)
+                        }
+                } else {
+                    for (document in documents) {
+                        document.reference.update(post.json)
+                            .addOnSuccessListener {
+                                callback(true)
+                            }
+                            .addOnFailureListener {
+                                callback(false)
+                            }
+                    }
+                }
+            }
+            .addOnFailureListener {
+                callback(false)
+            }
+    }
 }
