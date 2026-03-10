@@ -7,8 +7,8 @@ import androidx.lifecycle.ViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.auth
-import com.idz.trailsync.model.Model
-import com.idz.trailsync.model.User
+import com.idz.trailsync.models.Model
+import com.idz.trailsync.models.User
 
 sealed class LoginResult {
     object Success : LoginResult()

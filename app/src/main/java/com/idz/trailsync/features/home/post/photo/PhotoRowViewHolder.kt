@@ -1,42 +1,77 @@
 package com.idz.trailsync.features.home.post.photo
 
-import android.content.res.Resources
 import android.net.Uri
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.idz.trailsync.databinding.PhotoItemBinding
+import com.squareup.picasso.Picasso
 
-class PhotoRowViewHolder(
-    private val binding: PhotoItemBinding
+class PhotoRowViewHolder<T>(
+    private val binding: PhotoItemBinding,
+    private val onRemoveClick: ((T) -> Unit)? = null
 ) : RecyclerView.ViewHolder(binding.root) {
 
-    private var photoPath: String? = null
+    private var photo: T? = null
     private var isLast: Boolean = false
 
-    fun bind(photoPath: String?, isLast: Boolean) {
-        this.photoPath = photoPath
+    fun bind(photo: T?, isLast: Boolean) {
+        this.photo = photo
         this.isLast = isLast
 
-        photoPath?.let { path ->
-            updatePhotoMargins()
-            loadPhoto(path)
+        photo?.let { p ->
+            updateDimensionsAndMargins()
+            loadPhoto(p)
+            setupRemoveButton(p)
         }
     }
 
-    private fun updatePhotoMargins() {
+    private fun updateDimensionsAndMargins() {
         val params = binding.photoCardView.layoutParams as ViewGroup.MarginLayoutParams
-        params.marginEnd = if (isLast) 0 else (12 * Resources.getSystem().displayMetrics.density).toInt()
+        val density = itemView.context.resources.displayMetrics.density
+        
+        if (onRemoveClick != null) {
+            params.width = (80 * density).toInt()
+            params.height = (80 * density).toInt()
+            params.marginEnd = (8 * density).toInt()
+        } else {
+            params.width = (290 * density).toInt()
+            params.height = (180 * density).toInt()
+            params.marginEnd = if (isLast) 0 else (12 * density).toInt()
+        }
+
         binding.photoCardView.layoutParams = params
     }
 
-    private fun loadPhoto(path: String) {
-        if (path.startsWith("android.resource")) {
-            val resId = path.substringAfterLast("/").toIntOrNull()
-            if (resId != null) {
-                binding.photoImage.setImageResource(resId)
+    private fun loadPhoto(photo: T) {
+        when (photo) {
+            is String -> {
+                if (photo.startsWith("android.resource")) {
+                    val resId = photo.substringAfterLast("/").toIntOrNull()
+                    if (resId != null) {
+                        binding.photoImage.setImageResource(resId)
+                    }
+                } else {
+                    Picasso.get()
+                        .load(photo)
+                        .placeholder(android.R.drawable.ic_menu_gallery)
+                        .into(binding.photoImage)
+                }
+            }
+            is Uri -> {
+                binding.photoImage.setImageURI(photo)
+            }
+        }
+    }
+
+    private fun setupRemoveButton(photo: T) {
+        if (onRemoveClick != null) {
+            binding.removePhotoButton.visibility = View.VISIBLE
+            binding.removePhotoButton.setOnClickListener {
+                onRemoveClick.invoke(photo)
             }
         } else {
-            binding.photoImage.setImageURI(Uri.parse(path))
+            binding.removePhotoButton.visibility = View.GONE
         }
     }
 }

@@ -192,27 +192,60 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/durationLabel">
 
-            <TextView
-                android:id="@+id/durationValue"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
+            <EditText
+                android:id="@+id/durationEditText"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="10dp"
+                android:background="@android:color/transparent"
+                android:gravity="center_vertical"
+                android:inputType="number"
+                android:paddingHorizontal="10dp"
                 android:text="1"
-                android:textColor="@color/black"
+                android:textColor="@color/dark_neutral"
                 android:textSize="14sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintEnd_toStartOf="@+id/stepperControls"
+                app:layout_constraintStart_toStartOf="parent" />
 
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_marginEnd="16dp"
-                android:src="@drawable/ic_calendar_outline"
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/stepperControls"
+                android:layout_width="40dp"
+                android:layout_height="match_parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:tint="@color/dark_neutral" />
+                app:layout_constraintTop_toTopOf="parent">
+
+                <ImageView
+                    android:id="@+id/durationStepperIcon"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_unfold_more"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:tint="@color/dark_neutral" />
+
+                <View
+                    android:id="@+id/btnIncrement"
+                    android:layout_width="match_parent"
+                    android:layout_height="27dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <View
+                    android:id="@+id/btnDecrement"
+                    android:layout_width="match_parent"
+                    android:layout_height="27dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:layout_constraintBottom_toBottomOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <TextView
@@ -236,17 +269,18 @@
             app:layout_constraintStart_toEndOf="@+id/durationContainer"
             app:layout_constraintTop_toBottomOf="@id/priceLabel">
 
-            <TextView
-                android:id="@+id/priceValue"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:text="$ 0"
-                android:textColor="@color/black"
-                android:textSize="14sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+            <EditText
+                android:id="@+id/priceEditText"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginStart="10dp"
+                android:background="@android:color/transparent"
+                android:gravity="center_vertical"
+                android:hint="$ 0"
+                android:inputType="number"
+                android:paddingHorizontal="10dp"
+                android:textColor="@color/dark_neutral"
+                android:textSize="14sp" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <!-- Description -->
@@ -277,7 +311,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/descriptionLabel" />
 
-        <!-- Photos Placeholder -->
+        <!-- Photos -->
         <TextView
             android:id="@+id/photosLabel"
             android:layout_width="wrap_content"
@@ -291,16 +325,16 @@
             app:layout_constraintTop_toBottomOf="@+id/descriptionEditText" />
 
         <LinearLayout
-            android:id="@+id/photosPlaceholder"
-            android:layout_width="0dp"
+            android:id="@+id/photosContainer"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
+            android:gravity="center_vertical"
             android:orientation="horizontal"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/photosLabel">
 
             <androidx.cardview.widget.CardView
+                android:id="@+id/addPhotosButton"
                 android:layout_width="80dp"
                 android:layout_height="80dp"
                 app:cardBackgroundColor="#F5F7F9"
@@ -324,6 +358,16 @@
                         android:textColor="@color/dark_neutral" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/selectedPhotosRecyclerView"
+                android:layout_width="0dp"
+                android:layout_height="80dp"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:listitem="@layout/selected_photo_item" />
         </LinearLayout>
 
         <Button
@@ -342,7 +386,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/photosPlaceholder" />
+            app:layout_constraintTop_toBottomOf="@+id/photosContainer" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.core.widget.NestedScrollView>

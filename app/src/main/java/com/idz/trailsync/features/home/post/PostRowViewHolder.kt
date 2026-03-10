@@ -5,7 +5,7 @@ import android.net.Uri
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.idz.trailsync.databinding.PostListItemBinding
-import com.idz.trailsync.model.Post
+import com.idz.trailsync.models.Post
 
 class PostRowViewHolder(
     private val binding: PostListItemBinding,

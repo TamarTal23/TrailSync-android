@@ -1,10 +1,11 @@
 package com.idz.trailsync.base
 
-import com.idz.trailsync.model.User
+import com.idz.trailsync.models.User
 
 typealias UsersCallback = (List<User>) -> Unit
 typealias UserCallback = (User?) -> Unit
 typealias BooleanCallback = (Boolean) -> Unit
+typealias StringCallback = (String?) -> Unit
 
 
 object Constants {

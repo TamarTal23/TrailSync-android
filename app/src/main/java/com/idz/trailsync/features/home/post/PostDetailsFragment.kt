@@ -15,7 +15,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.idz.trailsync.databinding.FragmentPostDetailsBinding
 import com.idz.trailsync.features.home.post.photo.PhotoCarouselController
-import com.idz.trailsync.model.Post
+import com.idz.trailsync.models.Post
 
 class PostDetailsFragment : Fragment() {
     private var _binding: FragmentPostDetailsBinding? = null

@@ -1,4 +1,4 @@
-package com.idz.trailsync.model
+package com.idz.trailsync.models
 
 import android.os.Parcelable
 import androidx.room.Entity

@@ -4,8 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.idz.trailsync.databinding.PostListItemBinding
-import com.idz.trailsync.features.home.post.PostRowViewHolder
-import com.idz.trailsync.model.Post
+import com.idz.trailsync.models.Post
 
 class PostsAdapter(
     var posts: List<Post>? = null,

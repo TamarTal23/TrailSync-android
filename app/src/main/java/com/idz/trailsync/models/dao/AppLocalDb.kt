@@ -1,14 +1,14 @@
-package com.idz.trailsync.model.dao
+package com.idz.trailsync.models.dao
 
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.idz.trailsync.base.MyApplication
-import com.idz.trailsync.model.Converters
-import com.idz.trailsync.model.Post
-import com.idz.trailsync.model.Comment
-import com.idz.trailsync.model.User
+import com.idz.trailsync.models.Converters
+import com.idz.trailsync.models.Post
+import com.idz.trailsync.models.Comment
+import com.idz.trailsync.models.User
 
 @Database(entities = [User::class, Comment:: class, Post::class ], version = 5)
 @TypeConverters(Converters::class)

@@ -1,19 +1,19 @@
-package com.idz.trailsync.model
+package com.idz.trailsync.models
 
 import android.graphics.Bitmap
 import android.os.Looper
 import androidx.core.os.HandlerCompat
 import com.idz.trailsync.base.BooleanCallback
-import com.idz.trailsync.base.Constants
 import com.idz.trailsync.base.UserCallback
-import com.idz.trailsync.model.dao.AppLocalDB
-import com.idz.trailsync.model.dao.AppLocalDbRepository
+import com.idz.trailsync.models.dao.AppLocalDB
+import com.idz.trailsync.models.dao.AppLocalDbRepository
 import com.idz.trailsync.base.UsersCallback
 import java.util.concurrent.Executors
 
 class Model private constructor() {
     private var executor = Executors.newSingleThreadExecutor()
     private val firebaseModel = FirebaseModel()
+    private val firebaseStorageModel = FirebaseStorageModel()
     private val database: AppLocalDbRepository = AppLocalDB.database
 
     companion object {
@@ -75,17 +75,15 @@ class Model private constructor() {
         firebaseModel.upsertUser(user) { success ->
             if (success) {
                 picture?.let {
-                    firebaseModel.uploadImage(
-                        picture,
-                        Constants.STORAGE.PROFILE_PICTURES,
+                    firebaseStorageModel.uploadUserImage(
+                        it,
                         user.id,
                         customCallback
-                    ) { exception -> callback(false) }
+                    )
                 } ?: callback(true)
             } else {
                 callback(false)
             }
         }
     }
-
 }

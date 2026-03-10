@@ -1,10 +1,10 @@
-package com.idz.trailsync.model.dao
+package com.idz.trailsync.models.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.idz.trailsync.model.User
+import com.idz.trailsync.models.User
 
 @Dao
 interface UserDao {

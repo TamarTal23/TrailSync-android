@@ -3,7 +3,7 @@ package com.idz.trailsync.features.home
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.idz.trailsync.model.Post
+import com.idz.trailsync.models.Post
 
 class HomeViewModel : ViewModel() {
     private val _posts = MutableLiveData<List<Post>>()

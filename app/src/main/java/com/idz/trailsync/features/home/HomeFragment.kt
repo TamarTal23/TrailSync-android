@@ -12,7 +12,7 @@ import com.idz.trailsync.R
 import com.idz.trailsync.databinding.FragmentHomeBinding
 import com.idz.trailsync.features.home.post.OnPostClickListener
 import com.idz.trailsync.features.home.post.PostsAdapter
-import com.idz.trailsync.model.Post
+import com.idz.trailsync.models.Post
 
 class HomeFragment : Fragment() {
 

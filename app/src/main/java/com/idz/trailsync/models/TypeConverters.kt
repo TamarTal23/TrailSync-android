@@ -1,4 +1,4 @@
-package com.idz.trailsync.model
+package com.idz.trailsync.models
 
 import androidx.room.TypeConverter
 import com.google.gson.Gson
