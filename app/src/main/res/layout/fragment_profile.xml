@@ -26,14 +26,6 @@
             android:background="@drawable/avatar_circle"
             app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CircularImage" />
 
-        <com.google.android.material.progressindicator.CircularProgressIndicator
-            android:id="@+id/circular_progress"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:indeterminate="true"
-            app:indicatorColor="@color/primary" />
-
     </FrameLayout>
 
     <TextView

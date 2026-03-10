@@ -35,7 +35,7 @@ class ProfileFragment : Fragment() {
         val profileImageView: ShapeableImageView = view.findViewById(R.id.profileImageView)
         val profileNameTextView: TextView = view.findViewById(R.id.profileNameTextView)
         val editProfileButton: Button = view.findViewById(R.id.editProfileButton)
-        val circularProgress = view.findViewById<CircularProgressIndicator>(R.id.circular_progress)
+//        val circularProgress = view.findViewById<CircularProgressIndicator>(R.id.circular_progress)
 
         editProfileButton.setOnClickListener {
             findNavController().navigate(R.id.editProfileFragment)
@@ -49,32 +49,15 @@ class ProfileFragment : Fragment() {
                 profileNameTextView.text = user?.username
                 val url = user?.profilePicture
 
-
-                if (!url.isNullOrBlank()) {
-                    circularProgress.visibility = View.VISIBLE
-                    profileImageView.visibility = View.GONE
-
-                    Picasso.get()
-                        .load(url)
-                        .resize(120, 120)
-                        .centerCrop()
-                        .error(R.drawable.user_icon_small)
-                        .into(profileImageView, object : com.squareup.picasso.Callback {
-                            override fun onSuccess() {
-                                circularProgress.visibility = View.GONE
-                                profileImageView.visibility = View.VISIBLE
-
-                            }
-
-                            override fun onError(e: Exception?) {
-                                circularProgress.visibility = View.GONE
-                                profileImageView.visibility = View.VISIBLE
-                            }
-                        })
-                } else {
-                    profileImageView.setImageResource(R.drawable.user_icon_small)
-                    circularProgress.visibility = View.GONE
-                    profileImageView.visibility = View.VISIBLE
+                url?.let {
+                    if (it.isNotBlank()) {
+                        Picasso.get()
+                            .load(it)
+                            .resize(120, 120)
+                            .centerCrop()
+                            .placeholder(R.drawable.user_icon_small)
+                            .into(profileImageView)
+                    }
                 }
             }
         }
