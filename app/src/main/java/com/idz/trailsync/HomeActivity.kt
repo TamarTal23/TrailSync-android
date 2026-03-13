@@ -23,6 +23,7 @@ class HomeActivity : AppCompatActivity() {
         val toolbar: Toolbar = findViewById(R.id.top_bar_container)
         setSupportActionBar(toolbar)
 
+
         val navHostFragment: NavHostFragment? =
             supportFragmentManager.findFragmentById(R.id.main_nav_host) as? NavHostFragment
         navController = navHostFragment?.navController
@@ -51,6 +52,14 @@ class HomeActivity : AppCompatActivity() {
                     logout.visibility = View.VISIBLE
                 } else {
                     logout.visibility = View.GONE
+                }
+            }
+
+            it.addOnDestinationChangedListener { _, destination, _ ->
+                if (destination.id == R.id.editProfileFragment) {
+                    toolbar.visibility = View.GONE
+                } else {
+                    toolbar.visibility = View.VISIBLE
                 }
             }
 
