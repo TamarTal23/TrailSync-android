@@ -7,8 +7,8 @@ import androidx.lifecycle.ViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.auth
-import com.idz.trailsync.models.Model
-import com.idz.trailsync.models.User
+import com.idz.trailsync.model.User
+import com.idz.trailsync.data.repository.UserRepository
 
 sealed class LoginResult {
     object Success : LoginResult()
@@ -58,7 +58,7 @@ class AuthenticationViewModel : ViewModel() {
                             username = username,
                             profilePicture = null
                         )
-                        Model.shared.upsertUser(
+                        UserRepository.shared.upsertUser(
                             user,
                             profileBitmap
                         ) { success ->
@@ -89,4 +89,3 @@ class AuthenticationViewModel : ViewModel() {
         return Firebase.auth.currentUser != null
     }
 }
-
