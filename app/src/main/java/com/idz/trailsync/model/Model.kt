@@ -4,7 +4,6 @@ import android.graphics.Bitmap
 import android.os.Looper
 import androidx.core.os.HandlerCompat
 import com.idz.trailsync.base.BooleanCallback
-import com.idz.trailsync.base.Constants
 import com.idz.trailsync.base.UserCallback
 import com.idz.trailsync.model.dao.AppLocalDB
 import com.idz.trailsync.model.dao.AppLocalDbRepository
@@ -37,17 +36,38 @@ class Model private constructor() {
         }
     }
 
-    fun getUserByEmail(email: String, callback: UserCallback) {
+    fun getUserByEmail(email: String?, callback: UserCallback) {
         executor.execute {
             val localUser = database.UserDao().getByEmail(email)
             HandlerCompat.createAsync(Looper.getMainLooper()).post {
                 callback(localUser)
             }
-            firebaseModel.getUserByEmail(email) { remoteUser ->
-                executor.execute {
-                    remoteUser?.let { database.UserDao().create(it) }
-                    HandlerCompat.createAsync(Looper.getMainLooper()).post {
-                        callback(remoteUser)
+            firebaseModel.getUserByEmail(email ?: "") { remoteUser ->
+                if (remoteUser != null) {
+                    executor.execute {
+                        database.UserDao().create(remoteUser)
+                        HandlerCompat.createAsync(Looper.getMainLooper()).post {
+                            callback(remoteUser)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fun getUserById(id: String, callback: UserCallback) {
+        executor.execute {
+            val localUser = database.UserDao().getById(id)
+            HandlerCompat.createAsync(Looper.getMainLooper()).post {
+                callback(localUser)
+            }
+            firebaseModel.getUserById(id) { remoteUser ->
+                if (remoteUser != null) {
+                    executor.execute {
+                        database.UserDao().create(remoteUser)
+                        HandlerCompat.createAsync(Looper.getMainLooper()).post {
+                            callback(remoteUser)
+                        }
                     }
                 }
             }
@@ -55,37 +75,19 @@ class Model private constructor() {
     }
 
     fun upsertUser(user: User, picture: Bitmap?, callback: BooleanCallback) {
-        executor.execute {
-            database.UserDao().create(user)
-            HandlerCompat.createAsync(Looper.getMainLooper()).post {
-                callback(true)
-            }
-        }
-        val customCallback = { uri: String? ->
-            if (!uri.isNullOrBlank()) {
-                val updatedUser = user.copy(profilePicture = uri)
-                firebaseModel.upsertUser(updatedUser) { success ->
-                    callback(success)
+        firebaseModel.upsertUserWithImage(user, picture) { success, updatedUser ->
+            if (success) {
+                executor.execute {
+                    database.UserDao().create(updatedUser)
+                    HandlerCompat.createAsync(Looper.getMainLooper()).post {
+                        callback(true)
+                    }
                 }
             } else {
-                callback(false)
-            }
-        }
-
-        firebaseModel.upsertUser(user) { success ->
-            if (success) {
-                picture?.let {
-                    firebaseModel.uploadImage(
-                        picture,
-                        Constants.STORAGE.PROFILE_PICTURES,
-                        user.id,
-                        customCallback
-                    ) { exception -> callback(false) }
-                } ?: callback(true)
-            } else {
-                callback(false)
+                HandlerCompat.createAsync(Looper.getMainLooper()).post {
+                    callback(false)
+                }
             }
         }
     }
-
 }

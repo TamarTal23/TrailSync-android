@@ -44,29 +44,37 @@ class FirebaseModel {
     fun getUserByEmail(email: String, callback: UserCallback) {
         database.collection(Constants.COLLECTIONS.USERS).whereEqualTo("email", email).get()
             .addOnSuccessListener { documents ->
-                for (document in documents) {
+                if (!documents.isEmpty) {
+                    val user: User = User.fromJSON(documents.documents[0].data ?: mapOf())
+                    callback(user)
+                } else {
+                    callback(null)
+                }
+            }
+            .addOnFailureListener {
+                callback(null)
+            }
+    }
+
+    fun getUserById(id: String, callback: UserCallback) {
+        database.collection(Constants.COLLECTIONS.USERS).document(id).get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
                     val user: User = User.fromJSON(document.data ?: mapOf())
                     callback(user)
+                } else {
+                    callback(null)
                 }
+            }
+            .addOnFailureListener {
+                callback(null)
             }
     }
 
     fun upsertUser(user: User, callback: BooleanCallback) {
-        database.collection(Constants.COLLECTIONS.USERS).whereEqualTo("email", user.email).get()
-            .addOnSuccessListener { documents ->
-                if (documents.size() == 0) {
-                    database.collection(Constants.COLLECTIONS.USERS).document()
-                        .set(user.json).addOnSuccessListener {
-                            callback(true)
-                        }
-                } else {
-                    for (document in documents) {
-                        document.reference.update(user.json).addOnSuccessListener {
-                            callback(true)
-                        }
-                    }
-                }
-
+        database.collection(Constants.COLLECTIONS.USERS).document(user.id).set(user.json)
+            .addOnCompleteListener { task ->
+                callback(task.isSuccessful)
             }
     }
 
@@ -97,31 +105,21 @@ class FirebaseModel {
     fun upsertUserWithImage(
         user: User,
         profileBitmap: Bitmap?,
-        callback: BooleanCallback
+        onComplete: (Boolean, User) -> Unit
     ) {
         if (profileBitmap == null) {
-            callback(false)
+            upsertUser(user) { success ->
+                onComplete(success, user)
+            }
             return
         }
-        uploadImage(profileBitmap, "profilePictures", user.id ?: "", { url ->
+        uploadImage(profileBitmap, Constants.STORAGE.PROFILE_PICTURES, user.id, { url ->
             val userWithPic = user.copy(profilePicture = url)
-            database.collection(Constants.COLLECTIONS.USERS).whereEqualTo("email", user.email).get()
-                .addOnSuccessListener { documents ->
-                    if (documents.size() == 0) {
-                        database.collection(Constants.COLLECTIONS.USERS).document()
-                            .set(userWithPic.json).addOnSuccessListener {
-                                callback(true)
-                            }
-                    } else {
-                        for (document in documents) {
-                            document.reference.update(userWithPic.json).addOnSuccessListener {
-                                callback(true)
-                            }
-                        }
-                    }
-                }
+            upsertUser(userWithPic) { success ->
+                onComplete(success, userWithPic)
+            }
         }, { _ ->
-            callback(false)
+            onComplete(false, user)
         })
     }
 }

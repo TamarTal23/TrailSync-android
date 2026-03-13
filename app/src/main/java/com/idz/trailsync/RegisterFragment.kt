@@ -197,6 +197,7 @@ class RegisterFragment : Fragment() {
                     Toast.makeText(requireContext(), "Please fill all fields", Toast.LENGTH_SHORT)
                         .show()
                 }
+
             }
         })
 

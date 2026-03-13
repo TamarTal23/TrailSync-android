@@ -43,7 +43,7 @@
 
     <fragment
         android:id="@+id/editProfileFragment"
-        android:name="com.idz.trailsync.EditProfileFragment"
+        android:name="com.idz.trailsync.features.profile.EditProfileFragment"
         android:label="Edit Profile"
         tools:layout="@layout/fragment_edit_profile" />
 

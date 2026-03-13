@@ -16,13 +16,6 @@ import com.idz.trailsync.model.Model
 import com.idz.trailsync.model.User
 
 class ProfileFragment : Fragment() {
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        // todo tamar logout button and function
-
-    }
-
     private var userInfo: User? = null
 
     override fun onCreateView(
