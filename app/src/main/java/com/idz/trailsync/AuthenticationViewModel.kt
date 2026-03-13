@@ -10,16 +10,10 @@ import com.google.firebase.auth.auth
 import com.idz.trailsync.model.Model
 import com.idz.trailsync.model.User
 
-/**
- * A wrapper for data that is exposed via a LiveData that represents an event.
- */
 open class Event<out T>(private val content: T) {
     var hasBeenHandled = false
         private set
 
-    /**
-     * Returns the content and prevents its use again.
-     */
     fun getContentIfNotHandled(): T? {
         return if (hasBeenHandled) {
             null
@@ -28,10 +22,6 @@ open class Event<out T>(private val content: T) {
             content
         }
     }
-
-    /**
-     * Returns the content, even if it's already been handled.
-     */
     fun peekContent(): T = content
 }
 
@@ -80,32 +70,17 @@ class AuthenticationViewModel : ViewModel() {
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
                         val uid = auth.currentUser?.uid ?: ""
-                        val user = User(
-                            id = uid,
-                            email = email,
-                            username = username,
-                            profilePicture = null
-                        )
-                        Model.shared.upsertUser(
-                            user,
-                            profileBitmap
-                        ) { success ->
-                            if (success) {
-                                _registrationResult.value = LoginResult.Success
-                            } else {
-                                _registrationResult.value =
-                                    LoginResult.Error("Failed to save user to database")
-                            }
+                        val user = User(id = uid, email = email, username = username, profilePicture = null)
+                        Model.shared.upsertUser(user, profileBitmap) { success ->
+                            _registrationResult.value = if (success) LoginResult.Success 
+                            else LoginResult.Error("Failed to save user to database")
                         }
                     } else {
                         val exception = task.exception
-                        if (exception is FirebaseAuthUserCollisionException) {
-                            _registrationResult.value =
-                                LoginResult.Error("This email is already registered.")
-                        } else {
-                            _registrationResult.value =
-                                LoginResult.Error(exception?.message ?: "Registration failed")
-                        }
+                        _registrationResult.value = LoginResult.Error(
+                            if (exception is FirebaseAuthUserCollisionException) "This email is already registered."
+                            else exception?.message ?: "Registration failed"
+                        )
                     }
                 }
         } else {
@@ -114,26 +89,21 @@ class AuthenticationViewModel : ViewModel() {
     }
 
     fun updateProfile(newUsername: String?, newProfileBitmap: Bitmap?) {
-        val authUser = Firebase.auth.currentUser
-        if (authUser == null) {
+        val authUser = Firebase.auth.currentUser ?: run {
             _updateProfileResult.value = Event(LoginResult.Error("User not logged in"))
             return
         }
 
+        var isUpdateStarted = false
         Model.shared.getUserById(authUser.uid) { user ->
-            if (user != null) {
-                val updatedUser = user.copy(
-                    username = newUsername ?: user.username
-                )
-                Model.shared.upsertUser(updatedUser, newProfileBitmap) { success ->
-                    if (success) {
-                        _updateProfileResult.value = Event(LoginResult.Success)
-                    } else {
-                        _updateProfileResult.value = Event(LoginResult.Error("Failed to update profile in database"))
-                    }
-                }
-            } else {
-                _updateProfileResult.value = Event(LoginResult.Error("User record not found"))
+            // getUserById returns twice (local then remote). We only want to trigger the update once.
+            if (isUpdateStarted || user == null) return@getUserById
+            isUpdateStarted = true
+
+            val updatedUser = user.copy(username = newUsername ?: user.username)
+            Model.shared.upsertUser(updatedUser, newProfileBitmap) { success ->
+                _updateProfileResult.value = if (success) Event(LoginResult.Success)
+                else Event(LoginResult.Error("Failed to update profile"))
             }
         }
     }
@@ -142,11 +112,6 @@ class AuthenticationViewModel : ViewModel() {
         _updateProfileResult.value = null
     }
 
-    fun isUserLoggedIn(): Boolean {
-        return Firebase.auth.currentUser != null
-    }
-
-    fun logout() {
-        Firebase.auth.signOut()
-    }
+    fun isUserLoggedIn(): Boolean = Firebase.auth.currentUser != null
+    fun logout() = Firebase.auth.signOut()
 }
