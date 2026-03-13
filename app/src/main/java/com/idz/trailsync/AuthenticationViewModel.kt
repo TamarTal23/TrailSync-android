@@ -88,5 +88,8 @@ class AuthenticationViewModel : ViewModel() {
     fun isUserLoggedIn(): Boolean {
         return Firebase.auth.currentUser != null
     }
-}
 
+    fun logout() {
+        Firebase.auth.signOut()
+    }
+}

@@ -6,7 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 class AuthenticationActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Check if user is already logged in
+
         val authenticationViewModel = AuthenticationViewModel()
         if (authenticationViewModel.isUserLoggedIn()) {
             val intent = android.content.Intent(this, HomeActivity::class.java)
