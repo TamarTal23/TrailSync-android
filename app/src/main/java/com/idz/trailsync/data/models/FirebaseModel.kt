@@ -1,21 +1,18 @@
-package com.idz.trailsync.model
+package com.idz.trailsync.data.models
 
-import android.graphics.Bitmap
-import android.net.Uri
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.firestoreSettings
 import com.google.firebase.firestore.memoryCacheSettings
-import com.google.firebase.storage.FirebaseStorage
 import com.idz.trailsync.base.BooleanCallback
 import com.idz.trailsync.base.UsersCallback
 import com.idz.trailsync.base.Constants
 import com.idz.trailsync.base.UserCallback
-import java.io.ByteArrayOutputStream
+import com.idz.trailsync.model.Post
+import com.idz.trailsync.model.User
 
 class FirebaseModel {
     private val database = Firebase.firestore
-    private val storage = FirebaseStorage.getInstance()
 
     init {
         val setting = firestoreSettings {
@@ -44,8 +41,10 @@ class FirebaseModel {
     fun getUserByEmail(email: String, callback: UserCallback) {
         database.collection(Constants.COLLECTIONS.USERS).whereEqualTo("email", email).get()
             .addOnSuccessListener { documents ->
-                for (document in documents) {
-                    val user: User = User.fromJSON(document.data ?: mapOf())
+                if (documents.isEmpty) {
+                    callback(null)
+                } else {
+                    val user: User = User.fromJSON(documents.documents[0].data ?: mapOf())
                     callback(user)
                 }
             }
@@ -70,58 +69,35 @@ class FirebaseModel {
             }
     }
 
-    fun uploadImage(
-        bitmap: Bitmap,
-        folder: String,
-        name: String,
-        onSuccess: (String) -> Unit,
-        onError: (Exception) -> Unit
-    ) {
-        val storageRef =
-            storage.reference.child("$folder/${System.currentTimeMillis()}_$name.jpg")
-        val baos = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
-        val data = baos.toByteArray()
-        val uploadTask = storageRef.putBytes(data)
-        uploadTask.addOnSuccessListener {
-            storageRef.downloadUrl.addOnSuccessListener { downloadUri: Uri ->
-                onSuccess(downloadUri.toString())
-            }.addOnFailureListener { exception: Exception ->
-                onError(exception)
-            }
-        }.addOnFailureListener { exception: Exception ->
-            onError(exception)
-        }
-    }
-
-    fun upsertUserWithImage(
-        user: User,
-        profileBitmap: Bitmap?,
-        callback: BooleanCallback
-    ) {
-        if (profileBitmap == null) {
-            callback(false)
-            return
-        }
-        uploadImage(profileBitmap, "profilePictures", user.id ?: "", { url ->
-            val userWithPic = user.copy(profilePicture = url)
-            database.collection(Constants.COLLECTIONS.USERS).whereEqualTo("email", user.email).get()
-                .addOnSuccessListener { documents ->
-                    if (documents.size() == 0) {
-                        database.collection(Constants.COLLECTIONS.USERS).document()
-                            .set(userWithPic.json).addOnSuccessListener {
-                                callback(true)
-                            }
-                    } else {
-                        for (document in documents) {
-                            document.reference.update(userWithPic.json).addOnSuccessListener {
-                                callback(true)
-                            }
+    fun upsertPost(post: Post, callback: BooleanCallback) {
+        database.collection(Constants.COLLECTIONS.POSTS)
+            .whereEqualTo("id", post.id)
+            .get()
+            .addOnSuccessListener { documents ->
+                if (documents.isEmpty) {
+                    database.collection(Constants.COLLECTIONS.POSTS)
+                        .document()
+                        .set(post.json)
+                        .addOnSuccessListener {
+                            callback(true)
                         }
+                        .addOnFailureListener {
+                            callback(false)
+                        }
+                } else {
+                    for (document in documents) {
+                        document.reference.update(post.json)
+                            .addOnSuccessListener {
+                                callback(true)
+                            }
+                            .addOnFailureListener {
+                                callback(false)
+                            }
                     }
                 }
-        }, { _ ->
-            callback(false)
-        })
+            }
+            .addOnFailureListener {
+                callback(false)
+            }
     }
 }

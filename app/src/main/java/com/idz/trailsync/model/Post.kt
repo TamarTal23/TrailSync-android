@@ -3,8 +3,10 @@ package com.idz.trailsync.model
 import android.os.Parcelable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.google.firebase.Timestamp
 import kotlinx.parcelize.Parcelize
-import java.util.*
+import java.util.Date
+import java.util.UUID
 
 @Parcelize
 @Entity
@@ -31,7 +33,6 @@ data class Post(
         val lng: Double = 0.0,
         val name: String = "",
         val placeId: String = "",
-        val mapLink: String = ""
     ) : Parcelable
 
     companion object {
@@ -63,14 +64,13 @@ data class Post(
                     lng = (map["lng"] as? Number)?.toDouble() ?: 0.0,
                     name = map["name"] as? String ?: "",
                     placeId = map["placeId"] as? String ?: "",
-                    mapLink = map["mapLink"] as? String ?: ""
                 )
             }
             val numberOfDays = (json[NUMBER_OF_DAYS_KEY] as? Number)?.toInt() ?: 0
             val photos = (json[PHOTOS_KEY] as? List<*>)?.filterIsInstance<String>() ?: emptyList()
             val price = (json[PRICE_KEY] as? Number)?.toInt() ?: 0
-            val createdAt = (json[CREATED_AT_KEY] as? com.google.firebase.Timestamp)?.toDate() ?: Date()
-            val updatedAt = (json[UPDATED_AT_KEY] as? com.google.firebase.Timestamp)?.toDate() ?: Date()
+            val createdAt = (json[CREATED_AT_KEY] as? Timestamp)?.toDate() ?: Date()
+            val updatedAt = (json[UPDATED_AT_KEY] as? Timestamp)?.toDate() ?: Date()
             val mapLink = json[MAP_LINK_KEY] as? String ?: ""
             val commentsCount = (json[COMMENTS_COUNT_KEY] as? Number)?.toInt() ?: 0
             val savedCount = (json[SAVED_COUNT_KEY] as? Number)?.toInt() ?: 0
@@ -103,7 +103,6 @@ data class Post(
                     "lng" to it.lng,
                     "name" to it.name,
                     "placeId" to it.placeId,
-                    "mapLink" to it.mapLink
                 )
             }
             return hashMapOf(
@@ -115,8 +114,8 @@ data class Post(
                 NUMBER_OF_DAYS_KEY to numberOfDays,
                 PHOTOS_KEY to photos,
                 PRICE_KEY to price,
-                CREATED_AT_KEY to com.google.firebase.Timestamp(createdAt),
-                UPDATED_AT_KEY to com.google.firebase.Timestamp(updatedAt),
+                CREATED_AT_KEY to Timestamp(createdAt),
+                UPDATED_AT_KEY to Timestamp(updatedAt),
                 MAP_LINK_KEY to mapLink,
                 COMMENTS_COUNT_KEY to commentsCount,
                 SAVED_COUNT_KEY to savedCount

@@ -1,6 +1,9 @@
-package com.idz.trailsync
+package com.idz.trailsync.features.Register
 
+import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Matrix
+import android.media.ExifInterface
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -20,9 +23,11 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import com.google.android.material.imageview.ShapeableImageView
-import android.media.ExifInterface
-import android.graphics.Matrix
-
+import com.google.android.material.textfield.TextInputLayout
+import com.idz.trailsync.AuthenticationViewModel
+import com.idz.trailsync.HomeActivity
+import com.idz.trailsync.LoginResult
+import com.idz.trailsync.R
 
 class RegisterFragment : Fragment() {
     private var profileBitmap: Bitmap? = null
@@ -66,11 +71,11 @@ class RegisterFragment : Fragment() {
         val registerProgressBar: ProgressBar = view.findViewById(R.id.registerProgressBar)
         val pickProfilePictureButton: ImageButton = view.findViewById(R.id.buttonPickProfilePicture)
         val emailInputLayout =
-            view.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.emailInputLayout)
+            view.findViewById<TextInputLayout>(R.id.emailInputLayout)
         val passwordInputLayout =
-            view.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.passwordInputLayout)
+            view.findViewById<TextInputLayout>(R.id.passwordInputLayout)
         val confirmPasswordInputLayout =
-            view.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.confirmPasswordInputLayout)
+            view.findViewById<TextInputLayout>(R.id.confirmPasswordInputLayout)
 
         pickProfilePictureButton.setOnClickListener {
             galleryLauncher.launch("image/*")
@@ -184,7 +189,7 @@ class RegisterFragment : Fragment() {
                 is LoginResult.Success -> {
                     Toast.makeText(requireContext(), "Registration successful!", Toast.LENGTH_SHORT)
                         .show()
-                    val intent = android.content.Intent(requireActivity(), HomeActivity::class.java)
+                    val intent = Intent(requireActivity(), HomeActivity::class.java)
                     startActivity(intent)
                     requireActivity().finish()
                 }

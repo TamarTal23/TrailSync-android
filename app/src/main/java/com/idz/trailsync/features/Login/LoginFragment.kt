@@ -1,5 +1,6 @@
-package com.idz.trailsync
+package com.idz.trailsync.features.Login
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,7 +13,11 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
-import androidx.navigation.fragment.findNavController
+import com.idz.trailsync.AuthenticationActivity
+import com.idz.trailsync.AuthenticationViewModel
+import com.idz.trailsync.HomeActivity
+import com.idz.trailsync.LoginResult
+import com.idz.trailsync.R
 
 class LoginFragment : Fragment() {
     private val authenticationViewModel: AuthenticationViewModel by viewModels()
@@ -47,7 +52,7 @@ class LoginFragment : Fragment() {
             when (result) {
                 is LoginResult.Success -> {
                     Toast.makeText(requireContext(), "Login successful!", Toast.LENGTH_SHORT).show()
-                    val intent = android.content.Intent(requireActivity(), HomeActivity::class.java)
+                    val intent = Intent(requireActivity(), HomeActivity::class.java)
                     startActivity(intent)
                     requireActivity().finish()
                 }

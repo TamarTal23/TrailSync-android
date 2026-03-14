@@ -10,8 +10,8 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.idz.trailsync.R
 import com.idz.trailsync.databinding.FragmentHomeBinding
-import com.idz.trailsync.features.home.post.OnPostClickListener
-import com.idz.trailsync.features.home.post.PostsAdapter
+import com.idz.trailsync.features.post.OnPostClickListener
+import com.idz.trailsync.features.post.PostsAdapter
 import com.idz.trailsync.model.Post
 
 class HomeFragment : Fragment() {

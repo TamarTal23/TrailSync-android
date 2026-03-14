@@ -1,4 +1,4 @@
-package com.idz.trailsync.model.dao
+package com.idz.trailsync.dao
 
 import androidx.room.Dao
 import androidx.room.Insert

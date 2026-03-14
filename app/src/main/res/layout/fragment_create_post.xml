@@ -1,0 +1,411 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:fillViewport="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="20dp">
+
+        <TextView
+            android:id="@+id/headerTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Share your trail"
+            android:textColor="@color/black"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Trip Title -->
+        <TextView
+            android:id="@+id/tripTitleLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Trip Title"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/headerTitle" />
+
+        <EditText
+            android:id="@+id/tripTitleEditText"
+            android:layout_width="0dp"
+            android:layout_height="54dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/edit_text_background"
+            android:hint="My trip"
+            android:inputType="textCapWords"
+            android:paddingHorizontal="20dp"
+            android:textSize="14sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tripTitleLabel" />
+
+        <TextView
+            android:id="@+id/tripTitleError"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginStart="4dp"
+            android:text="Title is required"
+            android:textColor="@color/error_red"
+            android:textSize="12sp"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="@id/tripTitleEditText"
+            app:layout_constraintTop_toBottomOf="@id/tripTitleEditText" />
+
+        <!-- Google Maps Link -->
+        <TextView
+            android:id="@+id/googleMapsLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Google Maps URL"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tripTitleError" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/googleMapsContainer"
+            android:layout_width="0dp"
+            android:layout_height="54dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/edit_text_background"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/googleMapsLabel">
+
+            <EditText
+                android:id="@+id/googleMapsEditText"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:background="@android:color/transparent"
+                android:hint="http:// ..."
+                android:inputType="textUri"
+                android:paddingHorizontal="20dp"
+                android:textSize="14sp"
+                app:layout_constraintEnd_toStartOf="@+id/googleMapsIcon"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <ImageView
+                android:id="@+id/googleMapsIcon"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginEnd="16dp"
+                android:src="@drawable/googlemaps"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <TextView
+            android:id="@+id/googleMapsError"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginStart="4dp"
+            android:text="Google Maps URL is required"
+            android:textColor="@color/error_red"
+            android:textSize="12sp"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="@id/googleMapsContainer"
+            app:layout_constraintTop_toBottomOf="@id/googleMapsContainer" />
+
+        <TextView
+            android:id="@+id/locationLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Choose a Location"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/googleMapsError" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/locationContainer"
+            android:layout_width="0dp"
+            android:layout_height="54dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/edit_text_background"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/locationLabel">
+
+            <ImageView
+                android:id="@+id/locationIcon"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginStart="16dp"
+                android:src="@drawable/ic_location_outline"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:tint="@color/dark_neutral" />
+
+            <EditText
+                android:id="@+id/locationSearchEditText"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="16dp"
+                android:background="@android:color/transparent"
+                android:hint="Search everything"
+                android:inputType="text"
+                android:maxLines="1"
+                android:paddingHorizontal="4dp"
+                android:textSize="14sp"
+                android:textColor="@color/black"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/locationIcon"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/locationSuggestionsRecyclerView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:background="@drawable/edit_text_background"
+            android:elevation="4dp"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="@id/locationContainer"
+            app:layout_constraintStart_toStartOf="@id/locationContainer"
+            app:layout_constraintTop_toBottomOf="@id/locationContainer"
+            tools:listitem="@android:layout/simple_list_item_1" />
+
+
+        <TextView
+            android:id="@+id/durationLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Duration (Days)"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/locationContainer" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/durationContainer"
+            android:layout_width="0dp"
+            android:layout_height="54dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
+            android:background="@drawable/edit_text_background"
+            app:layout_constraintEnd_toStartOf="@+id/priceContainer"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/durationLabel">
+
+            <EditText
+                android:id="@+id/durationEditText"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="10dp"
+                android:background="@android:color/transparent"
+                android:gravity="center_vertical"
+                android:inputType="number"
+                android:paddingHorizontal="10dp"
+                android:text="1"
+                android:textColor="@color/dark_neutral"
+                android:textSize="14sp"
+                app:layout_constraintEnd_toStartOf="@+id/stepperControls"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/stepperControls"
+                android:layout_width="40dp"
+                android:layout_height="match_parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <ImageView
+                    android:id="@+id/durationStepperIcon"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_unfold_more"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:tint="@color/dark_neutral" />
+
+                <View
+                    android:id="@+id/btnIncrement"
+                    android:layout_width="match_parent"
+                    android:layout_height="27dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <View
+                    android:id="@+id/btnDecrement"
+                    android:layout_width="match_parent"
+                    android:layout_height="27dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:layout_constraintBottom_toBottomOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <TextView
+            android:id="@+id/priceLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Estimated Price"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="@id/priceContainer"
+            app:layout_constraintTop_toTopOf="@id/durationLabel" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/priceContainer"
+            android:layout_width="0dp"
+            android:layout_height="54dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/edit_text_background"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/durationContainer"
+            app:layout_constraintTop_toBottomOf="@id/priceLabel">
+
+            <EditText
+                android:id="@+id/priceEditText"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginStart="10dp"
+                android:background="@android:color/transparent"
+                android:gravity="center_vertical"
+                android:hint="$ 0"
+                android:inputType="number"
+                android:paddingHorizontal="10dp"
+                android:textColor="@color/dark_neutral"
+                android:textSize="14sp" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Description -->
+        <TextView
+            android:id="@+id/descriptionLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Description"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/durationContainer" />
+
+        <EditText
+            android:id="@+id/descriptionEditText"
+            android:layout_width="0dp"
+            android:layout_height="120dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/edit_text_background"
+            android:gravity="top"
+            android:hint="Describe tour trip.."
+            android:inputType="textMultiLine"
+            android:padding="20dp"
+            android:textSize="14sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/descriptionLabel" />
+
+        <!-- Photos -->
+        <TextView
+            android:id="@+id/photosLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Photos"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/descriptionEditText" />
+
+        <LinearLayout
+            android:id="@+id/photosContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            app:layout_constraintTop_toBottomOf="@+id/photosLabel">
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/addPhotosButton"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                app:cardBackgroundColor="#F5F7F9"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical">
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@android:drawable/ic_menu_gallery"
+                        app:tint="@color/dark_neutral" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Add Photos"
+                        android:textSize="10sp"
+                        android:textColor="@color/dark_neutral" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/selectedPhotosRecyclerView"
+                android:layout_width="0dp"
+                android:layout_height="80dp"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:listitem="@layout/selected_photo_item" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/createPostButton"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_marginTop="32dp"
+            android:layout_marginBottom="20dp"
+            android:backgroundTint="@color/primary"
+            android:text="Create Post"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:cornerRadius="28dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/photosContainer" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.core.widget.NestedScrollView>

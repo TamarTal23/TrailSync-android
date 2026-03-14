@@ -1,4 +1,4 @@
-package com.idz.trailsync.features.home.post
+package com.idz.trailsync.features.post
 
 import android.content.Intent
 import android.graphics.Bitmap
@@ -14,7 +14,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.idz.trailsync.databinding.FragmentPostDetailsBinding
-import com.idz.trailsync.features.home.post.photo.PhotoCarouselController
+import com.idz.trailsync.features.post.photo.PhotoCarouselController
 import com.idz.trailsync.model.Post
 
 class PostDetailsFragment : Fragment() {
