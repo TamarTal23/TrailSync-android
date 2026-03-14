@@ -70,19 +70,25 @@ class UserFormViewModel : ViewModel() {
             emailError = "Invalid email"
         }
 
-        // Username validation (always required)
-        if (form.username.isBlank()) {
-            usernameError = "Username required"
-        }
-
         if (isRegistration) {
-            // Registration specific validation
+            // Username validation (required for registration)
+            if (form.username.isBlank()) {
+                usernameError = "Username required"
+            }
+
+            // Registration specific password validation
             if (form.password.length < 6) {
                 passwordError = "Password must be at least 6 characters"
             }
 
             if (form.password != form.confirmPassword) {
                 confirmPasswordError = "Passwords do not match"
+            }
+        } else {
+            // Login or Profile Edit (without password change)
+            // If we are on login, we just need a password to be present
+            if (form.password.isBlank()) {
+                passwordError = "Password required"
             }
         }
 
