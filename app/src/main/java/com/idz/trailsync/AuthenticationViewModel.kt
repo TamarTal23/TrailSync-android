@@ -22,6 +22,7 @@ open class Event<out T>(private val content: T) {
             content
         }
     }
+
     fun peekContent(): T = content
 }
 
@@ -70,9 +71,14 @@ class AuthenticationViewModel : ViewModel() {
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
                         val uid = auth.currentUser?.uid ?: ""
-                        val user = User(id = uid, email = email, username = username, profilePicture = null)
+                        val user = User(
+                            id = uid,
+                            email = email,
+                            username = username,
+                            profilePicture = null
+                        )
                         Model.shared.upsertUser(user, profileBitmap) { success ->
-                            _registrationResult.value = if (success) LoginResult.Success 
+                            _registrationResult.value = if (success) LoginResult.Success
                             else LoginResult.Error("Failed to save user to database")
                         }
                     } else {
@@ -96,7 +102,6 @@ class AuthenticationViewModel : ViewModel() {
 
         var isUpdateStarted = false
         Model.shared.getUserById(authUser.uid) { user ->
-            // getUserById returns twice (local then remote). We only want to trigger the update once.
             if (isUpdateStarted || user == null) return@getUserById
             isUpdateStarted = true
 

@@ -63,7 +63,6 @@ class UserFormViewModel : ViewModel() {
         var passwordError: String? = null
         var confirmPasswordError: String? = null
 
-        // Email validation (always required)
         if (form.email.isBlank()) {
             emailError = "Email required"
         } else if (!Patterns.EMAIL_ADDRESS.matcher(form.email).matches()) {
@@ -71,12 +70,10 @@ class UserFormViewModel : ViewModel() {
         }
 
         if (isRegistration) {
-            // Username validation (required for registration)
             if (form.username.isBlank()) {
                 usernameError = "Username required"
             }
 
-            // Registration specific password validation
             if (form.password.length < 6) {
                 passwordError = "Password must be at least 6 characters"
             }
@@ -85,8 +82,6 @@ class UserFormViewModel : ViewModel() {
                 confirmPasswordError = "Passwords do not match"
             }
         } else {
-            // Login or Profile Edit (without password change)
-            // If we are on login, we just need a password to be present
             if (form.password.isBlank()) {
                 passwordError = "Password required"
             }

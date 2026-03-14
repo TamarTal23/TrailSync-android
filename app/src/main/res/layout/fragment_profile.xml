@@ -53,5 +53,5 @@
         android:textStyle="bold"
         app:cornerRadius="100dp" />
 
-    <!--    todo add user posts-->
+    <!--    TODO: add user posts-->
 </LinearLayout>
