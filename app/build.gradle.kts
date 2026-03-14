@@ -10,7 +10,7 @@ plugins {
 }
 
 android {
-    namespace = "com.id.trailsync"
+    namespace = "com.idz.trailsync"
     compileSdk = 36
 
     defaultConfig {
