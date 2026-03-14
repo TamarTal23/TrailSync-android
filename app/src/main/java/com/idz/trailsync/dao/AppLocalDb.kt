@@ -10,16 +10,18 @@ import com.idz.trailsync.model.Post
 import com.idz.trailsync.model.Comment
 import com.idz.trailsync.model.User
 
-@Database(entities = [User::class, Comment:: class, Post::class ], version = 5)
+@Database(entities = [User::class, Comment::class, Post::class], version = 6)
 @TypeConverters(Converters::class)
-abstract class AppLocalDbRepository: RoomDatabase(){
+abstract class AppLocalDbRepository : RoomDatabase() {
     abstract fun UserDao(): UserDao
     abstract fun PostDao(): PostDao
+    abstract fun CommentDao(): CommentDao
 }
 
-object AppLocalDB{
+object AppLocalDB {
     val database: AppLocalDbRepository by lazy {
-        val context = MyApplication.Globals.context?:throw IllegalArgumentException("Application context is missing")
+        val context = MyApplication.Globals.context
+            ?: throw IllegalArgumentException("Application context is missing")
 
         Room.databaseBuilder(
             context = context,
