@@ -10,7 +10,7 @@ plugins {
 }
 
 android {
-    namespace = "com.idz.trailsync"
+    namespace = "com.id.trailsync"
     compileSdk = 36
 
     defaultConfig {
@@ -19,8 +19,6 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
-
-        buildConfigField("String", "MAPS_API_KEY", "\"AIzaSyBoA2yjQQGzptfwMLcmaGbzdQ4RTvMETV0\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
