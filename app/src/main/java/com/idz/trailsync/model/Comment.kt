@@ -2,7 +2,8 @@ package com.idz.trailsync.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import java.util.*
+import com.google.firebase.Timestamp
+import java.util.Date
 
 @Entity
 data class Comment(
@@ -22,7 +23,7 @@ data class Comment(
         fun fromJSON(json: Map<String, Any>, postId: String, docId: String): Comment {
             val text = json[TEXT_KEY] as? String ?: ""
             val author = json[AUTHOR_KEY] as? String ?: ""
-            val createdAt = (json[CREATED_AT_KEY] as? com.google.firebase.Timestamp)?.toDate() ?: Date()
+            val createdAt = (json[CREATED_AT_KEY] as? Timestamp)?.toDate() ?: Date()
 
             return Comment(
                 id = docId,
@@ -39,7 +40,7 @@ data class Comment(
             return hashMapOf(
                 TEXT_KEY to text,
                 AUTHOR_KEY to author,
-                CREATED_AT_KEY to com.google.firebase.Timestamp(createdAt)
+                CREATED_AT_KEY to Timestamp(createdAt)
             )
         }
 }

@@ -1,4 +1,4 @@
-package com.idz.trailsync.model
+package com.idz.trailsync.data.models
 
 import android.graphics.Bitmap
 import android.net.Uri
@@ -6,16 +6,19 @@ import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.firestoreSettings
 import com.google.firebase.firestore.memoryCacheSettings
-import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.storage
 import com.idz.trailsync.base.BooleanCallback
 import com.idz.trailsync.base.UsersCallback
 import com.idz.trailsync.base.Constants
 import com.idz.trailsync.base.UserCallback
+import com.idz.trailsync.model.Post
+import com.idz.trailsync.model.User
 import java.io.ByteArrayOutputStream
 
 class FirebaseModel {
     private val database = Firebase.firestore
-    private val storage = FirebaseStorage.getInstance()
+    private val storage = Firebase.storage
+
 
     init {
         val setting = firestoreSettings {
@@ -102,6 +105,7 @@ class FirebaseModel {
         }
     }
 
+    // todo tamar use the storage shit
     fun upsertUserWithImage(
         user: User,
         profileBitmap: Bitmap?,
@@ -121,5 +125,37 @@ class FirebaseModel {
         }, { _ ->
             onComplete(false, user)
         })
+    }
+
+    fun upsertPost(post: Post, callback: BooleanCallback) {
+        database.collection(Constants.COLLECTIONS.POSTS)
+            .whereEqualTo("id", post.id)
+            .get()
+            .addOnSuccessListener { documents ->
+                if (documents.isEmpty) {
+                    database.collection(Constants.COLLECTIONS.POSTS)
+                        .document()
+                        .set(post.json)
+                        .addOnSuccessListener {
+                            callback(true)
+                        }
+                        .addOnFailureListener {
+                            callback(false)
+                        }
+                } else {
+                    for (document in documents) {
+                        document.reference.update(post.json)
+                            .addOnSuccessListener {
+                                callback(true)
+                            }
+                            .addOnFailureListener {
+                                callback(false)
+                            }
+                    }
+                }
+            }
+            .addOnFailureListener {
+                callback(false)
+            }
     }
 }

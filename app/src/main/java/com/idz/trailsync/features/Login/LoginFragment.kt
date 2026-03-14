@@ -1,4 +1,4 @@
-package com.idz.trailsync
+package com.idz.trailsync.features.Login
 
 import android.content.Intent
 import android.os.Bundle
@@ -14,6 +14,10 @@ import androidx.lifecycle.Observer
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.idz.trailsync.databinding.FragmentLoginBinding
 import com.idz.trailsync.features.profile.UserFormViewModel
+import com.idz.trailsync.AuthenticationActivity
+import com.idz.trailsync.AuthenticationViewModel
+import com.idz.trailsync.HomeActivity
+import com.idz.trailsync.LoginResult
 
 class LoginFragment : Fragment() {
     private var _binding: FragmentLoginBinding? = null

@@ -9,8 +9,8 @@ import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.auth
-import com.idz.trailsync.model.Model
 import com.idz.trailsync.model.User
+import com.idz.trailsync.data.repository.UserRepository
 
 open class Event<out T>(private val content: T) {
     var hasBeenHandled = false
@@ -72,10 +72,29 @@ class AuthenticationViewModel : ViewModel() {
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
                         val uid = auth.currentUser?.uid ?: ""
+<<<<<<< HEAD
                         val user = User(id = uid, email = email, username = username, profilePicture = null)
                         Model.shared.upsertUser(user, profileBitmap) { success ->
                             _registrationResult.value = if (success) LoginResult.Success 
                             else LoginResult.Error("Failed to save user to database")
+=======
+                        val user = User(
+                            id = uid,
+                            email = email,
+                            username = username,
+                            profilePicture = null
+                        )
+                        UserRepository.shared.upsertUser(
+                            user,
+                            profileBitmap
+                        ) { success ->
+                            if (success) {
+                                _registrationResult.value = LoginResult.Success
+                            } else {
+                                _registrationResult.value =
+                                    LoginResult.Error("Failed to save user to database")
+                            }
+>>>>>>> 4e3b78387fb984b7cb4eb780b4bc55dfb092e04d
                         }
                     } else {
                         val exception = task.exception
@@ -92,6 +111,7 @@ class AuthenticationViewModel : ViewModel() {
         }
     }
 
+<<<<<<< HEAD
     fun updateProfile(newUsername: String?, newProfileBitmap: Bitmap?) {
         val authUser = Firebase.auth.currentUser ?: run {
             _updateProfileResult.value = Event(LoginResult.Error("User not logged in"))
@@ -117,4 +137,9 @@ class AuthenticationViewModel : ViewModel() {
 
     fun isUserLoggedIn(): Boolean = Firebase.auth.currentUser != null
     fun logout() = Firebase.auth.signOut()
+=======
+    fun isUserLoggedIn(): Boolean {
+        return Firebase.auth.currentUser != null
+    }
+>>>>>>> 4e3b78387fb984b7cb4eb780b4bc55dfb092e04d
 }

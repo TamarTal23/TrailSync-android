@@ -1,4 +1,4 @@
-package com.idz.trailsync.features.home.post
+package com.idz.trailsync.features.post
 
 import android.R
 import android.net.Uri

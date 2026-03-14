@@ -1,4 +1,4 @@
-package com.idz.trailsync.features.home.post.photo
+package com.idz.trailsync.features.post.photo
 
 import android.content.Context
 import android.view.View
@@ -16,7 +16,7 @@ class PhotoCarouselController(
     private val dotsContainer: LinearLayout
 ) {
 
-    private val adapter = PhotoAdapter()
+    private val adapter = PhotoAdapter<String>()
     private val layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
     private val snapHelper = PagerSnapHelper()
 
@@ -86,15 +86,17 @@ class PhotoCarouselController(
 
     private fun updateDots(position: Int) {
         for (i in 0 until dotsContainer.childCount) {
-            val dot = dotsContainer.getChildAt(i) as ImageView
+            val imageView = dotsContainer.getChildAt(i) as? ImageView
 
-            val drawable = if (i == position) {
-                R.drawable.dot_active
-            } else {
-                R.drawable.dot_inactive
+            imageView?.let {
+                val drawable = if (i == position) {
+                    R.drawable.dot_active
+                } else {
+                    R.drawable.dot_inactive
+                }
+
+                it.setImageDrawable(ContextCompat.getDrawable(context, drawable))
             }
-
-            dot.setImageDrawable(ContextCompat.getDrawable(context, drawable))
         }
     }
 

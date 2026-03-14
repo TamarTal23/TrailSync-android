@@ -1,10 +1,9 @@
-package com.idz.trailsync.features.home.post
+package com.idz.trailsync.features.post
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.idz.trailsync.databinding.PostListItemBinding
-import com.idz.trailsync.features.home.post.PostRowViewHolder
 import com.idz.trailsync.model.Post
 
 class PostsAdapter(

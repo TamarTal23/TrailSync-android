@@ -17,7 +17,7 @@
 
     <fragment
         android:id="@+id/createPostFragment"
-        android:name="com.idz.trailsync.CreatePostFragment"
+        android:name="com.idz.trailsync.features.createPost.CreatePostFragment"
         android:label="Upsert post">
         <argument
             android:name="postId"
@@ -49,7 +49,7 @@
 
     <fragment
         android:id="@+id/postDetailsFragment"
-        android:name="com.idz.trailsync.features.home.post.PostDetailsFragment"
+        android:name="com.idz.trailsync.features.post.PostDetailsFragment"
         android:label="Post Details"
         tools:layout="@layout/fragment_post_details">
         <argument
@@ -59,7 +59,7 @@
 
     <fragment
         android:id="@+id/registerFragment"
-        android:name="com.idz.trailsync.RegisterFragment"
+        android:name="com.idz.trailsync.features.Register.RegisterFragment"
         android:label="Register"
         tools:layout="@layout/fragment_register" />
 

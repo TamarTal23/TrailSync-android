@@ -5,6 +5,7 @@ import com.idz.trailsync.model.User
 typealias UsersCallback = (List<User>) -> Unit
 typealias UserCallback = (User?) -> Unit
 typealias BooleanCallback = (Boolean) -> Unit
+typealias StringCallback = (String?) -> Unit
 
 
 object Constants {

@@ -1,7 +1,9 @@
-package com.idz.trailsync
+package com.idz.trailsync.features.Register
 
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Matrix
+import android.media.ExifInterface
 import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
@@ -18,6 +20,12 @@ import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.idz.trailsync.databinding.FragmentRegisterBinding
 import com.idz.trailsync.features.profile.UserFormViewModel
 import com.idz.trailsync.utils.BitmapUtils
+import com.google.android.material.imageview.ShapeableImageView
+import com.google.android.material.textfield.TextInputLayout
+import com.idz.trailsync.AuthenticationViewModel
+import com.idz.trailsync.HomeActivity
+import com.idz.trailsync.LoginResult
+import com.idz.trailsync.R
 
 class RegisterFragment : Fragment() {
     private var _binding: FragmentRegisterBinding? = null
@@ -46,6 +54,7 @@ class RegisterFragment : Fragment() {
         return binding.root
     }
 
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -59,6 +68,7 @@ class RegisterFragment : Fragment() {
             override fun afterTextChanged(s: Editable?) {
                 userFormViewModel.updateEmail(s.toString())
             }
+
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
@@ -67,6 +77,7 @@ class RegisterFragment : Fragment() {
             override fun afterTextChanged(s: Editable?) {
                 userFormViewModel.updateUsername(s.toString())
             }
+
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
@@ -75,6 +86,7 @@ class RegisterFragment : Fragment() {
             override fun afterTextChanged(s: Editable?) {
                 userFormViewModel.updatePassword(s.toString())
             }
+
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
@@ -83,6 +95,7 @@ class RegisterFragment : Fragment() {
             override fun afterTextChanged(s: Editable?) {
                 userFormViewModel.updateConfirmPassword(s.toString())
             }
+
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
@@ -103,9 +116,13 @@ class RegisterFragment : Fragment() {
 
         binding.buttonSignUp.setOnClickListener {
             userFormViewModel.touchAll()
-            
+
             if (profileBitmap == null) {
-                Toast.makeText(requireContext(), "Please select a profile picture", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    "Please select a profile picture",
+                    Toast.LENGTH_SHORT
+                ).show()
                 return@setOnClickListener
             }
 
@@ -131,16 +148,21 @@ class RegisterFragment : Fragment() {
 
             when (result) {
                 is LoginResult.Success -> {
-                    Toast.makeText(requireContext(), "Registration successful!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "Registration successful!", Toast.LENGTH_SHORT)
+                        .show()
+
                     val intent = Intent(requireActivity(), HomeActivity::class.java)
                     startActivity(intent)
                     requireActivity().finish()
                 }
+
                 is LoginResult.Error -> {
                     Toast.makeText(requireContext(), result.message, Toast.LENGTH_SHORT).show()
                 }
+
                 is LoginResult.EmptyFields -> {
-                    Toast.makeText(requireContext(), "Please fill all fields", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "Please fill all fields", Toast.LENGTH_SHORT)
+                        .show()
                 }
             }
         })

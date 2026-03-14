@@ -6,6 +6,7 @@ plugins {
     id("kotlin-parcelize")
     alias(libs.plugins.google.services)
     alias(libs.plugins.navigation.safeargs)
+    alias(libs.plugins.secrets.gradle.plugin)
 }
 
 android {
@@ -41,6 +42,7 @@ android {
     buildFeatures {
         compose = true
         viewBinding = true
+        buildConfig = true
     }
 }
 
@@ -51,6 +53,7 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.firebase.appcheck.debug)
     implementation(libs.firebase.appcheck.ktx)
+    implementation(libs.firebase.storage)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
@@ -76,7 +79,6 @@ dependencies {
     kapt(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
     implementation("com.google.code.gson:gson:2.10.1")
-    implementation("com.google.firebase:firebase-storage:20.3.0")
+    implementation(libs.google.maps.places)
     implementation("com.squareup.picasso:picasso:2.8")
-    implementation("com.google.android.material:material:1.10.0")
 }

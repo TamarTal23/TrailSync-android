@@ -1,22 +1,26 @@
-package com.idz.trailsync.model
+package com.idz.trailsync.data.repository
 
 import android.graphics.Bitmap
 import android.os.Looper
 import androidx.core.os.HandlerCompat
 import com.idz.trailsync.base.BooleanCallback
 import com.idz.trailsync.base.UserCallback
-import com.idz.trailsync.model.dao.AppLocalDB
-import com.idz.trailsync.model.dao.AppLocalDbRepository
 import com.idz.trailsync.base.UsersCallback
+import com.idz.trailsync.dao.AppLocalDB
+import com.idz.trailsync.dao.AppLocalDbRepository
+import com.idz.trailsync.data.models.FirebaseModel
+import com.idz.trailsync.data.models.FirebaseStorageModel
+import com.idz.trailsync.model.User
 import java.util.concurrent.Executors
 
-class Model private constructor() {
+class UserRepository private constructor() {
     private var executor = Executors.newSingleThreadExecutor()
     private val firebaseModel = FirebaseModel()
+    private val firebaseStorageModel = FirebaseStorageModel()
     private val database: AppLocalDbRepository = AppLocalDB.database
 
     companion object {
-        val shared = Model()
+        val shared = UserRepository()
     }
 
     fun getAllUsers(callback: UsersCallback) {
@@ -75,10 +79,27 @@ class Model private constructor() {
     }
 
     fun upsertUser(user: User, picture: Bitmap?, callback: BooleanCallback) {
-        firebaseModel.upsertUserWithImage(user, picture) { success, updatedUser ->
+        if (picture != null) {
+            firebaseStorageModel.uploadUserImage(picture, user.id) { url ->
+                if (url != null) {
+                    val updatedUser = user.copy(profilePicture = url)
+                    syncUserToDatabases(updatedUser, callback)
+                } else {
+                    HandlerCompat.createAsync(Looper.getMainLooper()).post {
+                        callback(false)
+                    }
+                }
+            }
+        } else {
+            syncUserToDatabases(user, callback)
+        }
+    }
+
+    private fun syncUserToDatabases(user: User, callback: BooleanCallback) {
+        firebaseModel.upsertUser(user) { success ->
             if (success) {
                 executor.execute {
-                    database.UserDao().create(updatedUser)
+                    database.UserDao().create(user)
                     HandlerCompat.createAsync(Looper.getMainLooper()).post {
                         callback(true)
                     }
