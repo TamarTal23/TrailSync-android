@@ -10,9 +10,7 @@ plugins {
 
 android {
     namespace = "com.idz.trailsync"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.idz.trailsync"
@@ -51,7 +49,8 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.auth)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.firebase.appcheck.debug)
+    implementation(libs.firebase.appcheck.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
