@@ -9,6 +9,7 @@ import com.google.firebase.initialize
 import com.google.android.libraries.places.api.Places
 import com.idz.trailsync.BuildConfig
 
+
 class MyApplication : Application() {
     object Globals {
         var context: Context? = null

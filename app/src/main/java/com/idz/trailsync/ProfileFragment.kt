@@ -8,8 +8,8 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import com.idz.trailsync.data.repository.UserRepository
 import com.idz.trailsync.databinding.FragmentProfileBinding
-import com.idz.trailsync.model.Model
 import com.idz.trailsync.model.User
 import com.squareup.picasso.Picasso
 
@@ -36,7 +36,7 @@ class ProfileFragment : Fragment() {
         val currentUserId = auth.currentUser?.uid
 
         currentUserId?.let { uid ->
-            Model.shared.getUserById(uid) { user ->
+            UserRepository.shared.getUserById(uid) { user ->
                 // Check if binding is still available before updating UI
                 _binding?.let { b ->
                     userInfo = user

@@ -18,9 +18,8 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.idz.trailsync.AuthenticationViewModel
 import com.idz.trailsync.LoginResult
-import com.idz.trailsync.R
+import com.idz.trailsync.data.repository.UserRepository
 import com.idz.trailsync.databinding.FragmentEditProfileBinding
-import com.idz.trailsync.model.Model
 import com.idz.trailsync.utils.BitmapUtils
 import com.squareup.picasso.Picasso
 
@@ -71,7 +70,7 @@ class EditProfileFragment : Fragment() {
         val auth = Firebase.auth
 
         auth.currentUser?.uid?.let { uid ->
-            Model.shared.getUserById(uid) { user ->
+            UserRepository.shared.getUserById(uid) { user ->
                 user?.let {
                     binding.editTextEmail.setText(it.email)
                     binding.editTextUsername.setText(it.username)
