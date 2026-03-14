@@ -4,54 +4,70 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.TextView
-import com.google.android.material.imageview.ShapeableImageView
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.google.firebase.Firebase
-import com.squareup.picasso.Picasso
 import com.google.firebase.auth.auth
+import com.idz.trailsync.databinding.FragmentProfileBinding
 import com.idz.trailsync.model.Model
 import com.idz.trailsync.model.User
+import com.squareup.picasso.Picasso
 
 class ProfileFragment : Fragment() {
+    private var _binding: FragmentProfileBinding? = null
+    private val binding get() = _binding!!
     private var userInfo: User? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_profile, container, false)
-        val profileImageView: ShapeableImageView = view.findViewById(R.id.profileImageView)
-        val profileNameTextView: TextView = view.findViewById(R.id.profileNameTextView)
-        val editProfileButton: Button = view.findViewById(R.id.editProfileButton)
+    ): View {
+        _binding = FragmentProfileBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
-        editProfileButton.setOnClickListener {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        binding.editProfileButton.setOnClickListener {
             findNavController().navigate(R.id.editProfileFragment)
         }
 
         val auth = Firebase.auth
+        val currentUserId = auth.currentUser?.uid
 
-        auth.currentUser?.email?.let {
-            Model.shared.getUserByEmail(it) { user ->
-                userInfo = user
-                profileNameTextView.text = user?.username
-                val url = user?.profilePicture
+        currentUserId?.let { uid ->
+            Model.shared.getUserById(uid) { user ->
+                // Check if binding is still available before updating UI
+                _binding?.let { b ->
+                    userInfo = user
+                    b.profileNameTextView.text = user?.username
 
-                url?.let {
-                    if (it.isNotBlank()) {
-                        Picasso.get()
-                            .load(it)
-                            .resize(120, 120)
-                            .centerCrop()
-                            .placeholder(R.drawable.user_icon_small)
-                            .into(profileImageView)
+                    user?.profilePicture?.let { profileUrl ->
+                        if (profileUrl.isNotBlank()) {
+                            b.profileProgressBar.visibility = View.VISIBLE
+
+                            Picasso.get()
+                                .load(profileUrl)
+                                .resize(240, 240)
+                                .centerCrop()
+                                .into(b.profileImageView, object : com.squareup.picasso.Callback {
+                                    override fun onSuccess() {
+                                        _binding?.profileProgressBar?.visibility = View.GONE
+                                    }
+
+                                    override fun onError(e: Exception?) {
+                                        _binding?.profileProgressBar?.visibility = View.GONE
+                                    }
+                                })
+                        }
                     }
                 }
             }
         }
-
-        return view
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
 }

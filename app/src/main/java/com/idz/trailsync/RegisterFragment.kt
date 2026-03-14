@@ -92,7 +92,6 @@ class RegisterFragment : Fragment() {
             binding.usernameInputLayout.error = state.usernameError
             binding.passwordInputLayout.error = state.passwordError
             binding.confirmPasswordInputLayout.error = state.confirmPasswordError
-            binding.buttonSignUp.isEnabled = state.isValid
         }
 
         val loadingDrawable = CircularProgressDrawable(requireContext()).apply {
@@ -103,21 +102,25 @@ class RegisterFragment : Fragment() {
         }
 
         binding.buttonSignUp.setOnClickListener {
+            userFormViewModel.touchAll()
+            
             if (profileBitmap == null) {
                 Toast.makeText(requireContext(), "Please select a profile picture", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            binding.buttonSignUp.text = ""
-            binding.buttonSignUp.icon = loadingDrawable
-            loadingDrawable.start()
-            binding.buttonSignUp.isEnabled = false
+            if (userFormViewModel.isFormValid()) {
+                binding.buttonSignUp.text = ""
+                binding.buttonSignUp.icon = loadingDrawable
+                loadingDrawable.start()
+                binding.buttonSignUp.isEnabled = false
 
-            val email = userFormViewModel.formState.value?.email ?: ""
-            val username = userFormViewModel.formState.value?.username ?: ""
-            val password = userFormViewModel.formState.value?.password ?: ""
+                val email = userFormViewModel.formState.value?.email ?: ""
+                val username = userFormViewModel.formState.value?.username ?: ""
+                val password = userFormViewModel.formState.value?.password ?: ""
 
-            authenticationViewModel.register(email, username, password, profileBitmap)
+                authenticationViewModel.register(email, username, password, profileBitmap)
+            }
         }
 
         authenticationViewModel.registrationResult.observe(viewLifecycleOwner, Observer { result ->

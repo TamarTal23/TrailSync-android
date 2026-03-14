@@ -44,6 +44,7 @@ class LoginFragment : Fragment() {
             override fun afterTextChanged(s: Editable?) {
                 userFormViewModel.updateEmail(s.toString())
             }
+
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
@@ -52,6 +53,7 @@ class LoginFragment : Fragment() {
             override fun afterTextChanged(s: Editable?) {
                 userFormViewModel.updatePassword(s.toString())
             }
+
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
@@ -59,7 +61,7 @@ class LoginFragment : Fragment() {
         userFormViewModel.validationState.observe(viewLifecycleOwner) { state ->
             binding.emailInputLayout.error = state.emailError
             binding.passwordInputLayout.error = state.passwordError
-            binding.buttonLogin.isEnabled = state.isValid
+            binding.buttonLogin.isEnabled = true
         }
 
         val loadingDrawable = CircularProgressDrawable(requireContext()).apply {
@@ -70,14 +72,18 @@ class LoginFragment : Fragment() {
         }
 
         binding.buttonLogin.setOnClickListener {
-            binding.buttonLogin.text = ""
-            binding.buttonLogin.icon = loadingDrawable
-            loadingDrawable.start()
-            binding.buttonLogin.isEnabled = false
+            userFormViewModel.touchAll()
 
-            val email = binding.editTextEmail.text.toString()
-            val password = binding.editTextPassword.text.toString()
-            authenticationViewModel.login(email, password)
+            if (userFormViewModel.isFormValid()) {
+                binding.buttonLogin.text = ""
+                binding.buttonLogin.icon = loadingDrawable
+                loadingDrawable.start()
+                binding.buttonLogin.isEnabled = false
+
+                val email = binding.editTextEmail.text.toString()
+                val password = binding.editTextPassword.text.toString()
+                authenticationViewModel.login(email, password)
+            }
         }
 
         authenticationViewModel.loginResult.observe(viewLifecycleOwner, Observer { result ->
@@ -105,6 +111,7 @@ class LoginFragment : Fragment() {
                         Toast.LENGTH_SHORT
                     ).show()
                 }
+
                 else -> {}
             }
         })

@@ -26,6 +26,15 @@
             android:background="@drawable/avatar_circle"
             app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CircularImage" />
 
+        <ProgressBar
+            android:id="@+id/profileProgressBar"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
+            android:elevation="10dp"
+            android:indeterminateTint="@color/primary"
+            android:visibility="gone" />
+
     </FrameLayout>
 
     <TextView
@@ -40,7 +49,7 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/editProfileButton"
-        style="@style/Widget.Material3.Button.OutlinedButton"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Edit Profile"
@@ -49,8 +58,9 @@
         app:strokeWidth="3dp"
         android:paddingVertical="10dp"
         android:paddingHorizontal="30dp"
-        android:textSize="20dp"
         android:textStyle="bold"
+        android:textSize="20dp"
+        android:textAllCaps="false"
         app:cornerRadius="100dp" />
 
     <!--    TODO: add user posts-->

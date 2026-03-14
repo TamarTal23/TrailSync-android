@@ -27,10 +27,10 @@ import com.squareup.picasso.Picasso
 class EditProfileFragment : Fragment() {
     private val userFormViewModel: UserFormViewModel by activityViewModels()
     private val authViewModel: AuthenticationViewModel by activityViewModels()
-    
+
     private var _binding: FragmentEditProfileBinding? = null
     private val binding get() = _binding!!
-    
+
     private var profileBitmap: Bitmap? = null
     private val bitmapUtils = BitmapUtils()
 
@@ -59,7 +59,7 @@ class EditProfileFragment : Fragment() {
             findNavController().navigateUp()
         }
 
-        userFormViewModel.setRegistration(false)
+        userFormViewModel.setMode(FormMode.EDIT_PROFILE)
 
         binding.buttonPickProfilePicture.setOnClickListener {
             galleryLauncher.launch("image/*")
@@ -81,12 +81,23 @@ class EditProfileFragment : Fragment() {
                     val url = it.profilePicture
                     url?.let { profileUrl ->
                         if (profileUrl.isNotBlank()) {
+                            binding.profileProgressBar.visibility = View.VISIBLE
+
                             Picasso.get()
                                 .load(profileUrl)
                                 .resize(120, 120)
                                 .centerCrop()
-                                .placeholder(R.drawable.user_icon_small)
-                                .into(binding.profileImageView)
+                                .into(
+                                    binding.profileImageView,
+                                    object : com.squareup.picasso.Callback {
+                                        override fun onSuccess() {
+                                            binding.profileProgressBar.visibility = View.GONE
+                                        }
+
+                                        override fun onError(e: Exception?) {
+                                            binding.profileProgressBar.visibility = View.GONE
+                                        }
+                                    })
                         }
                     }
                 }
@@ -142,6 +153,7 @@ class EditProfileFragment : Fragment() {
         }
 
         binding.buttonSaveChanges.setOnClickListener {
+            userFormViewModel.touchAll()
             if (userFormViewModel.isFormValid()) {
                 val username = userFormViewModel.formState.value?.username
 

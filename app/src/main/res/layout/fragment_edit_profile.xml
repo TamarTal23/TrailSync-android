@@ -39,6 +39,15 @@
             android:contentDescription="Profile Picture"
             app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CircularImage" />
 
+        <ProgressBar
+            android:id="@+id/profileProgressBar"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
+            android:elevation="10dp"
+            android:indeterminateTint="@color/primary"
+            android:visibility="gone" />
+
         <ImageButton
             android:id="@+id/buttonPickProfilePicture"
             android:layout_width="40dp"

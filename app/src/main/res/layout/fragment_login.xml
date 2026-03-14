@@ -116,6 +116,7 @@
         android:backgroundTint="@color/primary"
         android:text="Login"
         android:textSize="16sp"
+        android:textColor="@color/white"
         app:cornerRadius="25dp"
         app:iconGravity="textStart"
         app:iconPadding="0dp"
