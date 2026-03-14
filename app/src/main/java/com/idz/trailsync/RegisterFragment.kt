@@ -1,5 +1,6 @@
 package com.idz.trailsync
 
+import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
@@ -8,22 +9,21 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
-import android.widget.ImageButton
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
-import com.google.android.material.button.MaterialButton
-import com.google.android.material.imageview.ShapeableImageView
+import com.idz.trailsync.databinding.FragmentRegisterBinding
 import com.idz.trailsync.features.profile.UserFormViewModel
 import com.idz.trailsync.utils.BitmapUtils
 
 class RegisterFragment : Fragment() {
+    private var _binding: FragmentRegisterBinding? = null
+    private val binding get() = _binding!!
+
     private var profileBitmap: Bitmap? = null
-    private lateinit var imageView: ShapeableImageView
     private val authenticationViewModel: AuthenticationViewModel by activityViewModels()
     private val userFormViewModel: UserFormViewModel by activityViewModels()
     private val bitmapUtils = BitmapUtils()
@@ -32,7 +32,7 @@ class RegisterFragment : Fragment() {
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             val rotatedBitmap = bitmapUtils.getRotatedBitmap(uri, requireActivity().contentResolver)
             if (rotatedBitmap != null) {
-                imageView.setImageBitmap(rotatedBitmap)
+                binding.profileImageView.setImageBitmap(rotatedBitmap)
                 profileBitmap = rotatedBitmap
             }
         }
@@ -41,28 +41,21 @@ class RegisterFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_register, container, false)
-        imageView = view.findViewById(R.id.profileImageView)
-        val emailEditText: EditText = view.findViewById(R.id.editTextEmail)
-        val usernameEditText: EditText = view.findViewById(R.id.editTextUsername)
-        val passwordEditText: EditText = view.findViewById(R.id.editTextPassword)
-        val confirmPasswordEditText: EditText = view.findViewById(R.id.editTextConfirmPassword)
-        val signUpButton: MaterialButton = view.findViewById(R.id.buttonSignUp)
-        val pickProfilePictureButton: ImageButton = view.findViewById(R.id.buttonPickProfilePicture)
-        
-        val emailInputLayout = view.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.emailInputLayout)
-        val usernameInputLayout = view.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.usernameInputLayout)
-        val passwordInputLayout = view.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.passwordInputLayout)
-        val confirmPasswordInputLayout = view.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.confirmPasswordInputLayout)
+    ): View {
+        _binding = FragmentRegisterBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         userFormViewModel.setRegistration(true)
 
-        pickProfilePictureButton.setOnClickListener {
+        binding.buttonPickProfilePicture.setOnClickListener {
             galleryLauncher.launch("image/*")
         }
 
-        emailEditText.addTextChangedListener(object : TextWatcher {
+        binding.editTextEmail.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 userFormViewModel.updateEmail(s.toString())
             }
@@ -70,7 +63,7 @@ class RegisterFragment : Fragment() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
 
-        usernameEditText.addTextChangedListener(object : TextWatcher {
+        binding.editTextUsername.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 userFormViewModel.updateUsername(s.toString())
             }
@@ -78,7 +71,7 @@ class RegisterFragment : Fragment() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
 
-        passwordEditText.addTextChangedListener(object : TextWatcher {
+        binding.editTextPassword.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 userFormViewModel.updatePassword(s.toString())
             }
@@ -86,7 +79,7 @@ class RegisterFragment : Fragment() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
 
-        confirmPasswordEditText.addTextChangedListener(object : TextWatcher {
+        binding.editTextConfirmPassword.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 userFormViewModel.updateConfirmPassword(s.toString())
             }
@@ -95,11 +88,11 @@ class RegisterFragment : Fragment() {
         })
 
         userFormViewModel.validationState.observe(viewLifecycleOwner) { state ->
-            emailInputLayout.error = state.emailError
-            usernameInputLayout.error = state.usernameError
-            passwordInputLayout.error = state.passwordError
-            confirmPasswordInputLayout.error = state.confirmPasswordError
-            signUpButton.isEnabled = state.isValid
+            binding.emailInputLayout.error = state.emailError
+            binding.usernameInputLayout.error = state.usernameError
+            binding.passwordInputLayout.error = state.passwordError
+            binding.confirmPasswordInputLayout.error = state.confirmPasswordError
+            binding.buttonSignUp.isEnabled = state.isValid
         }
 
         val loadingDrawable = CircularProgressDrawable(requireContext()).apply {
@@ -109,16 +102,16 @@ class RegisterFragment : Fragment() {
             setBounds(0, 0, 100, 100)
         }
 
-        signUpButton.setOnClickListener {
+        binding.buttonSignUp.setOnClickListener {
             if (profileBitmap == null) {
                 Toast.makeText(requireContext(), "Please select a profile picture", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            signUpButton.text = ""
-            signUpButton.icon = loadingDrawable
+            binding.buttonSignUp.text = ""
+            binding.buttonSignUp.icon = loadingDrawable
             loadingDrawable.start()
-            signUpButton.isEnabled = false
+            binding.buttonSignUp.isEnabled = false
 
             val email = userFormViewModel.formState.value?.email ?: ""
             val username = userFormViewModel.formState.value?.username ?: ""
@@ -129,14 +122,14 @@ class RegisterFragment : Fragment() {
 
         authenticationViewModel.registrationResult.observe(viewLifecycleOwner, Observer { result ->
             loadingDrawable.stop()
-            signUpButton.icon = null
-            signUpButton.text = "Sign Up"
-            signUpButton.isEnabled = true
+            binding.buttonSignUp.icon = null
+            binding.buttonSignUp.text = "Sign Up"
+            binding.buttonSignUp.isEnabled = true
 
             when (result) {
                 is LoginResult.Success -> {
                     Toast.makeText(requireContext(), "Registration successful!", Toast.LENGTH_SHORT).show()
-                    val intent = android.content.Intent(requireActivity(), HomeActivity::class.java)
+                    val intent = Intent(requireActivity(), HomeActivity::class.java)
                     startActivity(intent)
                     requireActivity().finish()
                 }
@@ -148,7 +141,10 @@ class RegisterFragment : Fragment() {
                 }
             }
         })
+    }
 
-        return view
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

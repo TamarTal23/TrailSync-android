@@ -7,18 +7,18 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
-import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
-import com.google.android.material.button.MaterialButton
-import com.google.android.material.textfield.TextInputLayout
+import com.idz.trailsync.databinding.FragmentLoginBinding
 import com.idz.trailsync.features.profile.UserFormViewModel
 
 class LoginFragment : Fragment() {
+    private var _binding: FragmentLoginBinding? = null
+    private val binding get() = _binding!!
+
     private val authenticationViewModel: AuthenticationViewModel by activityViewModels()
     private val userFormViewModel: UserFormViewModel by activityViewModels()
 
@@ -26,23 +26,21 @@ class LoginFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_login, container, false)
-        
-        val emailInputLayout: TextInputLayout = view.findViewById(R.id.emailInputLayout)
-        val passwordInputLayout: TextInputLayout = view.findViewById(R.id.passwordInputLayout)
-        val emailEditText: EditText = view.findViewById(R.id.editTextEmail)
-        val passwordEditText: EditText = view.findViewById(R.id.editTextPassword)
-        val loginButton: MaterialButton = view.findViewById(R.id.buttonLogin)
-        val signUpTextView: TextView = view.findViewById(R.id.textSignUp)
+    ): View {
+        _binding = FragmentLoginBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         userFormViewModel.setRegistration(false)
 
-        signUpTextView.setOnClickListener {
+        binding.textSignUp.setOnClickListener {
             (requireActivity() as? AuthenticationActivity)?.showRegisterFragment()
         }
 
-        emailEditText.addTextChangedListener(object : TextWatcher {
+        binding.editTextEmail.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 userFormViewModel.updateEmail(s.toString())
             }
@@ -50,7 +48,7 @@ class LoginFragment : Fragment() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
 
-        passwordEditText.addTextChangedListener(object : TextWatcher {
+        binding.editTextPassword.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 userFormViewModel.updatePassword(s.toString())
             }
@@ -59,9 +57,9 @@ class LoginFragment : Fragment() {
         })
 
         userFormViewModel.validationState.observe(viewLifecycleOwner) { state ->
-            emailInputLayout.error = state.emailError
-            passwordInputLayout.error = state.passwordError
-            loginButton.isEnabled = state.isValid
+            binding.emailInputLayout.error = state.emailError
+            binding.passwordInputLayout.error = state.passwordError
+            binding.buttonLogin.isEnabled = state.isValid
         }
 
         val loadingDrawable = CircularProgressDrawable(requireContext()).apply {
@@ -71,22 +69,22 @@ class LoginFragment : Fragment() {
             setBounds(0, 0, 100, 100)
         }
 
-        loginButton.setOnClickListener {
-            loginButton.text = ""
-            loginButton.icon = loadingDrawable
+        binding.buttonLogin.setOnClickListener {
+            binding.buttonLogin.text = ""
+            binding.buttonLogin.icon = loadingDrawable
             loadingDrawable.start()
-            loginButton.isEnabled = false
+            binding.buttonLogin.isEnabled = false
 
-            val email = emailEditText.text.toString()
-            val password = passwordEditText.text.toString()
+            val email = binding.editTextEmail.text.toString()
+            val password = binding.editTextPassword.text.toString()
             authenticationViewModel.login(email, password)
         }
 
         authenticationViewModel.loginResult.observe(viewLifecycleOwner, Observer { result ->
             loadingDrawable.stop()
-            loginButton.icon = null
-            loginButton.text = "Login"
-            loginButton.isEnabled = true
+            binding.buttonLogin.icon = null
+            binding.buttonLogin.text = "Login"
+            binding.buttonLogin.isEnabled = true
 
             when (result) {
                 is LoginResult.Success -> {
@@ -110,6 +108,10 @@ class LoginFragment : Fragment() {
                 else -> {}
             }
         })
-        return view
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }
