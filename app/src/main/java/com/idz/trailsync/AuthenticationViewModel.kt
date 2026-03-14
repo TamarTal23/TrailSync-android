@@ -5,10 +5,27 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.auth
 import com.idz.trailsync.model.User
 import com.idz.trailsync.data.repository.UserRepository
+
+open class Event<out T>(private val content: T) {
+    var hasBeenHandled = false
+        private set
+
+    fun getContentIfNotHandled(): T? {
+        return if (hasBeenHandled) {
+            null
+        } else {
+            hasBeenHandled = true
+            content
+        }
+    }
+    fun peekContent(): T = content
+}
 
 sealed class LoginResult {
     object Success : LoginResult()
@@ -23,6 +40,9 @@ class AuthenticationViewModel : ViewModel() {
     private val _registrationResult = MutableLiveData<LoginResult>()
     val registrationResult: LiveData<LoginResult> = _registrationResult
 
+    private val _updateProfileResult = MutableLiveData<Event<LoginResult>?>()
+    val updateProfileResult: LiveData<Event<LoginResult>?> = _updateProfileResult
+
     fun login(email: String, password: String) {
         val auth = Firebase.auth
         if (email.isNotEmpty() && password.isNotEmpty()) {
@@ -32,12 +52,12 @@ class AuthenticationViewModel : ViewModel() {
                         _loginResult.value = LoginResult.Success
                     } else {
                         val exception = task.exception
-                        _loginResult.value = LoginResult.Error(
-                            if (exception is FirebaseAuthUserCollisionException)
-                                "This email is already registered."
-                            else
-                                exception?.message ?: "Login failed"
-                        )
+                        val message = when (exception) {
+                            is FirebaseAuthInvalidUserException -> "No account found with this email."
+                            is FirebaseAuthInvalidCredentialsException -> "Incorrect password."
+                            else -> exception?.message ?: "Login failed. Please try again."
+                        }
+                        _loginResult.value = LoginResult.Error(message)
                     }
                 }
         } else {
@@ -52,32 +72,19 @@ class AuthenticationViewModel : ViewModel() {
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
                         val uid = auth.currentUser?.uid ?: ""
-                        val user = User(
-                            id = uid,
-                            email = email,
-                            username = username,
-                            profilePicture = null
-                        )
-                        UserRepository.shared.upsertUser(
-                            user,
-                            profileBitmap
-                        ) { success ->
-                            if (success) {
-                                _registrationResult.value = LoginResult.Success
-                            } else {
-                                _registrationResult.value =
-                                    LoginResult.Error("Failed to save user to database")
-                            }
+                        val user = User(id = uid, email = email, username = username, profilePicture = null)
+                        UserRepository.shared.upsertUser(user, profileBitmap) { success ->
+                            _registrationResult.value = if (success) LoginResult.Success 
+                            else LoginResult.Error("Failed to save user to database")
                         }
                     } else {
                         val exception = task.exception
-                        if (exception is FirebaseAuthUserCollisionException) {
-                            _registrationResult.value =
-                                LoginResult.Error("This email is already registered.")
-                        } else {
-                            _registrationResult.value =
-                                LoginResult.Error(exception?.message ?: "Registration failed")
-                        }
+                        val message = if (exception is FirebaseAuthUserCollisionException)
+                            "This email is already registered."
+                        else
+                            exception?.message ?: "Registration failed"
+                        
+                        _registrationResult.value = LoginResult.Error(message)
                     }
                 }
         } else {
@@ -85,7 +92,29 @@ class AuthenticationViewModel : ViewModel() {
         }
     }
 
-    fun isUserLoggedIn(): Boolean {
-        return Firebase.auth.currentUser != null
+    fun updateProfile(newUsername: String?, newProfileBitmap: Bitmap?) {
+        val authUser = Firebase.auth.currentUser ?: run {
+            _updateProfileResult.value = Event(LoginResult.Error("User not logged in"))
+            return
+        }
+
+        var isUpdateStarted = false
+        UserRepository.shared.getUserById(authUser.uid) { user ->
+            if (isUpdateStarted || user == null) return@getUserById
+            isUpdateStarted = true
+
+            val updatedUser = user.copy(username = newUsername ?: user.username)
+            UserRepository.shared.upsertUser(updatedUser, newProfileBitmap) { success ->
+                _updateProfileResult.value = if (success) Event(LoginResult.Success)
+                else Event(LoginResult.Error("Failed to update profile"))
+            }
+        }
     }
+
+    fun clearUpdateProfileResult() {
+        _updateProfileResult.value = null
+    }
+
+    fun isUserLoggedIn(): Boolean = Firebase.auth.currentUser != null
+    fun logout() = Firebase.auth.signOut()
 }

@@ -32,7 +32,7 @@
         tools:layout="@layout/fragment_home">
         <action
             android:id="@+id/action_homeFragment_to_postDetailsFragment"
-            app:destination="@id/postDetailsFragment" />
+            app:destination="@+id/postDetailsFragment" />
     </fragment>
 
     <fragment
@@ -40,6 +40,12 @@
         android:name="com.idz.trailsync.SavedPostsFragment"
         android:label="Saved Posts"
         tools:layout="@layout/fragment_saved_posts" />
+
+    <fragment
+        android:id="@+id/editProfileFragment"
+        android:name="com.idz.trailsync.features.profile.EditProfileFragment"
+        android:label="Edit Profile"
+        tools:layout="@layout/fragment_edit_profile" />
 
     <fragment
         android:id="@+id/postDetailsFragment"

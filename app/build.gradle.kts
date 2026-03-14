@@ -40,9 +40,9 @@ android {
         jvmTarget = "11"
     }
     buildFeatures {
+        buildConfig = true
         compose = true
         viewBinding = true
-        buildConfig = true
     }
 }
 
@@ -51,6 +51,8 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.auth)
+    implementation(libs.firebase.appcheck.debug)
+    implementation(libs.firebase.appcheck.ktx)
     implementation(libs.firebase.storage)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
