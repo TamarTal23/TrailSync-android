@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.google.firebase.Firebase
@@ -37,7 +38,6 @@ class ProfileFragment : Fragment() {
 
         currentUserId?.let { uid ->
             UserRepository.shared.getUserById(uid) { user ->
-                // Check if binding is still available before updating UI
                 _binding?.let { b ->
                     userInfo = user
                     b.profileNameTextView.text = user?.username
@@ -56,7 +56,11 @@ class ProfileFragment : Fragment() {
                                     }
 
                                     override fun onError(e: Exception?) {
-                                        _binding?.profileProgressBar?.visibility = View.GONE
+                                        _binding?.let { binding ->
+                                            binding.profileProgressBar.visibility = View.GONE
+                                            binding.profileImageView.setImageResource(R.drawable.user_icon_small)
+                                            Toast.makeText(context, "There was an error loading the image", Toast.LENGTH_SHORT).show()
+                                        }
                                     }
                                 })
                         }
