@@ -8,7 +8,11 @@
         android:id="@+id/profileFragment"
         android:name="com.idz.trailsync.ProfileFragment"
         android:label="Personal Info"
-        tools:layout="@layout/fragment_profile" />
+        tools:layout="@layout/fragment_profile">
+        <action
+            android:id="@+id/action_profileFragment_to_postDetailsFragment"
+            app:destination="@id/postDetailsFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/chatbotFragment"

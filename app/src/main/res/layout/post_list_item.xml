@@ -212,9 +212,23 @@
                 app:layout_constraintTop_toTopOf="parent" />
 
             <ImageView
+                android:id="@+id/post_edit_icon"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:src="@drawable/googlemaps"                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_marginEnd="12dp"
+                android:src="@android:drawable/ic_menu_edit"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/post_maps_icon"
+                app:layout_constraintTop_toTopOf="parent"
+                app:tint="@color/primary" />
+
+            <ImageView
+                android:id="@+id/post_maps_icon"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/googlemaps"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 

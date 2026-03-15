@@ -23,7 +23,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- Trip Title -->
         <TextView
             android:id="@+id/tripTitleLabel"
             android:layout_width="wrap_content"
@@ -63,7 +62,6 @@
             app:layout_constraintStart_toStartOf="@id/tripTitleEditText"
             app:layout_constraintTop_toBottomOf="@id/tripTitleEditText" />
 
-        <!-- Google Maps Link -->
         <TextView
             android:id="@+id/googleMapsLabel"
             android:layout_width="wrap_content"
@@ -302,7 +300,6 @@
                 android:textSize="14sp" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <!-- Description -->
         <TextView
             android:id="@+id/descriptionLabel"
             android:layout_width="wrap_content"
@@ -330,7 +327,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/descriptionLabel" />
 
-        <!-- Photos -->
         <TextView
             android:id="@+id/photosLabel"
             android:layout_width="wrap_content"
@@ -356,7 +352,7 @@
                 android:id="@+id/addPhotosButton"
                 android:layout_width="80dp"
                 android:layout_height="80dp"
-                app:cardBackgroundColor="#F5F7F9"
+                app:cardBackgroundColor="@color/light_gray"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="0dp">
                 <LinearLayout

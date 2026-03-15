@@ -6,6 +6,7 @@ import androidx.core.os.HandlerCompat
 import com.idz.trailsync.base.BooleanCallback
 import com.idz.trailsync.data.models.FirebaseModel
 import com.idz.trailsync.data.models.FirebaseStorageModel
+import com.idz.trailsync.data.models.PostsCallback
 import com.idz.trailsync.model.Post
 import com.idz.trailsync.dao.AppLocalDB
 import com.idz.trailsync.dao.AppLocalDbRepository
@@ -19,6 +20,45 @@ class PostRepository private constructor() {
 
     companion object {
         val shared = PostRepository()
+    }
+
+    fun getAllPosts(callback: PostsCallback) {
+        executor.execute {
+            val localPosts = database.PostDao().getAll()
+
+            HandlerCompat.createAsync(Looper.getMainLooper()).post {
+                callback(localPosts)
+            }
+
+            firebaseModel.getAllPosts { remotePosts ->
+                executor.execute {
+                    remotePosts.forEach { database.PostDao().upsert(it) }
+                    val updatedLocalPosts = database.PostDao().getAll()
+                    HandlerCompat.createAsync(Looper.getMainLooper()).post {
+                        callback(updatedLocalPosts)
+                    }
+                }
+            }
+        }
+    }
+
+    fun getPostsByAuthor(authorId: String, callback: PostsCallback) {
+        executor.execute {
+            val localPosts = database.PostDao().getPostsByAuthor(authorId)
+            HandlerCompat.createAsync(Looper.getMainLooper()).post {
+                callback(localPosts)
+            }
+
+            firebaseModel.getPostsByAuthor(authorId) { remotePosts ->
+                executor.execute {
+                    remotePosts.forEach { database.PostDao().upsert(it) }
+                    val updatedLocalPosts = database.PostDao().getPostsByAuthor(authorId)
+                    HandlerCompat.createAsync(Looper.getMainLooper()).post {
+                        callback(updatedLocalPosts)
+                    }
+                }
+            }
+        }
     }
 
     fun upsertPost(post: Post, pictures: List<Bitmap>?, callback: BooleanCallback) {
@@ -47,5 +87,4 @@ class PostRepository private constructor() {
 
             } ?: callback(true)
         }
-    }
-}
+    }}
