@@ -6,7 +6,7 @@
 
     <fragment
         android:id="@+id/profileFragment"
-        android:name="com.idz.trailsync.ProfileFragment"
+        android:name="com.idz.trailsync.features.profile.ProfileFragment"
         android:label="Personal Info"
         tools:layout="@layout/fragment_profile">
         <action
@@ -47,7 +47,7 @@
 
     <fragment
         android:id="@+id/editProfileFragment"
-        android:name="com.idz.trailsync.features.profile.EditProfileFragment"
+        android:name="com.idz.trailsync.features.EditProfile.EditProfileFragment"
         android:label="Edit Profile"
         tools:layout="@layout/fragment_edit_profile" />
 

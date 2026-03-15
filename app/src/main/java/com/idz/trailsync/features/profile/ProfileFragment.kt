@@ -1,4 +1,4 @@
-package com.idz.trailsync
+package com.idz.trailsync.features.profile
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -11,19 +11,23 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import com.idz.trailsync.ProfileFragmentDirections
+import com.idz.trailsync.features.profile.ProfileViewModel
+import com.idz.trailsync.R
 import com.idz.trailsync.data.repository.UserRepository
 import com.idz.trailsync.databinding.FragmentProfileBinding
 import com.idz.trailsync.features.post.OnPostClickListener
 import com.idz.trailsync.features.post.PostsAdapter
 import com.idz.trailsync.model.Post
 import com.idz.trailsync.model.User
+import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 
 class ProfileFragment : Fragment() {
     private var _binding: FragmentProfileBinding? = null
     private val binding get() = _binding!!
     private var userInfo: User? = null
-    
+
     private val viewModel: ProfileViewModel by viewModels()
     private var adapter: PostsAdapter? = null
 
@@ -55,7 +59,7 @@ class ProfileFragment : Fragment() {
         adapter = PostsAdapter(viewModel.userPosts.value)
         adapter?.listener = object : OnPostClickListener {
             override fun onPostClick(post: Post) {
-                val action = ProfileFragmentDirections.actionProfileFragmentToPostDetailsFragment(post)
+                val action = ProfileFragmentDirections.Companion.actionProfileFragmentToPostDetailsFragment(post)
                 findNavController().navigate(action)
             }
         }
@@ -66,7 +70,7 @@ class ProfileFragment : Fragment() {
         val currentUserId = Firebase.auth.currentUser?.uid
 
         currentUserId?.let { uid ->
-            UserRepository.shared.getUserById(uid) { user ->
+            UserRepository.Companion.shared.getUserById(uid) { user ->
                 _binding?.let { b ->
                     userInfo = user
                     b.profileNameTextView.text = user?.username
@@ -112,7 +116,7 @@ class ProfileFragment : Fragment() {
             .load(url)
             .resize(240, 240)
             .centerCrop()
-            .into(binding.profileImageView, object : com.squareup.picasso.Callback {
+            .into(binding.profileImageView, object : Callback {
                 override fun onSuccess() {
                     binding.profileProgressBar.visibility = View.GONE
                 }
