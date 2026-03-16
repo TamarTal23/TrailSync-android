@@ -11,8 +11,6 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
-import com.idz.trailsync.ProfileFragmentDirections
-import com.idz.trailsync.features.profile.ProfileViewModel
 import com.idz.trailsync.R
 import com.idz.trailsync.data.repository.UserRepository
 import com.idz.trailsync.databinding.FragmentProfileBinding
@@ -71,9 +69,9 @@ class ProfileFragment : Fragment() {
 
         currentUserId?.let { uid ->
             UserRepository.Companion.shared.getUserById(uid) { user ->
-                _binding?.let { b ->
+                _binding?.let { binding ->
                     userInfo = user
-                    b.profileNameTextView.text = user?.username
+                    binding.profileNameTextView.text = user?.username
                     loadProfileImage(user?.profilePicture)
                 }
             }

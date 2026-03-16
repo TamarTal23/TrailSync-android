@@ -40,11 +40,11 @@ class PostRowViewHolder(
         binding.commentCount.text = post.commentsCount.toString()
 
         val firstPhotoUrl = post.photos.firstOrNull()
-        Log.d("PostRowViewHolder", "First photo URL: $firstPhotoUrl")
 
         if (!firstPhotoUrl.isNullOrBlank()) {
             if (firstPhotoUrl.startsWith("android.resource")) {
                 val resId = firstPhotoUrl.substringAfterLast("/").toIntOrNull()
+
                 if (resId != null) {
                     binding.postImage.setImageResource(resId)
                 }
