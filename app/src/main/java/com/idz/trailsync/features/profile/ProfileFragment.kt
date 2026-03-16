@@ -11,8 +11,6 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
-import com.idz.trailsync.ProfileFragmentDirections
-import com.idz.trailsync.features.profile.ProfileViewModel
 import com.idz.trailsync.R
 import com.idz.trailsync.data.repository.UserRepository
 import com.idz.trailsync.databinding.FragmentProfileBinding
@@ -59,7 +57,7 @@ class ProfileFragment : Fragment() {
         adapter = PostsAdapter(viewModel.userPosts.value)
         adapter?.listener = object : OnPostClickListener {
             override fun onPostClick(post: Post) {
-                val action = ProfileFragmentDirections.Companion.actionProfileFragmentToPostDetailsFragment(post)
+                val action = ProfileFragmentDirections.actionProfileFragmentToPostDetailsFragment(post)
                 findNavController().navigate(action)
             }
         }
@@ -70,7 +68,7 @@ class ProfileFragment : Fragment() {
         val currentUserId = Firebase.auth.currentUser?.uid
 
         currentUserId?.let { uid ->
-            UserRepository.Companion.shared.getUserById(uid) { user ->
+            UserRepository.shared.getUserById(uid) { user ->
                 _binding?.let { b ->
                     userInfo = user
                     b.profileNameTextView.text = user?.username

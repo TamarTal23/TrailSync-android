@@ -24,15 +24,19 @@ class PostRepository private constructor() {
 
     fun getAllPosts(callback: PostsCallback) {
         executor.execute {
+            // 1. Get from local
             val localPosts = database.PostDao().getAll()
-
             HandlerCompat.createAsync(Looper.getMainLooper()).post {
                 callback(localPosts)
             }
 
+            // 2. Get from remote
             firebaseModel.getAllPosts { remotePosts ->
                 executor.execute {
-                    remotePosts.forEach { database.PostDao().upsert(it) }
+                    // 3. Sync local with remote (Clear local and insert all from remote)
+                    database.PostDao().clearAndInsertAll(remotePosts)
+                    
+                    // 4. Return updated list
                     val updatedLocalPosts = database.PostDao().getAll()
                     HandlerCompat.createAsync(Looper.getMainLooper()).post {
                         callback(updatedLocalPosts)
@@ -51,6 +55,7 @@ class PostRepository private constructor() {
 
             firebaseModel.getPostsByAuthor(authorId) { remotePosts ->
                 executor.execute {
+                    // Update local with remote results for this user
                     remotePosts.forEach { database.PostDao().upsert(it) }
                     val updatedLocalPosts = database.PostDao().getPostsByAuthor(authorId)
                     HandlerCompat.createAsync(Looper.getMainLooper()).post {
@@ -62,29 +67,56 @@ class PostRepository private constructor() {
     }
 
     fun upsertPost(post: Post, pictures: List<Bitmap>?, callback: BooleanCallback) {
-        executor.execute {
-            database.PostDao().upsert(post)
-
-            HandlerCompat.createAsync(Looper.getMainLooper()).post {
-                callback(true)
-            }
-        }
-
         firebaseModel.upsertPost(post) { success ->
             if (!success) {
-                callback(false)
+                HandlerCompat.createAsync(Looper.getMainLooper()).post {
+                    callback(false)
+                }
                 return@upsertPost
             }
 
-            pictures?.let { images ->
-                firebaseStorageModel.uploadPostImages(images, post.id) { urls ->
+            if (pictures != null && pictures.isNotEmpty()) {
+                firebaseStorageModel.uploadPostImages(pictures, post.id) { urls ->
                     val updatedPost = post.copy(photos = urls)
 
                     firebaseModel.upsertPost(updatedPost) { result ->
-                        callback(result)
+                        if (result) {
+                            executor.execute {
+                                database.PostDao().upsert(updatedPost)
+                                HandlerCompat.createAsync(Looper.getMainLooper()).post {
+                                    callback(true)
+                                }
+                            }
+                        } else {
+                            HandlerCompat.createAsync(Looper.getMainLooper()).post {
+                                callback(false)
+                            }
+                        }
                     }
                 }
-
-            } ?: callback(true)
+            } else {
+                executor.execute {
+                    database.PostDao().upsert(post)
+                    HandlerCompat.createAsync(Looper.getMainLooper()).post {
+                        callback(true)
+                    }
+                }
+            }
         }
-    }}
+    }
+
+    fun deletePost(postId: String, callback: BooleanCallback) {
+        firebaseModel.deletePost(postId) { success ->
+            if (success) {
+                executor.execute {
+                    database.PostDao().deleteById(postId)
+                    HandlerCompat.createAsync(Looper.getMainLooper()).post {
+                        callback(true)
+                    }
+                }
+            } else {
+                callback(false)
+            }
+        }
+    }
+}

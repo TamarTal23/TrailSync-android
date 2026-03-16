@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import com.idz.trailsync.model.Post
 
 @Dao
@@ -16,4 +17,16 @@ interface PostDao {
 
     @Query("SELECT * FROM Post WHERE author = :userId")
     fun getPostsByAuthor(userId: String): List<Post>
+
+    @Query("DELETE FROM Post WHERE id = :postId")
+    fun deleteById(postId: String)
+
+    @Query("DELETE FROM Post")
+    fun deleteAll()
+
+    @Transaction
+    fun clearAndInsertAll(posts: List<Post>) {
+        deleteAll()
+        upsert(*posts.toTypedArray())
+    }
 }
