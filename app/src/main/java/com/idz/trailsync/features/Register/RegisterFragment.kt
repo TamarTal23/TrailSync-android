@@ -2,8 +2,6 @@ package com.idz.trailsync.features.Register
 
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.Matrix
-import android.media.ExifInterface
 import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
@@ -18,14 +16,11 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.idz.trailsync.databinding.FragmentRegisterBinding
-import com.idz.trailsync.features.profile.UserFormViewModel
+import com.idz.trailsync.features.EditProfile.UserFormViewModel
 import com.idz.trailsync.utils.BitmapUtils
-import com.google.android.material.imageview.ShapeableImageView
-import com.google.android.material.textfield.TextInputLayout
 import com.idz.trailsync.AuthenticationViewModel
 import com.idz.trailsync.HomeActivity
 import com.idz.trailsync.LoginResult
-import com.idz.trailsync.R
 
 class RegisterFragment : Fragment() {
     private var _binding: FragmentRegisterBinding? = null

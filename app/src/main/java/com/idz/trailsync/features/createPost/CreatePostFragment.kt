@@ -44,11 +44,12 @@ class CreatePostFragment : Fragment() {
 
     private val pickMultipleMedia = registerForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(10)) { uris ->
         if (uris.isNotEmpty()) {
-            val remainingSlots = 10 - selectedPhotos.size
+            val photosAmount = 5
+            val remainingSlots = photosAmount - selectedPhotos.size
             val urisToAdd = uris.take(remainingSlots)
 
             if (uris.size > remainingSlots) {
-                Toast.makeText(context, "You can only select up to 10 photos", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "You can only select up to $photosAmount photos", Toast.LENGTH_SHORT).show()
             }
 
             selectedPhotos.addAll(urisToAdd)
