@@ -88,27 +88,32 @@ class PostDetailsFragment : Fragment() {
         val currentUser = Firebase.auth.currentUser
         if (currentUser != null) {
             UserRepository.shared.getUserById(currentUser.uid) { user ->
-                user?.let {
-                    if (!it.profilePicture.isNullOrEmpty()) {
-                        Picasso.get().load(it.profilePicture).into(binding.addCommentLayout.profileImage)
+                val currentBinding = _binding ?: return@getUserById
+                user?.let { loggedInUser ->
+                    if (!loggedInUser.profilePicture.isNullOrEmpty()) {
+                        Picasso.get().load(loggedInUser.profilePicture).into(currentBinding.addCommentLayout.profileImage)
                     }
-                }
-            }
 
-            binding.addCommentLayout.sendButton.setOnClickListener {
-                val text = binding.addCommentLayout.commentInput.text.toString().trim()
-                if (text.isNotEmpty()) {
-                    val comment = Comment(
-                        id = UUID.randomUUID().toString(),
-                        text = text,
-                        author = currentUser.displayName ?: currentUser.email ?: "Anonymous",
-                        postId = postId
-                    )
-                    viewModel.addComment(comment) { success ->
-                        if (success) {
-                            binding.addCommentLayout.commentInput.text.clear()
-                        } else {
-                            Toast.makeText(context, "Failed to add comment", Toast.LENGTH_SHORT).show()
+                    currentBinding.addCommentLayout.sendButton.setOnClickListener {
+                        val text = currentBinding.addCommentLayout.commentInput.text.toString().trim()
+                        if (text.isNotEmpty()) {
+                            val comment = Comment(
+                                id = UUID.randomUUID().toString(),
+                                text = text,
+                                author = loggedInUser.id,
+                                authorName = loggedInUser.username,
+                                authorImage = loggedInUser.profilePicture,
+                                postId = postId
+                            )
+                            viewModel.addComment(comment) { success ->
+                                if (_binding != null) {
+                                    if (success) {
+                                        _binding?.addCommentLayout?.commentInput?.text?.clear()
+                                    } else {
+                                        Toast.makeText(context, "Failed to add comment", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -142,12 +147,12 @@ class PostDetailsFragment : Fragment() {
             webViewClient = object : WebViewClient() {
                 override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                     super.onPageStarted(view, url, favicon)
-                    binding.mapProgressBar.visibility = View.VISIBLE
+                    _binding?.mapProgressBar?.visibility = View.VISIBLE
                 }
 
                 override fun onPageFinished(view: WebView?, url: String?) {
                     super.onPageFinished(view, url)
-                    binding.mapProgressBar.visibility = View.GONE
+                    _binding?.mapProgressBar?.visibility = View.GONE
                 }
 
                 override fun shouldOverrideUrlLoading(

@@ -5,8 +5,10 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.idz.trailsync.R
 import com.idz.trailsync.databinding.CommentItemBinding
 import com.idz.trailsync.model.Comment
+import com.squareup.picasso.Picasso
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -24,14 +26,19 @@ class CommentAdapter : ListAdapter<Comment, CommentAdapter.CommentViewHolder>(Co
     class CommentViewHolder(private val binding: CommentItemBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(comment: Comment) {
             binding.commentTextView.text = comment.text
-            binding.authorNameTextView.text = comment.author
+            binding.authorNameTextView.text = comment.authorName
             
             val sdf = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
             binding.commentTimeTextView.text = sdf.format(comment.createdAt)
             
-            // Note: authorImageView source setting might need to be handled via a user lookup 
-            // if the comment object only has the author's ID/name.
-            // For now, it uses the default src from layout.
+            if (!comment.authorImage.isNullOrEmpty()) {
+                Picasso.get()
+                    .load(comment.authorImage)
+                    .placeholder(R.drawable.user_icon_small)
+                    .into(binding.authorImageView)
+            } else {
+                binding.authorImageView.setImageResource(R.drawable.user_icon_small)
+            }
         }
     }
 
