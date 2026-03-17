@@ -48,56 +48,51 @@ class ProfileFragment : Fragment() {
             refreshData()
         }
 
-        getUserData()
+        val currentUserId = Firebase.auth.currentUser?.uid
+        currentUserId?.let { uid ->
+            viewModel.setUserId(uid)
+            getUserData(uid)
+        }
+        
         observeUserPosts()
     }
 
     private fun setupRecyclerView() {
-        binding.userPostsRecyclerView.layoutManager = LinearLayoutManager(context)
-        adapter = PostsAdapter(viewModel.userPosts.value)
+        adapter = PostsAdapter()
         adapter?.listener = object : OnPostClickListener {
             override fun onPostClick(post: Post) {
-                val action = ProfileFragmentDirections.Companion.actionProfileFragmentToPostDetailsFragment(post)
+                val action = ProfileFragmentDirections.actionProfileFragmentToPostDetailsFragment(post)
                 findNavController().navigate(action)
             }
         }
-        binding.userPostsRecyclerView.adapter = adapter
+        binding.userPostsRecyclerView.apply {
+            layoutManager = LinearLayoutManager(context)
+            adapter = this@ProfileFragment.adapter
+        }
     }
 
-    private fun getUserData() {
-        val currentUserId = Firebase.auth.currentUser?.uid
-
-        currentUserId?.let { uid ->
-            UserRepository.Companion.shared.getUserById(uid) { user ->
-                _binding?.let { binding ->
-                    userInfo = user
-                    binding.profileNameTextView.text = user?.username
-                    loadProfileImage(user?.profilePicture)
-                }
+    private fun getUserData(uid: String) {
+        UserRepository.shared.getUserById(uid) { user ->
+            _binding?.let { binding ->
+                userInfo = user
+                binding.profileNameTextView.text = user?.username
+                loadProfileImage(user?.profilePicture)
             }
         }
     }
 
     private fun observeUserPosts() {
-        val currentUserId = Firebase.auth.currentUser?.uid
-
-        currentUserId?.let { uid ->
-            if (viewModel.userPosts.value == null) {
-                viewModel.refreshUserPosts(uid)
-            }
-
-            viewModel.userPosts.observe(viewLifecycleOwner) { posts ->
-                adapter?.posts = posts
-                adapter?.notifyDataSetChanged()
-                binding.profileSwipeRefresh.isRefreshing = false
-            }
+        viewModel.userPosts.observe(viewLifecycleOwner) { posts ->
+            adapter?.posts = posts
+            adapter?.notifyDataSetChanged()
+            binding.profileSwipeRefresh.isRefreshing = false
         }
     }
 
     private fun refreshData() {
         val currentUserId = Firebase.auth.currentUser?.uid
         currentUserId?.let { uid ->
-            viewModel.refreshUserPosts(uid)
+            viewModel.setUserId(uid)
         } ?: run {
             binding.profileSwipeRefresh.isRefreshing = false
         }

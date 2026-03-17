@@ -4,10 +4,10 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.idz.trailsync.databinding.PostListItemBinding
-import com.idz.trailsync.model.Post
+import com.idz.trailsync.model.PostWithComments
 
 class PostsAdapter(
-    var posts: List<Post>? = null,
+    var posts: List<PostWithComments>? = null,
     var listener: OnPostClickListener? = null
 ) : RecyclerView.Adapter<PostRowViewHolder>() {
 

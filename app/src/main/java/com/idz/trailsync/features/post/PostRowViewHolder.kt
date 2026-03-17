@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.idz.trailsync.R
 import com.idz.trailsync.databinding.PostListItemBinding
 import com.idz.trailsync.model.Post
+import com.idz.trailsync.model.PostWithComments
 import com.squareup.picasso.Picasso
 
 class PostRowViewHolder(
@@ -29,7 +30,8 @@ class PostRowViewHolder(
         }
     }
 
-    fun bind(post: Post) {
+    fun bind(postWithComments: PostWithComments) {
+        val post = postWithComments.post
         this.post = post
         binding.postTitle.text = post.title
         binding.postLocation.text = post.location?.name ?: "Unknown"
@@ -37,7 +39,7 @@ class PostRowViewHolder(
         binding.postPrice.text = post.price.toString()
 
         binding.saveCount.text = post.savedCount.toString()
-        binding.commentCount.text = post.commentsCount.toString()
+        binding.commentCount.text = postWithComments.commentsCount.toString()
 
         val firstPhotoUrl = post.photos.firstOrNull()
 
