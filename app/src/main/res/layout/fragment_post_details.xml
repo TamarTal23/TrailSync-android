@@ -283,9 +283,10 @@
     <FrameLayout
         android:id="@+id/addCommentContainer"
         android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/neutral_background"
         android:paddingHorizontal="8dp"
         android:paddingVertical="16dp"
-        android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <include
