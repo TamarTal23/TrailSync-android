@@ -4,6 +4,8 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -91,11 +93,38 @@ class PostDetailsFragment : Fragment() {
                 val currentBinding = _binding ?: return@getUserById
                 user?.let { loggedInUser ->
                     if (!loggedInUser.profilePicture.isNullOrEmpty()) {
-                        Picasso.get().load(loggedInUser.profilePicture).into(currentBinding.addCommentLayout.profileImage)
+                        Picasso.get().load(loggedInUser.profilePicture)
+                            .into(currentBinding.addCommentLayout.profileImage)
                     }
 
+                    // Explicitly disable the send button initially
+                    currentBinding.addCommentLayout.sendButton.isEnabled = false
+
+                    currentBinding.addCommentLayout.commentInput.addTextChangedListener(object :
+                        TextWatcher {
+                        override fun beforeTextChanged(
+                            s: CharSequence?,
+                            start: Int,
+                            count: Int,
+                            after: Int
+                        ) {}
+
+                        override fun onTextChanged(
+                            s: CharSequence?,
+                            start: Int,
+                            before: Int,
+                            count: Int
+                        ) {
+                            currentBinding.addCommentLayout.sendButton.isEnabled =
+                                !s.isNullOrBlank()
+                        }
+
+                        override fun afterTextChanged(s: Editable?) {}
+                    })
+
                     currentBinding.addCommentLayout.sendButton.setOnClickListener {
-                        val text = currentBinding.addCommentLayout.commentInput.text.toString().trim()
+                        val text =
+                            currentBinding.addCommentLayout.commentInput.text.toString().trim()
                         if (text.isNotEmpty()) {
                             val comment = Comment(
                                 id = UUID.randomUUID().toString(),
@@ -109,8 +138,13 @@ class PostDetailsFragment : Fragment() {
                                 if (_binding != null) {
                                     if (success) {
                                         _binding?.addCommentLayout?.commentInput?.text?.clear()
+                                        // The button will be disabled by onTextChanged when text is cleared
                                     } else {
-                                        Toast.makeText(context, "Failed to add comment", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(
+                                            context,
+                                            "Failed to add comment",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
                                     }
                                 }
                             }
@@ -125,11 +159,11 @@ class PostDetailsFragment : Fragment() {
 
     private fun isGoogleMapsUrl(url: String): Boolean {
         val lowerUrl = url.lowercase()
-        return lowerUrl.contains("google.com/maps") || 
-               lowerUrl.contains("maps.google.com") || 
-               lowerUrl.contains("goo.gl/maps") ||
-               lowerUrl.contains("maps.app.goo.gl") ||
-               lowerUrl.contains("google.co.il/maps")
+        return lowerUrl.contains("google.com/maps") ||
+                lowerUrl.contains("maps.google.com") ||
+                lowerUrl.contains("goo.gl/maps") ||
+                lowerUrl.contains("maps.app.goo.gl") ||
+                lowerUrl.contains("google.co.il/maps")
     }
 
     private fun setupMapView(mapLink: String?) {
@@ -143,7 +177,7 @@ class PostDetailsFragment : Fragment() {
             settings.loadWithOverviewMode = true
             settings.useWideViewPort = true
             settings.domStorageEnabled = true
-            
+
             webViewClient = object : WebViewClient() {
                 override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                     super.onPageStarted(view, url, favicon)
@@ -188,8 +222,9 @@ class PostDetailsFragment : Fragment() {
                     } catch (e: Exception) {
                         false
                     }
-                }            }
-            
+                }
+            }
+
             loadUrl(mapLink)
         }
     }
