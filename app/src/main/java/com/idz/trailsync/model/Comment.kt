@@ -1,11 +1,23 @@
 package com.idz.trailsync.model
 
 import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.google.firebase.Timestamp
 import java.util.Date
 
-@Entity
+@Entity(
+    foreignKeys = [
+        ForeignKey(
+            entity = Post::class,
+            parentColumns = ["id"],
+            childColumns = ["postId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ],
+    indices = [Index(value = ["postId"])]
+)
 data class Comment(
     @PrimaryKey val id: String,
     val text: String,
