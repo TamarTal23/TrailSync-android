@@ -10,27 +10,40 @@ import android.view.ViewGroup
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 import com.idz.trailsync.databinding.FragmentPostDetailsBinding
 import com.idz.trailsync.features.post.photo.PhotoCarouselController
+import com.idz.trailsync.model.Comment
 import com.idz.trailsync.model.Post
+import com.idz.trailsync.data.repository.UserRepository
+import com.squareup.picasso.Picasso
+import java.util.UUID
 
 class PostDetailsFragment : Fragment() {
     private var _binding: FragmentPostDetailsBinding? = null
     private val binding get() = _binding!!
     private val args: PostDetailsFragmentArgs by navArgs()
     private lateinit var photoCarouselController: PhotoCarouselController
+    private lateinit var viewModel: PostDetailsViewModel
+    private lateinit var commentAdapter: CommentAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentPostDetailsBinding.inflate(inflater, container, false)
+        viewModel = ViewModelProvider(this)[PostDetailsViewModel::class.java]
 
         val post = args.post
         setupUI(post)
+        setupComments(post.id)
 
         return binding.root
     }
@@ -55,6 +68,54 @@ class PostDetailsFragment : Fragment() {
         photoCarouselController.setupPhotos(post.photos)
 
         setupMapView(post.mapLink)
+        setupAddCommentSection(post.id)
+    }
+
+    private fun setupComments(postId: String) {
+        commentAdapter = CommentAdapter()
+        binding.commentsRecyclerView.apply {
+            adapter = commentAdapter
+            layoutManager = LinearLayoutManager(context)
+            isNestedScrollingEnabled = false
+        }
+
+        viewModel.getCommentsForPost(postId).observe(viewLifecycleOwner) { comments ->
+            commentAdapter.submitList(comments)
+        }
+    }
+
+    private fun setupAddCommentSection(postId: String) {
+        val currentUser = Firebase.auth.currentUser
+        if (currentUser != null) {
+            UserRepository.shared.getUserById(currentUser.uid) { user ->
+                user?.let {
+                    if (!it.profilePicture.isNullOrEmpty()) {
+                        Picasso.get().load(it.profilePicture).into(binding.addCommentLayout.profileImage)
+                    }
+                }
+            }
+
+            binding.addCommentLayout.sendButton.setOnClickListener {
+                val text = binding.addCommentLayout.commentInput.text.toString().trim()
+                if (text.isNotEmpty()) {
+                    val comment = Comment(
+                        id = UUID.randomUUID().toString(),
+                        text = text,
+                        author = currentUser.displayName ?: currentUser.email ?: "Anonymous",
+                        postId = postId
+                    )
+                    viewModel.addComment(comment) { success ->
+                        if (success) {
+                            binding.addCommentLayout.commentInput.text.clear()
+                        } else {
+                            Toast.makeText(context, "Failed to add comment", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            }
+        } else {
+            binding.addCommentContainer.visibility = View.GONE
+        }
     }
 
     private fun isGoogleMapsUrl(url: String): Boolean {
