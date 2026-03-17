@@ -13,7 +13,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.idz.trailsync.databinding.FragmentLoginBinding
-import com.idz.trailsync.features.profile.UserFormViewModel
+import com.idz.trailsync.features.EditProfile.UserFormViewModel
 import com.idz.trailsync.AuthenticationActivity
 import com.idz.trailsync.AuthenticationViewModel
 import com.idz.trailsync.HomeActivity

@@ -1,4 +1,4 @@
-package com.idz.trailsync.features.profile
+package com.idz.trailsync.features.EditProfile
 
 import android.util.Patterns
 import androidx.lifecycle.LiveData

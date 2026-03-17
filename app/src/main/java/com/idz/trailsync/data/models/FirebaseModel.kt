@@ -7,11 +7,11 @@ import com.google.firebase.firestore.memoryCacheSettings
 import com.idz.trailsync.base.BooleanCallback
 import com.idz.trailsync.base.UsersCallback
 import com.idz.trailsync.base.Constants
+import com.idz.trailsync.base.PostsCallback
 import com.idz.trailsync.base.UserCallback
 import com.idz.trailsync.model.Comment
 import com.idz.trailsync.model.Post
 import com.idz.trailsync.model.User
-
 class FirebaseModel {
     private val database = Firebase.firestore
 
@@ -35,6 +35,35 @@ class FirebaseModel {
                     }
 
                     false -> callback(listOf())
+                }
+            }
+    }
+
+    fun getAllPosts(callback: PostsCallback) {
+        database.collection(Constants.COLLECTIONS.POSTS).get()
+            .addOnCompleteListener {
+                if (it.isSuccessful) {
+                    val posts: MutableList<Post> = mutableListOf()
+                    for (json in it.result) {
+                        posts.add(Post.fromJSON(json.data))
+                    }
+                    callback(posts)
+                } else {
+                    callback(listOf())
+                }
+            }
+    }
+
+    fun getPostsByAuthor(authorId: String, callback: PostsCallback) {
+        database.collection(Constants.COLLECTIONS.POSTS)
+            .whereEqualTo("author", authorId)
+            .get()
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val posts = task.result.map { Post.fromJSON(it.data) }
+                    callback(posts)
+                } else {
+                    callback(listOf())
                 }
             }
     }
@@ -78,34 +107,9 @@ class FirebaseModel {
 
 
     fun upsertPost(post: Post, callback: BooleanCallback) {
-        database.collection(Constants.COLLECTIONS.POSTS)
-            .whereEqualTo("id", post.id)
-            .get()
-            .addOnSuccessListener { documents ->
-                if (documents.isEmpty) {
-                    database.collection(Constants.COLLECTIONS.POSTS)
-                        .document()
-                        .set(post.json)
-                        .addOnSuccessListener {
-                            callback(true)
-                        }
-                        .addOnFailureListener {
-                            callback(false)
-                        }
-                } else {
-                    for (document in documents) {
-                        document.reference.update(post.json)
-                            .addOnSuccessListener {
-                                callback(true)
-                            }
-                            .addOnFailureListener {
-                                callback(false)
-                            }
-                    }
-                }
-            }
-            .addOnFailureListener {
-                callback(false)
+        database.collection(Constants.COLLECTIONS.POSTS).document(post.id).set(post.json)
+            .addOnCompleteListener { task ->
+                callback(task.isSuccessful)
             }
     }
 

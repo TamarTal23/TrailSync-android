@@ -1,6 +1,7 @@
-package com.idz.trailsync.features.profile
+package com.idz.trailsync.features.EditProfile
 
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
@@ -21,6 +22,7 @@ import com.idz.trailsync.LoginResult
 import com.idz.trailsync.data.repository.UserRepository
 import com.idz.trailsync.databinding.FragmentEditProfileBinding
 import com.idz.trailsync.utils.BitmapUtils
+import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 
 class EditProfileFragment : Fragment() {
@@ -70,7 +72,7 @@ class EditProfileFragment : Fragment() {
         val auth = Firebase.auth
 
         auth.currentUser?.uid?.let { uid ->
-            UserRepository.shared.getUserById(uid) { user ->
+            UserRepository.Companion.shared.getUserById(uid) { user ->
                 user?.let {
                     binding.editTextEmail.setText(it.email)
                     binding.editTextUsername.setText(it.username)
@@ -88,7 +90,7 @@ class EditProfileFragment : Fragment() {
                                 .centerCrop()
                                 .into(
                                     binding.profileImageView,
-                                    object : com.squareup.picasso.Callback {
+                                    object : Callback {
                                         override fun onSuccess() {
                                             binding.profileProgressBar.visibility = View.GONE
                                         }
@@ -120,7 +122,7 @@ class EditProfileFragment : Fragment() {
         val loadingDrawable = CircularProgressDrawable(requireContext()).apply {
             strokeWidth = 6f
             centerRadius = 24f
-            setColorSchemeColors(android.graphics.Color.WHITE)
+            setColorSchemeColors(Color.WHITE)
             setBounds(0, 0, 100, 100)
         }
 

@@ -1,11 +1,12 @@
 package com.idz.trailsync.features.post
 
-import android.R
-import android.net.Uri
+import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
+import com.idz.trailsync.R
 import com.idz.trailsync.databinding.PostListItemBinding
 import com.idz.trailsync.model.Post
+import com.squareup.picasso.Picasso
 
 class PostRowViewHolder(
     private val binding: PostListItemBinding,
@@ -38,18 +39,33 @@ class PostRowViewHolder(
         binding.saveCount.text = post.savedCount.toString()
         binding.commentCount.text = post.commentsCount.toString()
 
-        if (post.photos.isNotEmpty()) {
-            val photoPath = post.photos[0]
-            if (photoPath.startsWith("android.resource")) {
-                val resId = photoPath.substringAfterLast("/").toIntOrNull()
+        val firstPhotoUrl = post.photos.firstOrNull()
+
+        if (!firstPhotoUrl.isNullOrBlank()) {
+            if (firstPhotoUrl.startsWith("android.resource")) {
+                val resId = firstPhotoUrl.substringAfterLast("/").toIntOrNull()
+
                 if (resId != null) {
                     binding.postImage.setImageResource(resId)
                 }
             } else {
-                binding.postImage.setImageURI(Uri.parse(photoPath))
+                Picasso.get()
+                    .load(firstPhotoUrl)
+                    .fit()
+                    .centerCrop()
+                    .into(binding.postImage, object : com.squareup.picasso.Callback {
+                        override fun onSuccess() {
+                            Log.d("Picasso", "Successfully loaded image for: ${post.title}")
+                        }
+
+                        override fun onError(e: Exception?) {
+                            Log.e("Picasso", "Failed to load image for: ${post.title}. Error: ${e?.message}")
+                            binding.postImage.setImageResource(android.R.drawable.ic_menu_gallery)
+                        }
+                    })
             }
         } else {
-            binding.postImage.setImageResource(R.drawable.ic_menu_gallery)
+            binding.postImage.setImageResource(android.R.drawable.ic_menu_gallery)
         }
 
         updateSaveButton()
@@ -58,11 +74,11 @@ class PostRowViewHolder(
     private fun updateSaveButton() {
         val context = itemView.context
         if (isSaved) {
-            binding.postSaveButton.setImageResource(com.idz.trailsync.R.drawable.ic_bookmark_filled)
-            binding.postSaveButton.setColorFilter(ContextCompat.getColor(context, com.idz.trailsync.R.color.orange))
+            binding.postSaveButton.setImageResource(R.drawable.ic_bookmark_filled)
+            binding.postSaveButton.setColorFilter(ContextCompat.getColor(context, R.color.orange))
         } else {
-            binding.postSaveButton.setImageResource(com.idz.trailsync.R.drawable.ic_bookmark_outline)
-            binding.postSaveButton.setColorFilter(ContextCompat.getColor(context, com.idz.trailsync.R.color.dark_neutral))
+            binding.postSaveButton.setImageResource(R.drawable.ic_bookmark_outline)
+            binding.postSaveButton.setColorFilter(ContextCompat.getColor(context, R.color.dark_neutral))
         }
     }
 }
