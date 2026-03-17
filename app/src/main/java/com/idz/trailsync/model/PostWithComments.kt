@@ -11,6 +11,5 @@ data class PostWithComments(
     )
     val comments: List<Comment> = emptyList()
 ) {
-    // This allows you to get the accurate count anywhere you have this object
     val commentsCount: Int get() = comments.size
 }

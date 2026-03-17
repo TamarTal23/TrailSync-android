@@ -20,7 +20,4 @@ interface CommentDao {
 
     @Query("DELETE FROM Comment WHERE id IN (:ids)")
     fun deleteByIds(ids: List<String>)
-
-    @Query("DELETE FROM Comment WHERE postId = :postId")
-    fun deleteCommentsForPost(postId: String)
 }

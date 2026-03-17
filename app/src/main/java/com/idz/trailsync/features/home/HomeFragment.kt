@@ -39,7 +39,7 @@ class HomeFragment : Fragment() {
                 navigateToPostDetails(post)
             }
         }
-        
+
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(context)
             setHasFixedSize(true)
@@ -49,9 +49,7 @@ class HomeFragment : Fragment() {
 
     private fun setupSwipeRefresh() {
         binding.swipeRefresh.setOnRefreshListener {
-            // The LiveData from Room will automatically update the UI 
-            // once the repository finishes refreshing the data from Firebase.
-            binding.swipeRefresh.isRefreshing = false 
+            binding.swipeRefresh.isRefreshing = false
         }
     }
 

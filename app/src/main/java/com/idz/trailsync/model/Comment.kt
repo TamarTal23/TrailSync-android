@@ -21,8 +21,8 @@ import java.util.Date
 data class Comment(
     @PrimaryKey val id: String,
     val text: String,
-    val author: String, // This is the user ID
-    val authorName: String, // This is the username
+    val author: String,
+    val authorName: String,
     val authorImage: String? = null,
     val postId: String,
     val createdAt: Date = Date()

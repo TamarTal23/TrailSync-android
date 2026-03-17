@@ -99,7 +99,6 @@ class PostDetailsFragment : Fragment() {
                             .into(currentBinding.addCommentLayout.profileImage)
                     }
 
-                    // Explicitly disable the send button initially
                     currentBinding.addCommentLayout.sendButton.isEnabled = false
 
                     currentBinding.addCommentLayout.commentInput.addTextChangedListener(object :
@@ -109,7 +108,8 @@ class PostDetailsFragment : Fragment() {
                             start: Int,
                             count: Int,
                             after: Int
-                        ) {}
+                        ) {
+                        }
 
                         override fun onTextChanged(
                             s: CharSequence?,
@@ -162,7 +162,8 @@ class PostDetailsFragment : Fragment() {
     private fun hideKeyboard() {
         val view = activity?.currentFocus
         if (view != null) {
-            val imm = activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+            val imm =
+                activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
             imm?.hideSoftInputFromWindow(view.windowToken, 0)
             view.clearFocus()
         }
