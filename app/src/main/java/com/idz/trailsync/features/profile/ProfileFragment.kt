@@ -1,5 +1,6 @@
 package com.idz.trailsync.features.profile
 
+import android.app.AlertDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -60,8 +61,33 @@ class ProfileFragment : Fragment() {
                 val action = ProfileFragmentDirections.actionProfileFragmentToPostDetailsFragment(post)
                 findNavController().navigate(action)
             }
+
+            override fun onDeleteClick(post: Post) {
+                showDeleteConfirmationDialog(post)
+            }
         }
         binding.userPostsRecyclerView.adapter = adapter
+    }
+
+    private fun showDeleteConfirmationDialog(post: Post) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Remove post")
+            .setMessage("Are you sure you want to remove this post?")
+            .setPositiveButton("Yes") { _, _ ->
+                deletePost(post)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun deletePost(post: Post) {
+        viewModel.deletePost(post) { success ->
+            if (success) {
+                Toast.makeText(context, "Post deleted", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(context, "Failed to delete post", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun getUserData() {
