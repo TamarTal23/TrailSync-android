@@ -56,9 +56,11 @@ class PostRowViewHolder(
         }
 
         val firstPhotoUrl = post.photos.firstOrNull()
+
         if (!firstPhotoUrl.isNullOrBlank()) {
             if (firstPhotoUrl.startsWith("android.resource")) {
                 val resId = firstPhotoUrl.substringAfterLast("/").toIntOrNull()
+
                 if (resId != null) {
                     binding.postImage.setImageResource(resId)
                 }

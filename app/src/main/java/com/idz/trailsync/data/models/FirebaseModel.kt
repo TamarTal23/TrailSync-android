@@ -7,12 +7,10 @@ import com.google.firebase.firestore.memoryCacheSettings
 import com.idz.trailsync.base.BooleanCallback
 import com.idz.trailsync.base.UsersCallback
 import com.idz.trailsync.base.Constants
+import com.idz.trailsync.base.PostsCallback
 import com.idz.trailsync.base.UserCallback
 import com.idz.trailsync.model.Post
 import com.idz.trailsync.model.User
-
-typealias PostsCallback = (List<Post>) -> Unit
-
 class FirebaseModel {
     private val database = Firebase.firestore
 

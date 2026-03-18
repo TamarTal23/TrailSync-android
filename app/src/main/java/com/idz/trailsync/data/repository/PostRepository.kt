@@ -4,9 +4,9 @@ import android.graphics.Bitmap
 import android.os.Looper
 import androidx.core.os.HandlerCompat
 import com.idz.trailsync.base.BooleanCallback
+import com.idz.trailsync.base.PostsCallback
 import com.idz.trailsync.data.models.FirebaseModel
 import com.idz.trailsync.data.models.FirebaseStorageModel
-import com.idz.trailsync.data.models.PostsCallback
 import com.idz.trailsync.model.Post
 import com.idz.trailsync.dao.AppLocalDB
 import com.idz.trailsync.dao.AppLocalDbRepository

@@ -85,7 +85,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/profileHeaderContainer" />
 
-    <!-- Scrollable Post List -->
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/profileSwipeRefresh"
         android:layout_width="match_parent"

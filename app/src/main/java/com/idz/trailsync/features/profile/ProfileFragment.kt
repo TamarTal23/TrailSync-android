@@ -94,10 +94,10 @@ class ProfileFragment : Fragment() {
         val currentUserId = Firebase.auth.currentUser?.uid
 
         currentUserId?.let { uid ->
-            UserRepository.shared.getUserById(uid) { user ->
-                _binding?.let { b ->
+            UserRepository.Companion.shared.getUserById(uid) { user ->
+                _binding?.let { binding ->
                     userInfo = user
-                    b.profileNameTextView.text = user?.username
+                    binding.profileNameTextView.text = user?.username
                     loadProfileImage(user?.profilePicture)
                 }
             }
