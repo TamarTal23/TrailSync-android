@@ -48,7 +48,6 @@ class PostRowViewHolder(
         binding.saveCount.text = post.savedCount.toString()
         binding.commentCount.text = post.commentsCount.toString()
 
-        // Handle delete button visibility (only for author)
         val currentUserId = Firebase.auth.currentUser?.uid
         if (post.author == currentUserId) {
             binding.postDeleteButton.visibility = View.VISIBLE

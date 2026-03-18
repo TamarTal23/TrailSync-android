@@ -24,19 +24,15 @@ class PostRepository private constructor() {
 
     fun getAllPosts(callback: PostsCallback) {
         executor.execute {
-            // 1. Get from local
             val localPosts = database.PostDao().getAll()
             HandlerCompat.createAsync(Looper.getMainLooper()).post {
                 callback(localPosts)
             }
 
-            // 2. Get from remote
             firebaseModel.getAllPosts { remotePosts ->
                 executor.execute {
-                    // 3. Sync local with remote (Clear local and insert all from remote)
                     database.PostDao().clearAndInsertAll(remotePosts)
                     
-                    // 4. Return updated list
                     val updatedLocalPosts = database.PostDao().getAll()
                     HandlerCompat.createAsync(Looper.getMainLooper()).post {
                         callback(updatedLocalPosts)
@@ -55,7 +51,6 @@ class PostRepository private constructor() {
 
             firebaseModel.getPostsByAuthor(authorId) { remotePosts ->
                 executor.execute {
-                    // Update local with remote results for this user
                     remotePosts.forEach { database.PostDao().upsert(it) }
                     val updatedLocalPosts = database.PostDao().getPostsByAuthor(authorId)
                     HandlerCompat.createAsync(Looper.getMainLooper()).post {
