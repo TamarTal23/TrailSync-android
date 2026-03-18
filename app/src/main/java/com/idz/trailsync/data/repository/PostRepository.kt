@@ -103,10 +103,12 @@ class PostRepository private constructor() {
     fun deletePost(postId: String, callback: BooleanCallback) {
         firebaseModel.deletePost(postId) { success ->
             if (success) {
-                executor.execute {
-                    database.PostDao().deleteById(postId)
-                    HandlerCompat.createAsync(Looper.getMainLooper()).post {
-                        callback(true)
+                firebaseStorageModel.deletePostImages(postId) { storageSuccess ->
+                    executor.execute {
+                        database.PostDao().deleteById(postId)
+                        HandlerCompat.createAsync(Looper.getMainLooper()).post {
+                            callback(true)
+                        }
                     }
                 }
             } else {
