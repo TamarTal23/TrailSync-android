@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import com.google.firebase.Firebase
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.storage
+import com.idz.trailsync.base.BooleanCallback
 import com.idz.trailsync.base.StringCallback
 import java.io.ByteArrayOutputStream
 import java.util.UUID
@@ -47,6 +48,36 @@ class FirebaseStorageModel {
             }
         }
     }
+
+    fun deletePostImages(postId: String, callback: BooleanCallback) {
+        val storageRef = storage.reference.child("posts/$postId")
+
+        storageRef.listAll().addOnSuccessListener { listResult ->
+            val totalItems = listResult.items.size
+            if (totalItems == 0) {
+                callback(true)
+                return@addOnSuccessListener
+            }
+            
+            var deletedCount = 0
+            var failed = false
+            
+            listResult.items.forEach { item ->
+                item.delete().addOnCompleteListener { task ->
+                    if (!task.isSuccessful) {
+                        failed = true
+                    }
+                    deletedCount++
+                    if (deletedCount == totalItems) {
+                        callback(!failed)
+                    }
+                }
+            }
+        }.addOnFailureListener {
+            callback(false)
+        }
+    }
+
     private fun uploadImage(image: Bitmap, ref: StorageReference, completion: StringCallback) {
         val baos = ByteArrayOutputStream()
         image.compress(Bitmap.CompressFormat.JPEG, 100, baos)

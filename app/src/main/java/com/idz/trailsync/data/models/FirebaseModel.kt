@@ -111,4 +111,11 @@ class FirebaseModel {
                 callback(task.isSuccessful)
             }
     }
+
+    fun deletePost(postId: String, callback: BooleanCallback) {
+        database.collection(Constants.COLLECTIONS.POSTS).document(postId).delete()
+            .addOnCompleteListener { task ->
+                callback(task.isSuccessful)
+            }
+    }
 }

@@ -18,6 +18,7 @@ import com.idz.trailsync.features.post.OnPostClickListener
 import com.idz.trailsync.features.post.PostsAdapter
 import com.idz.trailsync.model.Post
 import com.idz.trailsync.model.User
+import com.idz.trailsync.utils.DialogUtils
 import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 
@@ -57,18 +58,34 @@ class ProfileFragment : Fragment() {
         adapter = PostsAdapter(viewModel.userPosts.value)
         adapter?.listener = object : OnPostClickListener {
             override fun onPostClick(post: Post) {
-                val action = ProfileFragmentDirections.Companion.actionProfileFragmentToPostDetailsFragment(post)
+                val action = ProfileFragmentDirections.actionProfileFragmentToPostDetailsFragment(post)
                 findNavController().navigate(action)
+            }
+
+            override fun onDeleteClick(post: Post) {
+                DialogUtils.showDeletePostConfirmation(requireContext()) {
+                    deletePost(post)
+                }
             }
         }
         binding.userPostsRecyclerView.adapter = adapter
+    }
+
+    private fun deletePost(post: Post) {
+        viewModel.deletePost(post) { success ->
+            if (success) {
+                Toast.makeText(context, "Post deleted", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(context, "Failed to delete post", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun getUserData() {
         val currentUserId = Firebase.auth.currentUser?.uid
 
         currentUserId?.let { uid ->
-            UserRepository.Companion.shared.getUserById(uid) { user ->
+            UserRepository.shared.getUserById(uid) { user ->
                 _binding?.let { binding ->
                     userInfo = user
                     binding.profileNameTextView.text = user?.username

@@ -11,8 +11,18 @@ class ProfileViewModel : ViewModel() {
     val userPosts: LiveData<List<Post>> = _userPosts
 
     fun refreshUserPosts(userId: String) {
-        PostRepository.Companion.shared.getPostsByAuthor(userId) { posts ->
+        PostRepository.shared.getPostsByAuthor(userId) { posts ->
             _userPosts.value = posts
+        }
+    }
+
+    fun deletePost(post: Post, onComplete: (Boolean) -> Unit) {
+        PostRepository.shared.deletePost(post.id) { success ->
+            if (success) {
+                val currentUserId = post.author
+                refreshUserPosts(currentUserId)
+            }
+            onComplete(success)
         }
     }
 }
