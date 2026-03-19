@@ -37,6 +37,12 @@ class ProfileFragment : Fragment() {
         return binding.root
     }
 
+    override fun onResume() {
+        super.onResume()
+        refreshData()
+    }
+
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -53,7 +59,7 @@ class ProfileFragment : Fragment() {
             viewModel.setUserId(uid)
             getUserData(uid)
         }
-        
+
         observeUserPosts()
     }
 
@@ -61,7 +67,8 @@ class ProfileFragment : Fragment() {
         adapter = PostsAdapter()
         adapter?.listener = object : OnPostClickListener {
             override fun onPostClick(post: Post) {
-                val action = ProfileFragmentDirections.actionProfileFragmentToPostDetailsFragment(post)
+                val action =
+                    ProfileFragmentDirections.actionProfileFragmentToPostDetailsFragment(post)
                 findNavController().navigate(action)
             }
         }
@@ -90,9 +97,11 @@ class ProfileFragment : Fragment() {
     }
 
     private fun refreshData() {
+        binding.profileSwipeRefresh.isRefreshing = true
         val currentUserId = Firebase.auth.currentUser?.uid
         currentUserId?.let { uid ->
             viewModel.setUserId(uid)
+            viewModel.refreshPosts()
         } ?: run {
             binding.profileSwipeRefresh.isRefreshing = false
         }
@@ -117,7 +126,8 @@ class ProfileFragment : Fragment() {
                 override fun onError(e: Exception?) {
                     binding.profileProgressBar.visibility = View.GONE
                     binding.profileImageView.setImageResource(R.drawable.user_icon_small)
-                    Toast.makeText(context, "Error loading profile image", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Error loading profile image", Toast.LENGTH_SHORT)
+                        .show()
                 }
             })
     }

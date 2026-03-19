@@ -32,6 +32,11 @@ class HomeFragment : Fragment() {
         return binding.root
     }
 
+    override fun onResume() {
+        super.onResume()
+        refreshData()
+    }
+
     private fun setupRecyclerView() {
         adapter = PostsAdapter()
         adapter?.listener = object : OnPostClickListener {
@@ -49,14 +54,20 @@ class HomeFragment : Fragment() {
 
     private fun setupSwipeRefresh() {
         binding.swipeRefresh.setOnRefreshListener {
-            binding.swipeRefresh.isRefreshing = false
+            refreshData()
         }
+    }
+
+    private fun refreshData() {
+        binding.swipeRefresh.isRefreshing = true
+        viewModel.refreshPosts()
     }
 
     private fun observePosts() {
         viewModel.posts.observe(viewLifecycleOwner) { posts ->
             adapter?.posts = posts
             adapter?.notifyDataSetChanged()
+            binding.swipeRefresh.isRefreshing = false
         }
     }
 

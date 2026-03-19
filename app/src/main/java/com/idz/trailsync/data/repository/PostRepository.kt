@@ -22,11 +22,10 @@ class PostRepository private constructor() {
     }
 
     fun getAllPosts(): LiveData<List<PostWithComments>> {
-        refreshAllPosts()
         return database.PostDao().getAllWithComments()
     }
 
-    private fun refreshAllPosts() {
+    fun refreshAllPosts() {
         firebaseModel.getAllPosts { remotePosts ->
             executor.execute {
                 val postDao = database.PostDao()
@@ -39,11 +38,10 @@ class PostRepository private constructor() {
     }
 
     fun getPostsByAuthor(authorId: String): LiveData<List<PostWithComments>> {
-        refreshPostsByAuthor(authorId)
         return database.PostDao().getPostsByAuthorWithComments(authorId)
     }
 
-    private fun refreshPostsByAuthor(authorId: String) {
+    fun refreshPostsByAuthor(authorId: String) {
         firebaseModel.getPostsByAuthor(authorId) { remotePosts ->
             executor.execute {
                 val postDao = database.PostDao()
@@ -55,7 +53,7 @@ class PostRepository private constructor() {
         }
     }
 
-    private fun refreshCommentsForPost(postId: String) {
+    fun refreshCommentsForPost(postId: String) {
         firebaseModel.getCommentsForPost(postId) { remoteComments ->
             executor.execute {
                 val commentDao = database.CommentDao()

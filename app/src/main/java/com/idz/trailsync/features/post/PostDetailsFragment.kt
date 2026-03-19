@@ -87,9 +87,8 @@ class PostDetailsFragment : Fragment() {
         viewModel.getCommentsForPost(postId).observe(viewLifecycleOwner) { comments ->
             commentAdapter.submitList(comments)
         }
-        
-        // Initial refresh
-        viewModel.refreshComments(postId)
+
+
     }
 
     private fun setupAddCommentSection(postId: String) {

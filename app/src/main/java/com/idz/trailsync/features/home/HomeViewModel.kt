@@ -7,4 +7,9 @@ import com.idz.trailsync.model.PostWithComments
 
 class HomeViewModel : ViewModel() {
     val posts: LiveData<List<PostWithComments>> = PostRepository.shared.getAllPosts()
+
+
+    fun refreshPosts() {
+        PostRepository.shared.refreshAllPosts()
+    }
 }

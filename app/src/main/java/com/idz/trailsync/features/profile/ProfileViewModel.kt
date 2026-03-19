@@ -9,9 +9,15 @@ import com.idz.trailsync.model.PostWithComments
 
 class ProfileViewModel : ViewModel() {
     private val _userId = MutableLiveData<String>()
-    
+
     val userPosts: LiveData<List<PostWithComments>> = _userId.switchMap { id ->
         PostRepository.shared.getPostsByAuthor(id)
+    }
+
+    fun refreshPosts() {
+        _userId.value?.let { uid ->
+            PostRepository.shared.refreshPostsByAuthor(uid)
+        }
     }
 
     fun setUserId(userId: String) {
