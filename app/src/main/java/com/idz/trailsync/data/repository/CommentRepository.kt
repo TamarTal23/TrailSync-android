@@ -17,11 +17,10 @@ class CommentRepository private constructor() {
     }
 
     fun getCommentsForPost(postId: String): LiveData<List<Comment>> {
-        refreshComments(postId)
         return database.CommentDao().getCommentsForPost(postId)
     }
 
-    private fun refreshComments(postId: String) {
+    fun refreshComments(postId: String) {
         firebaseModel.getCommentsForPost(postId) { remoteComments ->
             executor.execute {
                 val commentDao = database.CommentDao()

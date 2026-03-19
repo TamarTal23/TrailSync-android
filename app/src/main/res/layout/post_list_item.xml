@@ -27,12 +27,12 @@
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/post_save_container"
-            android:layout_width="34dp"
-            android:layout_height="34dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
             app:cardBackgroundColor="@color/white"
-            app:cardCornerRadius="17dp"
+            app:cardCornerRadius="50dp"
             app:cardElevation="4dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -40,8 +40,8 @@
 
             <ImageView
                 android:id="@+id/post_save_button"
-                android:layout_width="18dp"
-                android:layout_height="18dp"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
                 android:layout_gravity="center"
                 android:src="@drawable/ic_bookmark_outline"
                 app:tint="@color/dark_neutral" />

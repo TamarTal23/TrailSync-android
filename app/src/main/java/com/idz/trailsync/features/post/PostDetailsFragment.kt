@@ -27,6 +27,7 @@ import com.idz.trailsync.features.post.photo.PhotoCarouselController
 import com.idz.trailsync.model.Comment
 import com.idz.trailsync.model.Post
 import com.idz.trailsync.data.repository.UserRepository
+import com.idz.trailsync.features.comment.CommentAdapter
 import com.squareup.picasso.Picasso
 import java.util.UUID
 
@@ -86,6 +87,9 @@ class PostDetailsFragment : Fragment() {
         viewModel.getCommentsForPost(postId).observe(viewLifecycleOwner) { comments ->
             commentAdapter.submitList(comments)
         }
+        
+        // Initial refresh
+        viewModel.refreshComments(postId)
     }
 
     private fun setupAddCommentSection(postId: String) {
@@ -142,11 +146,13 @@ class PostDetailsFragment : Fragment() {
                                         _binding?.addCommentLayout?.commentInput?.text?.clear()
                                         hideKeyboard()
                                     } else {
-                                        Toast.makeText(
-                                            context,
-                                            "Failed to add comment",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
+                                        context?.let { ctx ->
+                                            Toast.makeText(
+                                                ctx,
+                                                "Failed to add comment",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
                                     }
                                 }
                             }
