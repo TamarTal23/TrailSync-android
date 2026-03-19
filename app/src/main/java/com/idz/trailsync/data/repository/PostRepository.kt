@@ -76,12 +76,7 @@ class PostRepository private constructor() {
 
                     firebaseModel.upsertPost(updatedPost) { result ->
                         if (result) {
-                            executor.execute {
-                                database.PostDao().upsert(updatedPost)
-                                HandlerCompat.createAsync(Looper.getMainLooper()).post {
-                                    callback(true)
-                                }
-                            }
+                            upsertLocal(updatedPost, callback)
                         } else {
                             HandlerCompat.createAsync(Looper.getMainLooper()).post {
                                 callback(false)
@@ -90,12 +85,16 @@ class PostRepository private constructor() {
                     }
                 }
             } else {
-                executor.execute {
-                    database.PostDao().upsert(post)
-                    HandlerCompat.createAsync(Looper.getMainLooper()).post {
-                        callback(true)
-                    }
-                }
+                upsertLocal(post, callback)
+            }
+        }
+    }
+
+    private fun upsertLocal(post: Post, callback: BooleanCallback) {
+        executor.execute {
+            database.PostDao().upsert(post)
+            HandlerCompat.createAsync(Looper.getMainLooper()).post {
+                callback(true)
             }
         }
     }

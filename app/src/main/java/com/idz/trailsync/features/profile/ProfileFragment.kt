@@ -1,6 +1,5 @@
 package com.idz.trailsync.features.profile
 
-import android.app.AlertDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -19,6 +18,7 @@ import com.idz.trailsync.features.post.OnPostClickListener
 import com.idz.trailsync.features.post.PostsAdapter
 import com.idz.trailsync.model.Post
 import com.idz.trailsync.model.User
+import com.idz.trailsync.utils.DialogUtils
 import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 
@@ -63,21 +63,12 @@ class ProfileFragment : Fragment() {
             }
 
             override fun onDeleteClick(post: Post) {
-                showDeleteConfirmationDialog(post)
+                DialogUtils.showDeletePostConfirmation(requireContext()) {
+                    deletePost(post)
+                }
             }
         }
         binding.userPostsRecyclerView.adapter = adapter
-    }
-
-    private fun showDeleteConfirmationDialog(post: Post) {
-        AlertDialog.Builder(requireContext())
-            .setTitle("Remove post")
-            .setMessage("Are you sure you want to remove this post?")
-            .setPositiveButton("Yes") { _, _ ->
-                deletePost(post)
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
     }
 
     private fun deletePost(post: Post) {
@@ -94,7 +85,7 @@ class ProfileFragment : Fragment() {
         val currentUserId = Firebase.auth.currentUser?.uid
 
         currentUserId?.let { uid ->
-            UserRepository.Companion.shared.getUserById(uid) { user ->
+            UserRepository.shared.getUserById(uid) { user ->
                 _binding?.let { binding ->
                     userInfo = user
                     binding.profileNameTextView.text = user?.username

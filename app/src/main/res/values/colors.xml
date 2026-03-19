@@ -11,6 +11,7 @@
     <color name="dark_neutral">#335970</color>
     <color name="orange">#FF9800</color>
     <color name="gray_light">#F5F5F5</color>
+    <color name="red">#FF0000</color>
     <color name="error_red">#B00020</color>
     <color name="neutral_background">#F4F5F6</color>
     <color name="dark_text">#233D4D</color>

@@ -1,6 +1,5 @@
 package com.idz.trailsync.features.home
 
-import android.app.AlertDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,12 +9,12 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.idz.trailsync.R
 import com.idz.trailsync.data.repository.PostRepository
 import com.idz.trailsync.databinding.FragmentHomeBinding
 import com.idz.trailsync.features.post.OnPostClickListener
 import com.idz.trailsync.features.post.PostsAdapter
 import com.idz.trailsync.model.Post
+import com.idz.trailsync.utils.DialogUtils
 
 class HomeFragment : Fragment() {
 
@@ -50,7 +49,9 @@ class HomeFragment : Fragment() {
             }
 
             override fun onDeleteClick(post: Post) {
-                showDeleteConfirmationDialog(post)
+                DialogUtils.showDeletePostConfirmation(requireContext()) {
+                    deletePost(post)
+                }
             }
         }
         binding.recyclerView.adapter = adapter
@@ -60,17 +61,6 @@ class HomeFragment : Fragment() {
         }
 
         observePosts()
-    }
-
-    private fun showDeleteConfirmationDialog(post: Post) {
-        AlertDialog.Builder(requireContext())
-            .setTitle("Remove post")
-            .setMessage("Are you sure you want to remove this post?")
-            .setPositiveButton("Yes") { _, _ ->
-                deletePost(post)
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
     }
 
     private fun deletePost(post: Post) {

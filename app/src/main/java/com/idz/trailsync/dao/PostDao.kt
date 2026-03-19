@@ -12,10 +12,10 @@ interface PostDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun upsert(vararg post: Post)
 
-    @Query("SELECT * FROM Post")
+    @Query("SELECT * FROM Post ORDER BY createdAt DESC")
     fun getAll(): List<Post>
 
-    @Query("SELECT * FROM Post WHERE author = :userId")
+    @Query("SELECT * FROM Post WHERE author = :userId ORDER BY createdAt DESC")
     fun getPostsByAuthor(userId: String): List<Post>
 
     @Query("DELETE FROM Post WHERE id = :postId")
