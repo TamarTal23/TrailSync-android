@@ -9,7 +9,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.idz.trailsync.data.repository.PostRepository
 import com.idz.trailsync.databinding.FragmentHomeBinding
 import com.idz.trailsync.features.post.OnPostClickListener
 import com.idz.trailsync.features.post.PostsAdapter
@@ -30,19 +29,18 @@ class HomeFragment : Fragment() {
     ): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         setupRecyclerView()
+        setupSwipeRefresh()
+        observePosts()
         return binding.root
     }
 
     override fun onResume() {
         super.onResume()
-        refreshData()
+        viewModel.refreshPosts()
     }
 
     private fun setupRecyclerView() {
-        binding.recyclerView.layoutManager = LinearLayoutManager(context)
-        binding.recyclerView.setHasFixedSize(true)
-
-        adapter = PostsAdapter(viewModel.posts.value)
+        adapter = PostsAdapter()
         adapter?.listener = object : OnPostClickListener {
             override fun onPostClick(post: Post) {
                 navigateToPostDetails(post)
@@ -54,20 +52,24 @@ class HomeFragment : Fragment() {
                 }
             }
         }
-        binding.recyclerView.adapter = adapter
 
-        binding.swipeRefresh.setOnRefreshListener {
-            refreshData()
+        binding.recyclerView.apply {
+            layoutManager = LinearLayoutManager(context)
+            setHasFixedSize(true)
+            adapter = this@HomeFragment.adapter
         }
+    }
 
-        observePosts()
+    private fun setupSwipeRefresh() {
+        binding.swipeRefresh.setOnRefreshListener {
+            viewModel.refreshPosts()
+        }
     }
 
     private fun deletePost(post: Post) {
-        PostRepository.shared.deletePost(post.id) { success ->
+        viewModel.deletePost(post.id) { success ->
             if (success) {
                 Toast.makeText(context, "Post deleted", Toast.LENGTH_SHORT).show()
-                refreshData()
             } else {
                 Toast.makeText(context, "Failed to delete post", Toast.LENGTH_SHORT).show()
             }
@@ -80,10 +82,6 @@ class HomeFragment : Fragment() {
             adapter?.notifyDataSetChanged()
             binding.swipeRefresh.isRefreshing = false
         }
-    }
-
-    private fun refreshData() {
-        viewModel.refreshPosts()
     }
 
     private fun navigateToPostDetails(post: Post) {
