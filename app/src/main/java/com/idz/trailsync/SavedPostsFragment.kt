@@ -9,6 +9,7 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.idz.trailsync.databinding.FragmentSavedPostsBinding
 import com.idz.trailsync.features.post.OnPostClickListener
+import com.idz.trailsync.features.post.PostDetailsFragmentArgs
 import com.idz.trailsync.features.saved.SavedPostViewModel
 import com.idz.trailsync.features.saved.SavedPostsAdapter
 import com.idz.trailsync.model.Post
@@ -32,7 +33,8 @@ class SavedPostsFragment : Fragment() {
 
         adapter = SavedPostsAdapter(null, object : OnPostClickListener {
             override fun onPostClick(post: Post) {
-                // Navigate to details if needed
+                val action = SavedPostsFragmentDirections.actionSavedPostsFragmentToPostDetailsFragment(post)
+                findNavController().navigate(action)
             }
 
             override fun onDeleteClick(post: Post) {
