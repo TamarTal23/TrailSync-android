@@ -22,7 +22,6 @@ data class Post(
     val createdAt: Date = Date(),
     val updatedAt: Date = Date(),
     val mapLink: String = "",
-    val commentsCount: Int = 0,
     val savedCount: Int = 0
 ) : Parcelable {
     @Parcelize
@@ -47,7 +46,6 @@ data class Post(
         private const val CREATED_AT_KEY = "createdAt"
         private const val UPDATED_AT_KEY = "updatedAt"
         private const val MAP_LINK_KEY = "mapLink"
-        private const val COMMENTS_COUNT_KEY = "commentsCount"
         private const val SAVED_COUNT_KEY = "savedCount"
 
         fun fromJSON(json: Map<String, Any>): Post {
@@ -72,7 +70,6 @@ data class Post(
             val createdAt = (json[CREATED_AT_KEY] as? Timestamp)?.toDate() ?: Date()
             val updatedAt = (json[UPDATED_AT_KEY] as? Timestamp)?.toDate() ?: Date()
             val mapLink = json[MAP_LINK_KEY] as? String ?: ""
-            val commentsCount = (json[COMMENTS_COUNT_KEY] as? Number)?.toInt() ?: 0
             val savedCount = (json[SAVED_COUNT_KEY] as? Number)?.toInt() ?: 0
 
             return Post(
@@ -87,7 +84,6 @@ data class Post(
                 createdAt = createdAt,
                 updatedAt = updatedAt,
                 mapLink = mapLink,
-                commentsCount = commentsCount,
                 savedCount = savedCount
             )
         }
@@ -117,7 +113,6 @@ data class Post(
                 CREATED_AT_KEY to Timestamp(createdAt),
                 UPDATED_AT_KEY to Timestamp(updatedAt),
                 MAP_LINK_KEY to mapLink,
-                COMMENTS_COUNT_KEY to commentsCount,
                 SAVED_COUNT_KEY to savedCount
             )
         }

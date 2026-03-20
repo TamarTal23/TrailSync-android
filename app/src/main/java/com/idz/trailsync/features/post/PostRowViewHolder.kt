@@ -1,8 +1,11 @@
 package com.idz.trailsync.features.post
 
 import android.util.Log
+import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 import com.idz.trailsync.R
 import com.idz.trailsync.databinding.PostListItemBinding
 import com.idz.trailsync.model.Post
@@ -28,6 +31,12 @@ class PostRowViewHolder(
             isSaved = !isSaved
             updateSaveButton()
         }
+
+        binding.postDeleteButton.setOnClickListener {
+            post?.let {
+                listener?.onDeleteClick(it)
+            }
+        }
     }
 
     fun bind(postWithComments: PostWithComments) {
@@ -40,6 +49,13 @@ class PostRowViewHolder(
 
         binding.saveCount.text = post.savedCount.toString()
         binding.commentCount.text = postWithComments.commentsCount.toString()
+
+        val currentUserId = Firebase.auth.currentUser?.uid
+        if (post.author == currentUserId) {
+            binding.postDeleteButton.visibility = View.VISIBLE
+        } else {
+            binding.postDeleteButton.visibility = View.GONE
+        }
 
         val firstPhotoUrl = post.photos.firstOrNull()
 

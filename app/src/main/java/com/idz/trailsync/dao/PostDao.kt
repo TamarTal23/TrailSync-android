@@ -21,7 +21,19 @@ interface PostDao {
     @Transaction
     @Query("SELECT * FROM Post WHERE author = :userId ORDER BY createdAt DESC")
     fun getPostsByAuthorWithComments(userId: String): LiveData<List<PostWithComments>>
-    
+
     @Query("SELECT * FROM Post WHERE id = :postId")
     fun getPostById(postId: String): Post?
+
+    @Query("DELETE FROM Post WHERE id = :postId")
+    fun deleteById(postId: String)
+
+    @Query("DELETE FROM Post")
+    fun deleteAll()
+
+    @Transaction
+    fun clearAndInsertAll(posts: List<Post>) {
+        deleteAll()
+        upsert(*posts.toTypedArray())
+    }
 }

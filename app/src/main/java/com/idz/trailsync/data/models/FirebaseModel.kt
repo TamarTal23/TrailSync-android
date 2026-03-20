@@ -12,6 +12,7 @@ import com.idz.trailsync.base.UserCallback
 import com.idz.trailsync.model.Comment
 import com.idz.trailsync.model.Post
 import com.idz.trailsync.model.User
+
 class FirebaseModel {
     private val database = Firebase.firestore
 
@@ -134,6 +135,13 @@ class FirebaseModel {
             .document(comment.postId)
             .collection(Comment.SUB_COLLECTION)
             .add(comment.json)
+            .addOnCompleteListener { task ->
+                callback(task.isSuccessful)
+            }
+    }
+
+    fun deletePost(postId: String, callback: BooleanCallback) {
+        database.collection(Constants.COLLECTIONS.POSTS).document(postId).delete()
             .addOnCompleteListener { task ->
                 callback(task.isSuccessful)
             }

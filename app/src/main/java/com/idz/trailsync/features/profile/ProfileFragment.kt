@@ -18,6 +18,7 @@ import com.idz.trailsync.features.post.OnPostClickListener
 import com.idz.trailsync.features.post.PostsAdapter
 import com.idz.trailsync.model.Post
 import com.idz.trailsync.model.User
+import com.idz.trailsync.utils.DialogUtils
 import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 
@@ -34,14 +35,10 @@ class ProfileFragment : Fragment() {
     ): View {
         _binding = FragmentProfileBinding.inflate(inflater, container, false)
         setupRecyclerView()
+        setupSwipeRefresh()
+        observeUserPosts()
         return binding.root
     }
-
-    override fun onResume() {
-        super.onResume()
-        refreshData()
-    }
-
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -50,31 +47,52 @@ class ProfileFragment : Fragment() {
             findNavController().navigate(R.id.editProfileFragment)
         }
 
-        binding.profileSwipeRefresh.setOnRefreshListener {
-            refreshData()
-        }
-
         val currentUserId = Firebase.auth.currentUser?.uid
         currentUserId?.let { uid ->
             viewModel.setUserId(uid)
             getUserData(uid)
         }
+    }
 
-        observeUserPosts()
+    override fun onResume() {
+        super.onResume()
+        refreshData()
     }
 
     private fun setupRecyclerView() {
         adapter = PostsAdapter()
         adapter?.listener = object : OnPostClickListener {
             override fun onPostClick(post: Post) {
-                val action =
-                    ProfileFragmentDirections.actionProfileFragmentToPostDetailsFragment(post)
+                val action = ProfileFragmentDirections.actionProfileFragmentToPostDetailsFragment(post)
                 findNavController().navigate(action)
+            }
+
+            override fun onDeleteClick(post: Post) {
+                DialogUtils.showDeletePostConfirmation(requireContext()) {
+                    deletePost(post)
+                }
             }
         }
         binding.userPostsRecyclerView.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = this@ProfileFragment.adapter
+        }
+    }
+
+    private fun setupSwipeRefresh() {
+        binding.profileSwipeRefresh.setOnRefreshListener {
+            refreshData()
+        }
+    }
+
+    private fun refreshData() {
+        binding.profileSwipeRefresh.isRefreshing = true
+        val currentUserId = Firebase.auth.currentUser?.uid
+        currentUserId?.let { uid ->
+            viewModel.refreshPosts()
+            getUserData(uid)
+        } ?: run {
+            binding.profileSwipeRefresh.isRefreshing = false
         }
     }
 
@@ -88,21 +106,20 @@ class ProfileFragment : Fragment() {
         }
     }
 
+    private fun deletePost(post: Post) {
+        viewModel.deletePost(post.id) { success ->
+            if (success) {
+                Toast.makeText(context, "Post deleted", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(context, "Failed to delete post", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
     private fun observeUserPosts() {
         viewModel.userPosts.observe(viewLifecycleOwner) { posts ->
             adapter?.posts = posts
             adapter?.notifyDataSetChanged()
-            binding.profileSwipeRefresh.isRefreshing = false
-        }
-    }
-
-    private fun refreshData() {
-        binding.profileSwipeRefresh.isRefreshing = true
-        val currentUserId = Firebase.auth.currentUser?.uid
-        currentUserId?.let { uid ->
-            viewModel.setUserId(uid)
-            viewModel.refreshPosts()
-        } ?: run {
             binding.profileSwipeRefresh.isRefreshing = false
         }
     }

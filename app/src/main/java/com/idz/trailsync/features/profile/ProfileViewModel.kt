@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.switchMap
+import com.idz.trailsync.base.BooleanCallback
 import com.idz.trailsync.data.repository.PostRepository
 import com.idz.trailsync.model.PostWithComments
 
@@ -21,6 +22,12 @@ class ProfileViewModel : ViewModel() {
     }
 
     fun setUserId(userId: String) {
-        _userId.value = userId
+        if (_userId.value != userId) {
+            _userId.value = userId
+        }
+    }
+
+    fun deletePost(postId: String, callback: BooleanCallback) {
+        PostRepository.shared.deletePost(postId, callback)
     }
 }
