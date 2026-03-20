@@ -5,6 +5,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import com.idz.trailsync.model.Comment
 
 @Dao
@@ -20,4 +21,19 @@ interface CommentDao {
 
     @Query("DELETE FROM Comment WHERE id IN (:ids)")
     fun deleteByIds(ids: List<String>)
+
+    @Transaction
+    fun syncCommentsForPost(postId: String, remoteComments: List<Comment>) {
+        val localIds = getCommentIdsForPost(postId)
+        val remoteIds = remoteComments.map { it.id }.toSet()
+        val idsToDelete = localIds.filter { it !in remoteIds }
+
+        if (idsToDelete.isNotEmpty()) {
+            deleteByIds(idsToDelete)
+        }
+        
+        if (remoteComments.isNotEmpty()) {
+            insertAll(*remoteComments.toTypedArray())
+        }
+    }
 }

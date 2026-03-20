@@ -36,7 +36,7 @@ class HomeFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        refreshData()
+        viewModel.refreshPosts()
     }
 
     private fun setupRecyclerView() {
@@ -62,13 +62,8 @@ class HomeFragment : Fragment() {
 
     private fun setupSwipeRefresh() {
         binding.swipeRefresh.setOnRefreshListener {
-            refreshData()
+            viewModel.refreshPosts()
         }
-    }
-
-    private fun refreshData() {
-        binding.swipeRefresh.isRefreshing = true
-        viewModel.refreshPosts()
     }
 
     private fun deletePost(post: Post) {

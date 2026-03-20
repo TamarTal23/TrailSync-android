@@ -56,14 +56,15 @@ class ProfileFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        refreshData()
+        viewModel.refreshPosts()
     }
 
     private fun setupRecyclerView() {
         adapter = PostsAdapter()
         adapter?.listener = object : OnPostClickListener {
             override fun onPostClick(post: Post) {
-                val action = ProfileFragmentDirections.actionProfileFragmentToPostDetailsFragment(post)
+                val action =
+                    ProfileFragmentDirections.actionProfileFragmentToPostDetailsFragment(post)
                 findNavController().navigate(action)
             }
 
@@ -81,18 +82,7 @@ class ProfileFragment : Fragment() {
 
     private fun setupSwipeRefresh() {
         binding.profileSwipeRefresh.setOnRefreshListener {
-            refreshData()
-        }
-    }
-
-    private fun refreshData() {
-        binding.profileSwipeRefresh.isRefreshing = true
-        val currentUserId = Firebase.auth.currentUser?.uid
-        currentUserId?.let { uid ->
             viewModel.refreshPosts()
-            getUserData(uid)
-        } ?: run {
-            binding.profileSwipeRefresh.isRefreshing = false
         }
     }
 
@@ -143,8 +133,6 @@ class ProfileFragment : Fragment() {
                 override fun onError(e: Exception?) {
                     binding.profileProgressBar.visibility = View.GONE
                     binding.profileImageView.setImageResource(R.drawable.user_icon_small)
-                    Toast.makeText(context, "Error loading profile image", Toast.LENGTH_SHORT)
-                        .show()
                 }
             })
     }
