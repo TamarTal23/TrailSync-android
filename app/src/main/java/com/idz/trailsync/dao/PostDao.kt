@@ -18,6 +18,9 @@ interface PostDao {
     @Query("SELECT * FROM Post WHERE author = :userId ORDER BY createdAt DESC")
     fun getPostsByAuthor(userId: String): List<Post>
 
+    @Query("SELECT * FROM Post WHERE id = :postId")
+    fun getById(postId: String): Post?
+
     @Query("DELETE FROM Post WHERE id = :postId")
     fun deleteById(postId: String)
 

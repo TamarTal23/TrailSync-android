@@ -8,13 +8,15 @@ import com.idz.trailsync.base.MyApplication
 import com.idz.trailsync.model.Converters
 import com.idz.trailsync.model.Post
 import com.idz.trailsync.model.Comment
+import com.idz.trailsync.model.SavedPost
 import com.idz.trailsync.model.User
 
-@Database(entities = [User::class, Comment:: class, Post::class ], version = 5)
+@Database(entities = [User::class, Comment:: class, Post::class, SavedPost::class], version = 6)
 @TypeConverters(Converters::class)
 abstract class AppLocalDbRepository: RoomDatabase(){
     abstract fun UserDao(): UserDao
     abstract fun PostDao(): PostDao
+    abstract fun SavedPostDao(): SavedPostDao
 }
 
 object AppLocalDB{
