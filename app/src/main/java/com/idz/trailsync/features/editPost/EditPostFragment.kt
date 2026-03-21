@@ -22,8 +22,6 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.libraries.places.api.model.Place
-import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
 import com.idz.trailsync.R
 import com.idz.trailsync.databinding.FragmentEditPostBinding
 import com.idz.trailsync.features.createPost.location.LocationAutocompleteController
@@ -40,25 +38,32 @@ class EditPostFragment : Fragment() {
     private val args: EditPostFragmentArgs by navArgs()
 
     private var currentDuration = 1
-    private val selectedPhotos = mutableListOf<Any>() // Can be String (URL) or Uri (Local)
+    private val selectedPhotos = mutableListOf<Any>()
     private lateinit var photosAdapter: PhotoAdapter<Any>
     private var selectedPlace: Place? = null
-    private lateinit var locationController: LocationAutocompleteController
+    private var locationController: LocationAutocompleteController? = null
 
-    private val pickMultipleMedia = registerForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(10)) { uris ->
-        if (uris.isNotEmpty()) {
-            val totalAllowed = 10
-            val remainingSlots = totalAllowed - selectedPhotos.size
-            val urisToAdd = uris.take(remainingSlots)
+    private val pickMultipleMedia =
+        registerForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(10)) { uris ->
+            if (uris.isNotEmpty()) {
+                val totalAllowed = 10
+                val remainingSlots = totalAllowed - selectedPhotos.size
+                val urisToAdd = uris.take(remainingSlots)
 
-            if (uris.size > remainingSlots) {
-                Toast.makeText(context, "Maximum $totalAllowed photos allowed", Toast.LENGTH_SHORT).show()
+                if (uris.size > remainingSlots) {
+                    context?.let {
+                        Toast.makeText(
+                            it,
+                            "Maximum $totalAllowed photos allowed",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+
+                selectedPhotos.addAll(urisToAdd)
+                updatePhotosUI()
             }
-
-            selectedPhotos.addAll(urisToAdd)
-            updatePhotosUI()
         }
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -70,10 +75,10 @@ class EditPostFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        
+
         val postToEdit = args.post
         viewModel.setPost(postToEdit)
-        
+
         setupUI()
         setupPhotosRecyclerView()
         setupLocationController()
@@ -107,7 +112,9 @@ class EditPostFragment : Fragment() {
 
         binding.addPhotosButton.setOnClickListener {
             if (selectedPhotos.size >= 10) {
-                Toast.makeText(context, "Maximum 10 photos reached", Toast.LENGTH_SHORT).show()
+                context?.let {
+                    Toast.makeText(it, "Maximum 10 photos reached", Toast.LENGTH_SHORT).show()
+                }
             } else {
                 pickMultipleMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
             }
@@ -121,12 +128,14 @@ class EditPostFragment : Fragment() {
     }
 
     private fun setupLocationController() {
-        locationController = LocationAutocompleteController(
-            requireContext(),
-            binding.locationSearchEditText,
-            binding.locationSuggestionsRecyclerView
-        ) { place ->
-            selectedPlace = place
+        context?.let { ctx ->
+            locationController = LocationAutocompleteController(
+                ctx,
+                binding.locationSearchEditText,
+                binding.locationSuggestionsRecyclerView
+            ) { place ->
+                selectedPlace = place
+            }
         }
     }
 
@@ -152,7 +161,7 @@ class EditPostFragment : Fragment() {
         currentDuration = post.numberOfDays
         binding.priceEditText.setText(post.price.toString())
         binding.descriptionEditText.setText(post.description)
-        
+
         selectedPhotos.clear()
         selectedPhotos.addAll(post.photos)
         updatePhotosUI()
@@ -161,7 +170,8 @@ class EditPostFragment : Fragment() {
     private fun updatePhotosUI() {
         photosAdapter.photos = selectedPhotos.toList()
         photosAdapter.notifyDataSetChanged()
-        binding.selectedPhotosRecyclerView.visibility = if (selectedPhotos.isEmpty()) View.GONE else View.VISIBLE
+        binding.selectedPhotosRecyclerView.visibility =
+            if (selectedPhotos.isEmpty()) View.GONE else View.VISIBLE
     }
 
     private fun updateDurationUI() {
@@ -174,13 +184,12 @@ class EditPostFragment : Fragment() {
     private fun observeViewModel() {
         viewModel.isUpdating.observe(viewLifecycleOwner) { isUpdating ->
             binding.updatePostButton.isEnabled = !isUpdating
-            // Could show a progress bar here
         }
     }
 
     private fun updatePost() {
         val originalPost = viewModel.post.value ?: return
-        
+
         val title = binding.tripTitleEditText.text.toString().trim()
         val mapLink = binding.googleMapsEditText.text.toString().trim()
         val description = binding.descriptionEditText.text.toString().trim()
@@ -205,7 +214,6 @@ class EditPostFragment : Fragment() {
             )
         } ?: originalPost.location
 
-        // Separate existing URLs and new local Uris
         val existingUrls = selectedPhotos.filterIsInstance<String>()
         val newLocalUris = selectedPhotos.filterIsInstance<Uri>()
         val newBitmaps = newLocalUris.mapNotNull { uriToBitmap(it) }
@@ -217,28 +225,34 @@ class EditPostFragment : Fragment() {
             numberOfDays = currentDuration,
             price = price,
             mapLink = mapLink,
-            photos = existingUrls, // Pass existing ones, repository will append new ones
+            photos = existingUrls,
             updatedAt = Date()
         )
 
         viewModel.updatePost(updatedPost, newBitmaps) { success ->
-            if (success) {
-                Toast.makeText(context, "Post updated successfully!", Toast.LENGTH_SHORT).show()
-                findNavController().popBackStack()
-            } else {
-                Toast.makeText(context, "Failed to update post", Toast.LENGTH_SHORT).show()
+            if (isAdded && activity != null) {
+                val ctx = context
+                if (ctx != null) {
+                    if (success) {
+                        Toast.makeText(ctx, "Post updated successfully!", Toast.LENGTH_SHORT).show()
+                        findNavController().popBackStack()
+                    } else {
+                        Toast.makeText(ctx, "Failed to update post", Toast.LENGTH_SHORT).show()
+                    }
+                }
             }
         }
     }
 
     private fun uriToBitmap(uri: Uri): Bitmap? {
         return try {
+            val ctx = context ?: return null
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                val source = ImageDecoder.createSource(requireContext().contentResolver, uri)
+                val source = ImageDecoder.createSource(ctx.contentResolver, uri)
                 ImageDecoder.decodeBitmap(source)
             } else {
                 @Suppress("DEPRECATION")
-                MediaStore.Images.Media.getBitmap(requireContext().contentResolver, uri)
+                MediaStore.Images.Media.getBitmap(ctx.contentResolver, uri)
             }
         } catch (e: Exception) {
             Log.d("EditPostFragment", "Error converting URI to bitmap: ${e.message}")
@@ -247,7 +261,6 @@ class EditPostFragment : Fragment() {
     }
 
     private fun validateInput(): Boolean {
-        // Validation logic similar to CreatePostFragment
         val title = binding.tripTitleEditText.text.toString().trim()
         val mapLink = binding.googleMapsEditText.text.toString().trim()
         var isValid = true
@@ -266,32 +279,40 @@ class EditPostFragment : Fragment() {
     }
 
     private fun resetErrors() {
-        val normalBg = ContextCompat.getDrawable(requireContext(), R.drawable.edit_text_background)
-        val normalTextColor = ContextCompat.getColor(requireContext(), R.color.black)
-        binding.tripTitleLabel.setTextColor(normalTextColor)
-        binding.tripTitleEditText.background = normalBg
-        binding.tripTitleError.visibility = View.GONE
-        binding.googleMapsLabel.setTextColor(normalTextColor)
-        binding.googleMapsContainer.background = normalBg
-        binding.googleMapsError.visibility = View.GONE
+        context?.let { ctx ->
+            val normalBg = ContextCompat.getDrawable(ctx, R.drawable.edit_text_background)
+            val normalTextColor = ContextCompat.getColor(ctx, R.color.black)
+            binding.tripTitleLabel.setTextColor(normalTextColor)
+            binding.tripTitleEditText.background = normalBg
+            binding.tripTitleError.visibility = View.GONE
+            binding.googleMapsLabel.setTextColor(normalTextColor)
+            binding.googleMapsContainer.background = normalBg
+            binding.googleMapsError.visibility = View.GONE
+        }
     }
 
     private fun showTripTitleError(error: String) {
-        val errorBg = ContextCompat.getDrawable(requireContext(), R.drawable.edit_text_error_background)
-        val errorColor = ContextCompat.getColor(requireContext(), R.color.error_red)
-        binding.tripTitleLabel.setTextColor(errorColor)
-        binding.tripTitleEditText.background = errorBg
-        binding.tripTitleError.text = error
-        binding.tripTitleError.visibility = View.VISIBLE
+        context?.let { ctx ->
+            val errorBg =
+                ContextCompat.getDrawable(ctx, R.drawable.edit_text_error_background)
+            val errorColor = ContextCompat.getColor(ctx, R.color.error_red)
+            binding.tripTitleLabel.setTextColor(errorColor)
+            binding.tripTitleEditText.background = errorBg
+            binding.tripTitleError.text = error
+            binding.tripTitleError.visibility = View.VISIBLE
+        }
     }
 
     private fun showGoogleMapsError(error: String) {
-        val errorBg = ContextCompat.getDrawable(requireContext(), R.drawable.edit_text_error_background)
-        val errorColor = ContextCompat.getColor(requireContext(), R.color.error_red)
-        binding.googleMapsLabel.setTextColor(errorColor)
-        binding.googleMapsContainer.background = errorBg
-        binding.googleMapsError.text = error
-        binding.googleMapsError.visibility = View.VISIBLE
+        context?.let { ctx ->
+            val errorBg =
+                ContextCompat.getDrawable(ctx, R.drawable.edit_text_error_background)
+            val errorColor = ContextCompat.getColor(ctx, R.color.error_red)
+            binding.googleMapsLabel.setTextColor(errorColor)
+            binding.googleMapsContainer.background = errorBg
+            binding.googleMapsError.text = error
+            binding.googleMapsError.visibility = View.VISIBLE
+        }
     }
 
     override fun onDestroyView() {

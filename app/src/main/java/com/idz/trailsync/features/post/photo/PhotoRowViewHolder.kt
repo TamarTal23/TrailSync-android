@@ -1,10 +1,10 @@
 package com.idz.trailsync.features.post.photo
 
-import android.R
 import android.net.Uri
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.idz.trailsync.R
 import com.idz.trailsync.databinding.PhotoItemBinding
 import com.squareup.picasso.Picasso
 
@@ -49,17 +49,33 @@ class PhotoRowViewHolder<T>(
             is String -> {
                 if (photo.startsWith("android.resource")) {
                     val resId = photo.substringAfterLast("/").toIntOrNull()
+                    binding.photoShimmer.stopShimmer()
+                    binding.photoShimmer.visibility = View.GONE
                     if (resId != null) {
                         binding.photoImage.setImageResource(resId)
                     }
                 } else {
+                    binding.photoShimmer.visibility = View.VISIBLE
+                    binding.photoShimmer.startShimmer()
                     Picasso.get()
                         .load(photo)
-                        .placeholder(R.drawable.ic_menu_gallery)
-                        .into(binding.photoImage)
+                        .into(binding.photoImage, object : com.squareup.picasso.Callback {
+                            override fun onSuccess() {
+                                binding.photoShimmer.stopShimmer()
+                                binding.photoShimmer.visibility = View.GONE
+                            }
+
+                            override fun onError(e: Exception?) {
+                                binding.photoShimmer.stopShimmer()
+                                binding.photoShimmer.visibility = View.GONE
+                                binding.photoImage.setImageResource(android.R.drawable.ic_menu_gallery)
+                            }
+                        })
                 }
             }
             is Uri -> {
+                binding.photoShimmer.stopShimmer()
+                binding.photoShimmer.visibility = View.GONE
                 binding.photoImage.setImageURI(photo)
             }
         }

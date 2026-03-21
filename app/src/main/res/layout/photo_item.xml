@@ -11,8 +11,19 @@
         android:id="@+id/photoImage"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scaleType="centerCrop"
-        android:src="@android:drawable/ic_menu_gallery" />
+        android:scaleType="centerCrop" />
+
+    <com.facebook.shimmer.ShimmerFrameLayout
+        android:id="@+id/photoShimmer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:shimmer_auto_start="true">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/gray_neutral" />
+    </com.facebook.shimmer.ShimmerFrameLayout>
 
     <ImageView
         android:id="@+id/removePhotoButton"

@@ -70,21 +70,28 @@ class PostRowViewHolder(
         if (!firstPhotoUrl.isNullOrBlank()) {
             if (firstPhotoUrl.startsWith("android.resource")) {
                 val resId = firstPhotoUrl.substringAfterLast("/").toIntOrNull()
-
+                binding.postImageShimmer.stopShimmer()
+                binding.postImageShimmer.visibility = View.GONE
                 if (resId != null) {
                     binding.postImage.setImageResource(resId)
                 }
             } else {
+                binding.postImageShimmer.visibility = View.VISIBLE
+                binding.postImageShimmer.startShimmer()
                 Picasso.get()
                     .load(firstPhotoUrl)
                     .fit()
                     .centerCrop()
                     .into(binding.postImage, object : com.squareup.picasso.Callback {
                         override fun onSuccess() {
+                            binding.postImageShimmer.stopShimmer()
+                            binding.postImageShimmer.visibility = View.GONE
                             Log.d("Picasso", "Successfully loaded image for: ${post.title}")
                         }
 
                         override fun onError(e: Exception?) {
+                            binding.postImageShimmer.stopShimmer()
+                            binding.postImageShimmer.visibility = View.GONE
                             Log.e(
                                 "Picasso",
                                 "Failed to load image for: ${post.title}. Error: ${e?.message}"
@@ -94,6 +101,8 @@ class PostRowViewHolder(
                     })
             }
         } else {
+            binding.postImageShimmer.stopShimmer()
+            binding.postImageShimmer.visibility = View.GONE
             binding.postImage.setImageResource(android.R.drawable.ic_menu_gallery)
         }
 

@@ -7,6 +7,18 @@
     app:cardCornerRadius="12dp"
     app:cardElevation="0dp">
 
+    <com.facebook.shimmer.ShimmerFrameLayout
+        android:id="@+id/selectedImageShimmer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:shimmer_auto_start="true">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/gray_neutral" />
+    </com.facebook.shimmer.ShimmerFrameLayout>
+
     <ImageView
         android:id="@+id/selectedImageView"
         android:layout_width="match_parent"

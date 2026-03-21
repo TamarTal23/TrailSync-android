@@ -15,6 +15,21 @@
         android:layout_height="wrap_content"
         android:paddingBottom="12dp">
 
+        <com.facebook.shimmer.ShimmerFrameLayout
+            android:id="@+id/post_image_shimmer"
+            android:layout_width="0dp"
+            android:layout_height="220dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:shimmer_auto_start="true">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/gray_neutral" />
+        </com.facebook.shimmer.ShimmerFrameLayout>
+
         <ImageView
             android:id="@+id/post_image"
             android:layout_width="0dp"
