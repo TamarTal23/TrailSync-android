@@ -35,6 +35,8 @@ class ProfileFragment : Fragment() {
     ): View {
         _binding = FragmentProfileBinding.inflate(inflater, container, false)
         setupRecyclerView()
+        setupSwipeRefresh()
+        observeUserPosts()
         return binding.root
     }
 
@@ -45,20 +47,24 @@ class ProfileFragment : Fragment() {
             findNavController().navigate(R.id.editProfileFragment)
         }
 
-        binding.profileSwipeRefresh.setOnRefreshListener {
-            refreshData()
+        val currentUserId = Firebase.auth.currentUser?.uid
+        currentUserId?.let { uid ->
+            viewModel.setUserId(uid)
+            getUserData(uid)
         }
+    }
 
-        getUserData()
-        observeUserPosts()
+    override fun onResume() {
+        super.onResume()
+        viewModel.refreshPosts()
     }
 
     private fun setupRecyclerView() {
-        binding.userPostsRecyclerView.layoutManager = LinearLayoutManager(context)
-        adapter = PostsAdapter(viewModel.userPosts.value)
+        adapter = PostsAdapter()
         adapter?.listener = object : OnPostClickListener {
             override fun onPostClick(post: Post) {
-                val action = ProfileFragmentDirections.actionProfileFragmentToPostDetailsFragment(post)
+                val action =
+                    ProfileFragmentDirections.actionProfileFragmentToPostDetailsFragment(post)
                 findNavController().navigate(action)
             }
 
@@ -68,11 +74,30 @@ class ProfileFragment : Fragment() {
                 }
             }
         }
-        binding.userPostsRecyclerView.adapter = adapter
+        binding.userPostsRecyclerView.apply {
+            layoutManager = LinearLayoutManager(context)
+            adapter = this@ProfileFragment.adapter
+        }
+    }
+
+    private fun setupSwipeRefresh() {
+        binding.profileSwipeRefresh.setOnRefreshListener {
+            viewModel.refreshPosts()
+        }
+    }
+
+    private fun getUserData(uid: String) {
+        UserRepository.shared.getUserById(uid) { user ->
+            _binding?.let { binding ->
+                userInfo = user
+                binding.profileNameTextView.text = user?.username
+                loadProfileImage(user?.profilePicture)
+            }
+        }
     }
 
     private fun deletePost(post: Post) {
-        viewModel.deletePost(post) { success ->
+        viewModel.deletePost(post.id) { success ->
             if (success) {
                 Toast.makeText(context, "Post deleted", Toast.LENGTH_SHORT).show()
             } else {
@@ -81,41 +106,10 @@ class ProfileFragment : Fragment() {
         }
     }
 
-    private fun getUserData() {
-        val currentUserId = Firebase.auth.currentUser?.uid
-
-        currentUserId?.let { uid ->
-            UserRepository.shared.getUserById(uid) { user ->
-                _binding?.let { binding ->
-                    userInfo = user
-                    binding.profileNameTextView.text = user?.username
-                    loadProfileImage(user?.profilePicture)
-                }
-            }
-        }
-    }
-
     private fun observeUserPosts() {
-        val currentUserId = Firebase.auth.currentUser?.uid
-
-        currentUserId?.let { uid ->
-            if (viewModel.userPosts.value == null) {
-                viewModel.refreshUserPosts(uid)
-            }
-
-            viewModel.userPosts.observe(viewLifecycleOwner) { posts ->
-                adapter?.posts = posts
-                adapter?.notifyDataSetChanged()
-                binding.profileSwipeRefresh.isRefreshing = false
-            }
-        }
-    }
-
-    private fun refreshData() {
-        val currentUserId = Firebase.auth.currentUser?.uid
-        currentUserId?.let { uid ->
-            viewModel.refreshUserPosts(uid)
-        } ?: run {
+        viewModel.userPosts.observe(viewLifecycleOwner) { posts ->
+            adapter?.posts = posts
+            adapter?.notifyDataSetChanged()
             binding.profileSwipeRefresh.isRefreshing = false
         }
     }
@@ -139,7 +133,6 @@ class ProfileFragment : Fragment() {
                 override fun onError(e: Exception?) {
                     binding.profileProgressBar.visibility = View.GONE
                     binding.profileImageView.setImageResource(R.drawable.user_icon_small)
-                    Toast.makeText(context, "Error loading profile image", Toast.LENGTH_SHORT).show()
                 }
             })
     }

@@ -13,6 +13,7 @@ import com.idz.trailsync.base.UsersCallback
 import com.idz.trailsync.base.Constants
 import com.idz.trailsync.base.PostsCallback
 import com.idz.trailsync.base.UserCallback
+import com.idz.trailsync.model.Comment
 import com.idz.trailsync.model.Post
 import com.idz.trailsync.model.SavedPost
 import com.idz.trailsync.model.User
@@ -132,6 +133,32 @@ class FirebaseModel {
 
     fun upsertPost(post: Post, callback: BooleanCallback) {
         database.collection(Constants.COLLECTIONS.POSTS).document(post.id).set(post.json)
+            .addOnCompleteListener { task ->
+                callback(task.isSuccessful)
+            }
+    }
+
+    fun getCommentsForPost(postId: String, callback: (List<Comment>) -> Unit) {
+        database.collection(Constants.COLLECTIONS.POSTS)
+            .document(postId)
+            .collection(Comment.SUB_COLLECTION)
+            .get()
+            .addOnSuccessListener { result ->
+                val comments = result.map { doc ->
+                    Comment.fromJSON(doc.data, postId, doc.id)
+                }
+                callback(comments)
+            }
+            .addOnFailureListener {
+                callback(listOf())
+            }
+    }
+
+    fun addComment(comment: Comment, callback: BooleanCallback) {
+        database.collection(Constants.COLLECTIONS.POSTS)
+            .document(comment.postId)
+            .collection(Comment.SUB_COLLECTION)
+            .add(comment.json)
             .addOnCompleteListener { task ->
                 callback(task.isSuccessful)
             }

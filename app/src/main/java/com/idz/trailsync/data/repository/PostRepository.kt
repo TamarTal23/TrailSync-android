@@ -3,11 +3,12 @@ package com.idz.trailsync.data.repository
 import android.graphics.Bitmap
 import android.os.Looper
 import androidx.core.os.HandlerCompat
+import androidx.lifecycle.LiveData
 import com.idz.trailsync.base.BooleanCallback
-import com.idz.trailsync.base.PostsCallback
 import com.idz.trailsync.data.models.FirebaseModel
 import com.idz.trailsync.data.models.FirebaseStorageModel
 import com.idz.trailsync.model.Post
+import com.idz.trailsync.model.PostWithComments
 import com.idz.trailsync.dao.AppLocalDB
 import com.idz.trailsync.dao.AppLocalDbRepository
 import java.util.concurrent.Executors
@@ -17,46 +18,48 @@ class PostRepository private constructor() {
     private val firebaseModel = FirebaseModel()
     private val firebaseStorageModel = FirebaseStorageModel()
     private val database: AppLocalDbRepository = AppLocalDB.database
+    private val mainHandler = HandlerCompat.createAsync(Looper.getMainLooper())
 
     companion object {
         val shared = PostRepository()
     }
 
-    fun getAllPosts(callback: PostsCallback) {
-        executor.execute {
-            val localPosts = database.PostDao().getAll()
-            HandlerCompat.createAsync(Looper.getMainLooper()).post {
-                callback(localPosts)
-            }
+    fun getAllPosts(): LiveData<List<PostWithComments>> {
+        return database.PostDao().getAllWithComments()
+    }
 
-            firebaseModel.getAllPosts { remotePosts ->
-                executor.execute {
-                    database.PostDao().clearAndInsertAll(remotePosts)
-                    
-                    val updatedLocalPosts = database.PostDao().getAll()
-                    HandlerCompat.createAsync(Looper.getMainLooper()).post {
-                        callback(updatedLocalPosts)
-                    }
+    fun refreshAllPosts() {
+        firebaseModel.getAllPosts { remotePosts ->
+            executor.execute {
+                val postDao = database.PostDao()
+                remotePosts.forEach { post ->
+                    postDao.upsert(post)
+                    refreshCommentsForPost(post.id)
                 }
             }
         }
     }
 
-    fun getPostsByAuthor(authorId: String, callback: PostsCallback) {
-        executor.execute {
-            val localPosts = database.PostDao().getPostsByAuthor(authorId)
-            HandlerCompat.createAsync(Looper.getMainLooper()).post {
-                callback(localPosts)
-            }
+    fun getPostsByAuthor(authorId: String): LiveData<List<PostWithComments>> {
+        return database.PostDao().getPostsByAuthorWithComments(authorId)
+    }
 
-            firebaseModel.getPostsByAuthor(authorId) { remotePosts ->
-                executor.execute {
-                    remotePosts.forEach { database.PostDao().upsert(it) }
-                    val updatedLocalPosts = database.PostDao().getPostsByAuthor(authorId)
-                    HandlerCompat.createAsync(Looper.getMainLooper()).post {
-                        callback(updatedLocalPosts)
-                    }
+    fun refreshPostsByAuthor(authorId: String) {
+        firebaseModel.getPostsByAuthor(authorId) { remotePosts ->
+            executor.execute {
+                val postDao = database.PostDao()
+                remotePosts.forEach { post ->
+                    postDao.upsert(post)
+                    refreshCommentsForPost(post.id)
                 }
+            }
+        }
+    }
+
+    fun refreshCommentsForPost(postId: String) {
+        firebaseModel.getCommentsForPost(postId) { remoteComments ->
+            executor.execute {
+                database.CommentDao().syncCommentsForPost(postId, remoteComments)
             }
         }
     }
@@ -64,38 +67,35 @@ class PostRepository private constructor() {
     fun upsertPost(post: Post, pictures: List<Bitmap>?, callback: BooleanCallback) {
         firebaseModel.upsertPost(post) { success ->
             if (!success) {
-                HandlerCompat.createAsync(Looper.getMainLooper()).post {
-                    callback(false)
-                }
+                mainHandler.post { callback(false) }
                 return@upsertPost
             }
 
             if (pictures != null && pictures.isNotEmpty()) {
                 firebaseStorageModel.uploadPostImages(pictures, post.id) { urls ->
                     val updatedPost = post.copy(photos = urls)
-
                     firebaseModel.upsertPost(updatedPost) { result ->
                         if (result) {
-                            upsertLocal(updatedPost, callback)
-                        } else {
-                            HandlerCompat.createAsync(Looper.getMainLooper()).post {
-                                callback(false)
+                            upsertLocal(updatedPost) {
+                                mainHandler.post { callback(true) }
                             }
+                        } else {
+                            mainHandler.post { callback(false) }
                         }
                     }
                 }
             } else {
-                upsertLocal(post, callback)
+                upsertLocal(post) {
+                    mainHandler.post { callback(true) }
+                }
             }
         }
     }
 
-    private fun upsertLocal(post: Post, callback: BooleanCallback) {
+    private fun upsertLocal(post: Post, onComplete: () -> Unit = {}) {
         executor.execute {
             database.PostDao().upsert(post)
-            HandlerCompat.createAsync(Looper.getMainLooper()).post {
-                callback(true)
-            }
+            onComplete()
         }
     }
 
@@ -105,13 +105,15 @@ class PostRepository private constructor() {
                 firebaseStorageModel.deletePostImages(postId) { storageSuccess ->
                     executor.execute {
                         database.PostDao().deleteById(postId)
-                        HandlerCompat.createAsync(Looper.getMainLooper()).post {
+                        mainHandler.post {
                             callback(true)
                         }
                     }
                 }
             } else {
-                callback(false)
+                mainHandler.post {
+                    callback(false)
+                }
             }
         }
     }
