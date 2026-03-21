@@ -73,10 +73,9 @@ class PostRepository private constructor() {
 
             if (pictures != null && pictures.isNotEmpty()) {
                 firebaseStorageModel.uploadPostImages(pictures, post.id) { urls ->
-                    // Correctly append new URLs to existing ones
                     val allPhotos = post.photos.toMutableList()
                     allPhotos.addAll(urls)
-                    
+
                     val updatedPost = post.copy(photos = allPhotos)
                     firebaseModel.upsertPost(updatedPost) { result ->
                         if (result) {
