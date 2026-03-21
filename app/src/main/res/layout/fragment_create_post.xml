@@ -16,7 +16,7 @@
             android:id="@+id/headerTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Share your trail"
+            android:text="Share Your Trail"
             android:textColor="@color/black"
             android:textSize="28sp"
             android:textStyle="bold"
@@ -355,16 +355,19 @@
                 app:cardBackgroundColor="@color/light_gray"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="0dp">
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:gravity="center"
                     android:orientation="vertical">
+
                     <ImageView
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:src="@android:drawable/ic_menu_gallery"
                         app:tint="@color/dark_neutral" />
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"

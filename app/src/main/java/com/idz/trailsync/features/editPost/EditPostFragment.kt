@@ -1,6 +1,7 @@
 package com.idz.trailsync.features.editPost
 
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
@@ -21,6 +22,7 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.google.android.libraries.places.api.model.Place
 import com.idz.trailsync.R
 import com.idz.trailsync.databinding.FragmentEditPostBinding
@@ -81,8 +83,8 @@ class EditPostFragment : Fragment() {
 
         setupUI()
         setupPhotosRecyclerView()
-        setupLocationController()
         populateData(postToEdit)
+        setupLocationController()
         observeViewModel()
     }
 
@@ -182,8 +184,24 @@ class EditPostFragment : Fragment() {
     }
 
     private fun observeViewModel() {
+        val loadingDrawable = CircularProgressDrawable(requireContext()).apply {
+            strokeWidth = 6f
+            centerRadius = 24f
+            setColorSchemeColors(Color.WHITE)
+            setBounds(0, 0, 100, 100)
+        }
+
         viewModel.isUpdating.observe(viewLifecycleOwner) { isUpdating ->
             binding.updatePostButton.isEnabled = !isUpdating
+            if (isUpdating) {
+                binding.updatePostButton.text = ""
+                binding.updatePostButton.icon = loadingDrawable
+                loadingDrawable.start()
+            } else {
+                loadingDrawable.stop()
+                binding.updatePostButton.icon = null
+                binding.updatePostButton.text = "Update Post"
+            }
         }
     }
 

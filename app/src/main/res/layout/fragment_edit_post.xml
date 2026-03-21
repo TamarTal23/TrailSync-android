@@ -16,7 +16,7 @@
             android:id="@+id/headerTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Edit your trail"
+            android:text="Edit Your Trail"
             android:textColor="@color/black"
             android:textSize="28sp"
             android:textStyle="bold"
@@ -205,7 +205,7 @@
             android:layout_marginTop="10dp"
             android:layout_marginEnd="10dp"
             android:background="@drawable/edit_text_background"
-            app:layout_constraintEnd_toStartOf="@+id/priceLabelContainer"
+            app:layout_constraintEnd_toStartOf="@+id/priceContainer"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/durationLabel">
 
@@ -266,14 +266,14 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <TextView
-            android:id="@+id/priceLabelContainer"
+            android:id="@+id/priceLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Price"
+            android:text="Estimated Price"
             android:textColor="@color/black"
             android:textSize="16sp"
             android:textStyle="bold"
-            app:layout_constraintStart_toEndOf="@id/durationContainer"
+            app:layout_constraintStart_toStartOf="@id/priceContainer"
             app:layout_constraintTop_toTopOf="@id/durationLabel" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -283,17 +283,20 @@
             android:layout_marginTop="10dp"
             android:background="@drawable/edit_text_background"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/durationContainer"
-            app:layout_constraintTop_toBottomOf="@id/priceLabelContainer">
+            app:layout_constraintStart_toEndOf="@+id/durationContainer"
+            app:layout_constraintTop_toBottomOf="@id/priceLabel">
 
             <EditText
                 android:id="@+id/priceEditText"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:layout_marginStart="10dp"
                 android:background="@android:color/transparent"
+                android:gravity="center_vertical"
                 android:hint="$ 0"
                 android:inputType="number"
-                android:paddingHorizontal="20dp"
+                android:paddingHorizontal="10dp"
+                android:textColor="@color/dark_neutral"
                 android:textSize="14sp" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -307,7 +310,7 @@
             android:textSize="16sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/durationContainer" />
+            app:layout_constraintTop_toBottomOf="@+id/durationContainer" />
 
         <EditText
             android:id="@+id/descriptionEditText"
@@ -316,7 +319,7 @@
             android:layout_marginTop="10dp"
             android:background="@drawable/edit_text_background"
             android:gravity="top"
-            android:hint="Describe your adventure..."
+            android:hint="Describe your trip.."
             android:inputType="textMultiLine"
             android:padding="20dp"
             android:textSize="14sp"
@@ -334,55 +337,78 @@
             android:textSize="16sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/descriptionEditText" />
+            app:layout_constraintTop_toBottomOf="@+id/descriptionEditText" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/selectedPhotosRecyclerView"
-            android:layout_width="0dp"
+        <LinearLayout
+            android:id="@+id/photosContainer"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:orientation="horizontal"
-            android:visibility="gone"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/photosLabel"
-            tools:layout_height="100dp" />
-
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/addPhotosButton"
-            android:layout_width="0dp"
-            android:layout_height="54dp"
-            android:layout_marginTop="10dp"
-            android:background="@drawable/edit_text_background"
-            android:drawableStart="@drawable/ic_camera"
-            android:drawablePadding="10dp"
             android:gravity="center_vertical"
-            android:paddingHorizontal="20dp"
-            android:text="Add Photos"
-            android:textAllCaps="false"
-            android:textColor="@color/dark_neutral"
-            android:textSize="14sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/selectedPhotosRecyclerView" />
+            android:orientation="horizontal"
+            app:layout_constraintTop_toBottomOf="@+id/photosLabel">
 
-        <androidx.appcompat.widget.AppCompatButton
+            <androidx.cardview.widget.CardView
+                android:id="@+id/addPhotosButton"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                app:cardBackgroundColor="@color/light_gray"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@android:drawable/ic_menu_gallery"
+                        app:tint="@color/dark_neutral" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Add Photos"
+                        android:textSize="10sp"
+                        android:textColor="@color/dark_neutral" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/selectedPhotosRecyclerView"
+                android:layout_width="0dp"
+                android:layout_height="80dp"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:listitem="@layout/selected_photo_item" />
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/updatePostButton"
             android:layout_width="0dp"
-            android:layout_height="54dp"
-            android:layout_marginTop="40dp"
+            android:layout_height="56dp"
+            android:layout_marginTop="32dp"
             android:layout_marginBottom="20dp"
-            android:background="@drawable/button_background"
-            android:text="Update Trip"
+            android:backgroundTint="@color/primary"
+            android:text="Update Post"
             android:textAllCaps="false"
             android:textColor="@color/white"
-            android:textSize="16sp"
+            android:textSize="18sp"
             android:textStyle="bold"
+            app:cornerRadius="28dp"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconSize="30dp"
+            app:iconTint="@color/white"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/addPhotosButton" />
+            app:layout_constraintTop_toBottomOf="@+id/photosContainer" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
 </androidx.core.widget.NestedScrollView>
