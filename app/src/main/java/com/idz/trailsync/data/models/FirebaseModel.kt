@@ -1,5 +1,6 @@
 package com.idz.trailsync.data.models
 
+import android.util.Log
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.DocumentReference
@@ -35,7 +36,6 @@ class FirebaseModel {
                 if (!snapshot.isEmpty) {
                     callback(snapshot.documents[0].reference)
                 } else {
-                    // Fallback to UID as document ID if no document with field id=uid exists
                     callback(database.collection(Constants.COLLECTIONS.USERS).document(uid))
                 }
             }
@@ -140,7 +140,30 @@ class FirebaseModel {
     fun deletePost(postId: String, callback: BooleanCallback) {
         database.collection(Constants.COLLECTIONS.POSTS).document(postId).delete()
             .addOnCompleteListener { task ->
-                callback(task.isSuccessful)
+                if (task.isSuccessful) {
+                    database.collectionGroup(Constants.COLLECTIONS.SAVED_POSTS)
+                        .whereEqualTo("postId", postId)
+                        .get()
+                        .addOnSuccessListener { snapshot ->
+                            if (!snapshot.isEmpty) {
+                                val batch = database.batch()
+                                for (doc in snapshot.documents) {
+                                    batch.delete(doc.reference)
+                                }
+                                batch.commit().addOnCompleteListener { cleanupTask ->
+                                    callback(cleanupTask.isSuccessful)
+                                }
+                            } else {
+                                callback(true)
+                            }
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("FirebaseModel", "Failed to cleanup saved posts: ${e.message}")
+                            callback(true)
+                        }
+                } else {
+                    callback(false)
+                }
             }
     }
 

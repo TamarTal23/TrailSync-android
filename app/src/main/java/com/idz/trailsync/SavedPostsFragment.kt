@@ -9,7 +9,6 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.idz.trailsync.databinding.FragmentSavedPostsBinding
 import com.idz.trailsync.features.post.OnPostClickListener
-import com.idz.trailsync.features.post.PostDetailsFragmentArgs
 import com.idz.trailsync.features.saved.SavedPostViewModel
 import com.idz.trailsync.features.saved.SavedPostsAdapter
 import com.idz.trailsync.model.Post
@@ -45,8 +44,15 @@ class SavedPostsFragment : Fragment() {
         binding.recyclerViewSavedPosts.adapter = adapter
 
         viewModel.savedPosts.observe(viewLifecycleOwner) { posts ->
-            adapter.posts = posts
-            adapter.notifyDataSetChanged()
+            if (posts.isNullOrEmpty()) {
+                binding.textNoSavedPosts.visibility = View.VISIBLE
+                binding.recyclerViewSavedPosts.visibility = View.GONE
+            } else {
+                binding.textNoSavedPosts.visibility = View.GONE
+                binding.recyclerViewSavedPosts.visibility = View.VISIBLE
+                adapter.posts = posts
+                adapter.notifyDataSetChanged()
+            }
         }
 
         viewModel.refreshSavedPosts()
