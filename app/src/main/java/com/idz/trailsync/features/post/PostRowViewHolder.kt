@@ -37,6 +37,12 @@ class PostRowViewHolder(
                 listener?.onDeleteClick(it)
             }
         }
+
+        binding.postEditButton.setOnClickListener {
+            post?.let {
+                listener?.onEditClick(it)
+            }
+        }
     }
 
     fun bind(postWithComments: PostWithComments) {
@@ -53,8 +59,10 @@ class PostRowViewHolder(
         val currentUserId = Firebase.auth.currentUser?.uid
         if (post.author == currentUserId) {
             binding.postDeleteButton.visibility = View.VISIBLE
+            binding.postEditButton.visibility = View.VISIBLE
         } else {
             binding.postDeleteButton.visibility = View.GONE
+            binding.postEditButton.visibility = View.GONE
         }
 
         val firstPhotoUrl = post.photos.firstOrNull()
@@ -77,7 +85,10 @@ class PostRowViewHolder(
                         }
 
                         override fun onError(e: Exception?) {
-                            Log.e("Picasso", "Failed to load image for: ${post.title}. Error: ${e?.message}")
+                            Log.e(
+                                "Picasso",
+                                "Failed to load image for: ${post.title}. Error: ${e?.message}"
+                            )
                             binding.postImage.setImageResource(android.R.drawable.ic_menu_gallery)
                         }
                     })
@@ -96,7 +107,12 @@ class PostRowViewHolder(
             binding.postSaveButton.setColorFilter(ContextCompat.getColor(context, R.color.orange))
         } else {
             binding.postSaveButton.setImageResource(R.drawable.ic_bookmark_outline)
-            binding.postSaveButton.setColorFilter(ContextCompat.getColor(context, R.color.dark_neutral))
+            binding.postSaveButton.setColorFilter(
+                ContextCompat.getColor(
+                    context,
+                    R.color.dark_neutral
+                )
+            )
         }
     }
 }

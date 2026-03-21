@@ -12,6 +12,9 @@
         <action
             android:id="@+id/action_profileFragment_to_postDetailsFragment"
             app:destination="@id/postDetailsFragment" />
+        <action
+            android:id="@+id/action_profileFragment_to_editPostFragment"
+            app:destination="@id/editPostFragment" />
     </fragment>
 
     <fragment
@@ -37,6 +40,9 @@
         <action
             android:id="@+id/action_homeFragment_to_postDetailsFragment"
             app:destination="@+id/postDetailsFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_editPostFragment"
+            app:destination="@id/editPostFragment" />
     </fragment>
 
     <fragment
@@ -59,6 +65,9 @@
         <argument
             android:name="post"
             app:argType="com.idz.trailsync.model.Post" />
+        <action
+            android:id="@+id/action_postDetailsFragment_to_editPostFragment"
+            app:destination="@id/editPostFragment" />
     </fragment>
 
     <fragment
@@ -66,5 +75,15 @@
         android:name="com.idz.trailsync.features.Register.RegisterFragment"
         android:label="Register"
         tools:layout="@layout/fragment_register" />
+
+    <fragment
+        android:id="@+id/editPostFragment"
+        android:name="com.idz.trailsync.features.editPost.EditPostFragment"
+        android:label="Edit Post"
+        tools:layout="@layout/fragment_edit_post">
+        <argument
+            android:name="post"
+            app:argType="com.idz.trailsync.model.Post" />
+    </fragment>
 
 </navigation>
