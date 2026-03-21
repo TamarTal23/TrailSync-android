@@ -1,6 +1,10 @@
 package com.idz.trailsync.data.models
 
+import android.util.Log
 import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
+import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.firestoreSettings
 import com.google.firebase.firestore.memoryCacheSettings
@@ -11,6 +15,7 @@ import com.idz.trailsync.base.PostsCallback
 import com.idz.trailsync.base.UserCallback
 import com.idz.trailsync.model.Comment
 import com.idz.trailsync.model.Post
+import com.idz.trailsync.model.SavedPost
 import com.idz.trailsync.model.User
 
 class FirebaseModel {
@@ -23,18 +28,34 @@ class FirebaseModel {
         database.firestoreSettings = setting
     }
 
+    private fun getUserDocument(uid: String, callback: (DocumentReference) -> Unit) {
+        database.collection(Constants.COLLECTIONS.USERS)
+            .whereEqualTo("id", uid)
+            .limit(1)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                if (!snapshot.isEmpty) {
+                    callback(snapshot.documents[0].reference)
+                } else {
+                    callback(database.collection(Constants.COLLECTIONS.USERS).document(uid))
+                }
+            }
+            .addOnFailureListener {
+                callback(database.collection(Constants.COLLECTIONS.USERS).document(uid))
+            }
+    }
+
     fun getAllUsers(callback: UsersCallback) {
         database.collection(Constants.COLLECTIONS.USERS).get()
             .addOnCompleteListener {
                 when (it.isSuccessful) {
                     true -> {
                         val users: MutableList<User> = mutableListOf()
-                        for (json in it.result) {
-                            users.add(User.fromJSON(json.data))
+                        for (doc in it.result) {
+                            users.add(User.fromJSON(doc.data))
                         }
                         callback(users)
                     }
-
                     false -> callback(listOf())
                 }
             }
@@ -85,13 +106,16 @@ class FirebaseModel {
     }
 
     fun getUserById(id: String, callback: UserCallback) {
-        database.collection(Constants.COLLECTIONS.USERS).document(id).get()
-            .addOnSuccessListener { document ->
-                if (document.exists()) {
-                    val user: User = User.fromJSON(document.data ?: mapOf())
-                    callback(user)
+        database.collection(Constants.COLLECTIONS.USERS).whereEqualTo("id", id).get()
+            .addOnSuccessListener { snapshot ->
+                if (!snapshot.isEmpty) {
+                    callback(User.fromJSON(snapshot.documents[0].data ?: mapOf()))
                 } else {
-                    callback(null)
+                    database.collection(Constants.COLLECTIONS.USERS).document(id).get()
+                        .addOnSuccessListener { doc ->
+                            if (doc.exists()) callback(User.fromJSON(doc.data ?: mapOf()))
+                            else callback(null)
+                        }
                 }
             }
             .addOnFailureListener {
@@ -100,12 +124,12 @@ class FirebaseModel {
     }
 
     fun upsertUser(user: User, callback: BooleanCallback) {
-        database.collection(Constants.COLLECTIONS.USERS).document(user.id).set(user.json)
-            .addOnCompleteListener { task ->
+        getUserDocument(user.id) { docRef ->
+            docRef.set(user.json).addOnCompleteListener { task ->
                 callback(task.isSuccessful)
             }
+        }
     }
-
 
     fun upsertPost(post: Post, callback: BooleanCallback) {
         database.collection(Constants.COLLECTIONS.POSTS).document(post.id).set(post.json)
@@ -143,7 +167,77 @@ class FirebaseModel {
     fun deletePost(postId: String, callback: BooleanCallback) {
         database.collection(Constants.COLLECTIONS.POSTS).document(postId).delete()
             .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    database.collectionGroup(Constants.COLLECTIONS.SAVED_POSTS)
+                        .whereEqualTo("postId", postId)
+                        .get()
+                        .addOnSuccessListener { snapshot ->
+                            if (!snapshot.isEmpty) {
+                                val batch = database.batch()
+                                for (doc in snapshot.documents) {
+                                    batch.delete(doc.reference)
+                                }
+                                batch.commit().addOnCompleteListener { cleanupTask ->
+                                    callback(cleanupTask.isSuccessful)
+                                }
+                            } else {
+                                callback(true)
+                            }
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("FirebaseModel", "Failed to cleanup saved posts: ${e.message}")
+                            callback(true)
+                        }
+                } else {
+                    callback(false)
+                }
+            }
+    }
+
+    fun savePost(userId: String, postId: String, callback: BooleanCallback) {
+        getUserDocument(userId) { userRef ->
+            val savedPost = SavedPost(postId = postId, userId = userId)
+            val postRef = database.collection(Constants.COLLECTIONS.POSTS).document(postId)
+            val savedPostRef = userRef.collection(Constants.COLLECTIONS.SAVED_POSTS).document(postId)
+
+            database.runTransaction { transaction ->
+                transaction.set(savedPostRef, savedPost.json)
+                transaction.update(postRef, "savedCount", FieldValue.increment(1))
+                null
+            }.addOnCompleteListener { task ->
                 callback(task.isSuccessful)
             }
+        }
+    }
+
+    fun unsavePost(userId: String, postId: String, callback: BooleanCallback) {
+        getUserDocument(userId) { userRef ->
+            val postRef = database.collection(Constants.COLLECTIONS.POSTS).document(postId)
+            val savedPostRef = userRef.collection(Constants.COLLECTIONS.SAVED_POSTS).document(postId)
+
+            database.runTransaction { transaction ->
+                transaction.delete(savedPostRef)
+                transaction.update(postRef, "savedCount", FieldValue.increment(-1))
+                null
+            }.addOnCompleteListener { task ->
+                callback(task.isSuccessful)
+            }
+        }
+    }
+
+    fun getSavedPostsForUser(userId: String, callback: (List<SavedPost>) -> Unit) {
+        getUserDocument(userId) { userRef ->
+            userRef.collection(Constants.COLLECTIONS.SAVED_POSTS).get()
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        val savedPosts = task.result.map {
+                            SavedPost.fromJSON(it.data, userId, it.id)
+                        }
+                        callback(savedPosts)
+                    } else {
+                        callback(listOf())
+                    }
+                }
+        }
     }
 }

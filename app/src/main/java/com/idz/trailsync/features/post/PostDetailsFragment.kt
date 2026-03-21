@@ -87,8 +87,6 @@ class PostDetailsFragment : Fragment() {
         viewModel.getCommentsForPost(postId).observe(viewLifecycleOwner) { comments ->
             commentAdapter.submitList(comments)
         }
-
-
     }
 
     private fun setupAddCommentSection(postId: String) {
@@ -106,30 +104,15 @@ class PostDetailsFragment : Fragment() {
 
                     currentBinding.addCommentLayout.commentInput.addTextChangedListener(object :
                         TextWatcher {
-                        override fun beforeTextChanged(
-                            s: CharSequence?,
-                            start: Int,
-                            count: Int,
-                            after: Int
-                        ) {
+                        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                            _binding?.addCommentLayout?.sendButton?.isEnabled = !s.isNullOrBlank()
                         }
-
-                        override fun onTextChanged(
-                            s: CharSequence?,
-                            start: Int,
-                            before: Int,
-                            count: Int
-                        ) {
-                            currentBinding.addCommentLayout.sendButton.isEnabled =
-                                !s.isNullOrBlank()
-                        }
-
                         override fun afterTextChanged(s: Editable?) {}
                     })
 
                     currentBinding.addCommentLayout.sendButton.setOnClickListener {
-                        val text =
-                            currentBinding.addCommentLayout.commentInput.text.toString().trim()
+                        val text = currentBinding.addCommentLayout.commentInput.text.toString().trim()
                         if (text.isNotEmpty()) {
                             val comment = Comment(
                                 id = UUID.randomUUID().toString(),
@@ -140,18 +123,12 @@ class PostDetailsFragment : Fragment() {
                                 postId = postId
                             )
                             viewModel.addComment(comment) { success ->
-                                if (_binding != null) {
+                                _binding?.let { safeBinding ->
                                     if (success) {
-                                        _binding?.addCommentLayout?.commentInput?.text?.clear()
+                                        safeBinding.addCommentLayout.commentInput.text?.clear()
                                         hideKeyboard()
                                     } else {
-                                        context?.let { ctx ->
-                                            Toast.makeText(
-                                                ctx,
-                                                "Failed to add comment",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                        }
+                                        Toast.makeText(requireContext(), "Failed to add comment", Toast.LENGTH_SHORT).show()
                                     }
                                 }
                             }
@@ -167,8 +144,7 @@ class PostDetailsFragment : Fragment() {
     private fun hideKeyboard() {
         val view = activity?.currentFocus
         if (view != null) {
-            val imm =
-                activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+            val imm = activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
             imm?.hideSoftInputFromWindow(view.windowToken, 0)
             view.clearFocus()
         }
@@ -206,19 +182,13 @@ class PostDetailsFragment : Fragment() {
                     _binding?.mapProgressBar?.visibility = View.GONE
                 }
 
-                override fun shouldOverrideUrlLoading(
-                    view: WebView?,
-                    request: WebResourceRequest?
-                ): Boolean {
-
+                override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
                     val url = request?.url?.toString() ?: return false
-
                     if (url.startsWith("http://") || url.startsWith("https://")) {
                         return !isGoogleMapsUrl(url)
                     }
 
                     val context = view?.context ?: return false
-
                     return try {
                         val intent = if (url.startsWith("intent://")) {
                             Intent.parseUri(url, Intent.URI_INTENT_SCHEME)
@@ -226,27 +196,26 @@ class PostDetailsFragment : Fragment() {
                             Intent(Intent.ACTION_VIEW, Uri.parse(url))
                         }
 
-                        val isMapIntent =
-                            intent.`package`?.contains("com.google.android.apps.maps") == true ||
+                        val isMapIntent = intent.`package`?.contains("com.google.android.apps.maps") == true ||
                                     intent.action?.contains("geo") == true ||
                                     intent.dataString?.let { isGoogleMapsUrl(it) } == true
 
                         if (isMapIntent && intent.resolveActivity(context.packageManager) != null) {
                             context.startActivity(intent)
                         }
-
                         true
                     } catch (e: Exception) {
                         false
                     }
                 }
             }
-
             loadUrl(mapLink)
         }
     }
 
     override fun onDestroyView() {
+        _binding?.mapWebView?.stopLoading()
+        _binding?.mapWebView?.destroy()
         super.onDestroyView()
         _binding = null
     }

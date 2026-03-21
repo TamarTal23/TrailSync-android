@@ -43,7 +43,11 @@
         android:id="@+id/savedPostsFragment"
         android:name="com.idz.trailsync.SavedPostsFragment"
         android:label="Saved Posts"
-        tools:layout="@layout/fragment_saved_posts" />
+        tools:layout="@layout/fragment_saved_posts">
+        <action
+            android:id="@+id/action_savedPostsFragment_to_postDetailsFragment"
+            app:destination="@id/postDetailsFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/editProfileFragment"
