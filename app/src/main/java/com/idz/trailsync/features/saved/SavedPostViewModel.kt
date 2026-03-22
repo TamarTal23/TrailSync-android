@@ -12,14 +12,14 @@ import com.idz.trailsync.model.Post
 
 class SavedPostViewModel : ViewModel() {
     private val _savedPostIds = MutableLiveData<List<String>>()
-    private val savedPosts = MediatorLiveData<List<Post>>()
-    val savedPosts: LiveData<List<Post>> = savedPosts
+    private val _savedPosts = MediatorLiveData<List<Post>>()
+    val savedPosts: LiveData<List<Post>> = _savedPosts
 
     init {
-        savedPosts.addSource(PostRepository.shared.getAllPosts()) { postsWithComments ->
+        _savedPosts.addSource(PostRepository.shared.getAllPosts()) { postsWithComments ->
             filterSavedPosts(postsWithComments.map { it.post }, _savedPostIds.value)
         }
-        savedPosts.addSource(_savedPostIds) { ids ->
+        _savedPosts.addSource(_savedPostIds) { ids ->
             val postsWithComments = PostRepository.shared.getAllPosts().value
             filterSavedPosts(postsWithComments?.map { it.post }, ids)
         }
@@ -27,9 +27,9 @@ class SavedPostViewModel : ViewModel() {
 
     private fun filterSavedPosts(allPosts: List<Post>?, ids: List<String>?) {
         if (allPosts != null && ids != null) {
-            savedPosts.value = allPosts.filter { it.id in ids }
+            _savedPosts.value = allPosts.filter { it.id in ids }
         } else if (ids?.isEmpty() == true) {
-            savedPosts.value = emptyList()
+            _savedPosts.value = emptyList()
         }
     }
 
