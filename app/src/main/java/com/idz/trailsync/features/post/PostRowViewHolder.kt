@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.idz.trailsync.R
+import com.idz.trailsync.data.repository.SavedPostRepository
 import com.idz.trailsync.databinding.PostListItemBinding
 import com.idz.trailsync.model.Post
 import com.idz.trailsync.model.PostWithComments
@@ -28,8 +29,39 @@ class PostRowViewHolder(
         }
 
         binding.postSaveButton.setOnClickListener {
+            val currentPost = post ?: return@setOnClickListener
+            val currentUserId = Firebase.auth.currentUser?.uid ?: return@setOnClickListener
+
             isSaved = !isSaved
+
+            val newSavedCount =
+                if (isSaved) currentPost.savedCount + 1 else (currentPost.savedCount - 1).coerceAtLeast(
+                    0
+                )
+            binding.saveCount.text = newSavedCount.toString()
             updateSaveButton()
+
+            if (!isSaved) {
+                SavedPostRepository.shared.unsavePost(currentUserId, currentPost.id) { success ->
+                    if (!success) {
+                        isSaved = true
+                        binding.saveCount.text = currentPost.savedCount.toString()
+                        updateSaveButton()
+                    } else {
+                        post = currentPost.copy(savedCount = newSavedCount)
+                    }
+                }
+            } else {
+                SavedPostRepository.shared.savePost(currentUserId, currentPost.id) { success ->
+                    if (!success) {
+                        isSaved = false
+                        binding.saveCount.text = currentPost.savedCount.toString()
+                        updateSaveButton()
+                    } else {
+                        post = currentPost.copy(savedCount = newSavedCount)
+                    }
+                }
+            }
         }
 
         binding.postDeleteButton.setOnClickListener {
@@ -65,6 +97,15 @@ class PostRowViewHolder(
             binding.postEditButton.visibility = View.GONE
         }
 
+        if (currentUserId != null) {
+            SavedPostRepository.shared.isPostSaved(currentUserId, post.id) { saved ->
+                if (this.post?.id == post.id) {
+                    isSaved = saved
+                    updateSaveButton()
+                }
+            }
+        }
+
         val firstPhotoUrl = post.photos.firstOrNull()
 
         if (!firstPhotoUrl.isNullOrBlank()) {
@@ -96,6 +137,7 @@ class PostRowViewHolder(
                                 "Picasso",
                                 "Failed to load image for: ${post.title}. Error: ${e?.message}"
                             )
+
                             binding.postImage.setImageResource(android.R.drawable.ic_menu_gallery)
                         }
                     })

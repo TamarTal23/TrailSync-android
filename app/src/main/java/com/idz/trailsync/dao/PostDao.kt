@@ -23,7 +23,7 @@ interface PostDao {
     fun getPostsByAuthorWithComments(userId: String): LiveData<List<PostWithComments>>
 
     @Query("SELECT * FROM Post WHERE id = :postId")
-    fun getPostById(postId: String): Post?
+    fun getById(postId: String): Post?
 
     @Query("DELETE FROM Post WHERE id = :postId")
     fun deleteById(postId: String)
