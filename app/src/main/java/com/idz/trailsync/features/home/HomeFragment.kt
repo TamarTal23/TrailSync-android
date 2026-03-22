@@ -28,10 +28,15 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         setupRecyclerView()
         setupSwipeRefresh()
+        setupFilters()
         observePosts()
-        return binding.root
     }
 
     override fun onResume() {
@@ -68,6 +73,25 @@ class HomeFragment : Fragment() {
     private fun setupSwipeRefresh() {
         binding.swipeRefresh.setOnRefreshListener {
             viewModel.refreshPosts()
+        }
+    }
+
+    private fun setupFilters() {
+        binding.btnApplyFilters.setOnClickListener {
+            val location = binding.locationFilterEditText.text.toString().trim().ifEmpty { null }
+            val maxPrice = binding.priceFilterEditText.text.toString().toIntOrNull()
+            val minDays = binding.minDaysFilterEditText.text.toString().toIntOrNull()
+            val maxDays = binding.maxDaysFilterEditText.text.toString().toIntOrNull()
+
+            viewModel.setFilters(maxPrice, minDays, maxDays, location)
+        }
+
+        binding.btnClearFilters.setOnClickListener {
+            binding.locationFilterEditText.text = null
+            binding.priceFilterEditText.text = null
+            binding.minDaysFilterEditText.text = null
+            binding.maxDaysFilterEditText.text = null
+            viewModel.clearFilters()
         }
     }
 

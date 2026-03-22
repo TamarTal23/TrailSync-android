@@ -28,6 +28,10 @@ class PostRepository private constructor() {
         return database.PostDao().getAllWithComments()
     }
 
+    fun getFilteredPosts(maxPrice: Int?, minDays: Int?, maxDays: Int?, location: String?): LiveData<List<PostWithComments>> {
+        return database.PostDao().getFilteredPosts(maxPrice, minDays, maxDays, location)
+    }
+
     fun refreshAllPosts() {
         firebaseModel.getAllPosts { remotePosts ->
             executor.execute {
