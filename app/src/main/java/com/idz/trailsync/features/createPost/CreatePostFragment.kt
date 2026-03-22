@@ -49,7 +49,9 @@ class CreatePostFragment : Fragment() {
             val urisToAdd = uris.take(remainingSlots)
 
             if (uris.size > remainingSlots) {
-                Toast.makeText(context, "You can only select up to $photosAmount photos", Toast.LENGTH_SHORT).show()
+                context?.let {
+                    Toast.makeText(it, "You can only select up to $photosAmount photos", Toast.LENGTH_SHORT).show()
+                }
             }
 
             selectedPhotos.addAll(urisToAdd)
@@ -101,7 +103,9 @@ class CreatePostFragment : Fragment() {
 
         binding.addPhotosButton.setOnClickListener {
             if (selectedPhotos.size >= 10) {
-                Toast.makeText(context, "Maximum 10 photos reached", Toast.LENGTH_SHORT).show()
+                context?.let {
+                    Toast.makeText(it, "Maximum 10 photos reached", Toast.LENGTH_SHORT).show()
+                }
             } else {
                 pickMultipleMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
             }
@@ -167,24 +171,29 @@ class CreatePostFragment : Fragment() {
         val bitmaps = selectedPhotos.mapNotNull { uriToBitmap(it) }
 
         PostRepository.Companion.shared.upsertPost(post, bitmaps) { success ->
-            if (success) {
-                Toast.makeText(context, "Post created successfully!", Toast.LENGTH_SHORT).show()
-                findNavController().popBackStack()
-            } else {
-                binding.createPostButton.isEnabled = true
-                Toast.makeText(context, "Failed to create post", Toast.LENGTH_SHORT).show()
+            if (isAdded) {
+                context?.let { ctx ->
+                    if (success) {
+                        Toast.makeText(ctx, "Post created successfully!", Toast.LENGTH_SHORT).show()
+                        findNavController().popBackStack()
+                    } else {
+                        _binding?.createPostButton?.isEnabled = true
+                        Toast.makeText(ctx, "Failed to create post", Toast.LENGTH_SHORT).show()
+                    }
+                }
             }
         }
     }
 
     private fun uriToBitmap(uri: Uri): Bitmap? {
         return try {
+            val ctx = context ?: return null
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                val source = ImageDecoder.createSource(requireContext().contentResolver, uri)
+                val source = ImageDecoder.createSource(ctx.contentResolver, uri)
                 ImageDecoder.decodeBitmap(source)
             } else {
                 @Suppress("DEPRECATION")
-                MediaStore.Images.Media.getBitmap(requireContext().contentResolver, uri)
+                MediaStore.Images.Media.getBitmap(ctx.contentResolver, uri)
             }
         } catch (e: Exception) {
             Log.d("CreatePostFragment", "Error converting URI to bitmap: ${e.message}")
@@ -242,7 +251,9 @@ class CreatePostFragment : Fragment() {
         }
 
         if (location.isEmpty()) {
-            Toast.makeText(context, "Location is required", Toast.LENGTH_SHORT).show()
+            context?.let {
+                Toast.makeText(it, "Location is required", Toast.LENGTH_SHORT).show()
+            }
             isValid = false
         }
 
@@ -250,8 +261,8 @@ class CreatePostFragment : Fragment() {
     }
 
     private fun resetErrors() {
-        val normalBg = ContextCompat.getDrawable(requireContext(), R.drawable.edit_text_background)
-        val normalTextColor = ContextCompat.getColor(requireContext(), R.color.black)
+        val normalBg = context?.let { ContextCompat.getDrawable(it, R.drawable.edit_text_background) }
+        val normalTextColor = context?.let { ContextCompat.getColor(it, R.color.black) } ?: 0
 
         binding.tripTitleLabel.setTextColor(normalTextColor)
         binding.tripTitleEditText.background = normalBg
@@ -263,8 +274,8 @@ class CreatePostFragment : Fragment() {
     }
 
     private fun showTripTitleError(error: String) {
-        val errorBg = ContextCompat.getDrawable(requireContext(), R.drawable.edit_text_error_background)
-        val errorColor = ContextCompat.getColor(requireContext(), R.color.error_red)
+        val errorBg = context?.let { ContextCompat.getDrawable(it, R.drawable.edit_text_error_background) }
+        val errorColor = context?.let { ContextCompat.getColor(it, R.color.error_red) } ?: 0
 
         binding.tripTitleLabel.setTextColor(errorColor)
         binding.tripTitleEditText.background = errorBg
@@ -273,8 +284,8 @@ class CreatePostFragment : Fragment() {
     }
 
     private fun showGoogleMapsError(error: String) {
-        val errorBg = ContextCompat.getDrawable(requireContext(), R.drawable.edit_text_error_background)
-        val errorColor = ContextCompat.getColor(requireContext(), R.color.error_red)
+        val errorBg = context?.let { ContextCompat.getDrawable(it, R.drawable.edit_text_error_background) }
+        val errorColor = context?.let { ContextCompat.getColor(it, R.color.error_red) } ?: 0
 
         binding.googleMapsLabel.setTextColor(errorColor)
         binding.googleMapsContainer.background = errorBg

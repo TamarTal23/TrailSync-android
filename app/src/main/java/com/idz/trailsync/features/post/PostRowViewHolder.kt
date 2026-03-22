@@ -31,10 +31,13 @@ class PostRowViewHolder(
         binding.postSaveButton.setOnClickListener {
             val currentPost = post ?: return@setOnClickListener
             val currentUserId = Firebase.auth.currentUser?.uid ?: return@setOnClickListener
-            
+
             isSaved = !isSaved
 
-            val newSavedCount = if (isSaved) currentPost.savedCount + 1 else (currentPost.savedCount - 1).coerceAtLeast(0)
+            val newSavedCount =
+                if (isSaved) currentPost.savedCount + 1 else (currentPost.savedCount - 1).coerceAtLeast(
+                    0
+                )
             binding.saveCount.text = newSavedCount.toString()
             updateSaveButton()
 
@@ -66,6 +69,12 @@ class PostRowViewHolder(
                 listener?.onDeleteClick(it)
             }
         }
+
+        binding.postEditButton.setOnClickListener {
+            post?.let {
+                listener?.onEditClick(it)
+            }
+        }
     }
 
     fun bind(postWithComments: PostWithComments) {
@@ -82,8 +91,10 @@ class PostRowViewHolder(
         val currentUserId = Firebase.auth.currentUser?.uid
         if (post.author == currentUserId) {
             binding.postDeleteButton.visibility = View.VISIBLE
+            binding.postEditButton.visibility = View.VISIBLE
         } else {
             binding.postDeleteButton.visibility = View.GONE
+            binding.postEditButton.visibility = View.GONE
         }
 
         if (currentUserId != null) {
@@ -100,27 +111,40 @@ class PostRowViewHolder(
         if (!firstPhotoUrl.isNullOrBlank()) {
             if (firstPhotoUrl.startsWith("android.resource")) {
                 val resId = firstPhotoUrl.substringAfterLast("/").toIntOrNull()
-
+                binding.postImageShimmer.stopShimmer()
+                binding.postImageShimmer.visibility = View.GONE
                 if (resId != null) {
                     binding.postImage.setImageResource(resId)
                 }
             } else {
+                binding.postImageShimmer.visibility = View.VISIBLE
+                binding.postImageShimmer.startShimmer()
                 Picasso.get()
                     .load(firstPhotoUrl)
                     .fit()
                     .centerCrop()
                     .into(binding.postImage, object : com.squareup.picasso.Callback {
                         override fun onSuccess() {
+                            binding.postImageShimmer.stopShimmer()
+                            binding.postImageShimmer.visibility = View.GONE
                             Log.d("Picasso", "Successfully loaded image for: ${post.title}")
                         }
 
                         override fun onError(e: Exception?) {
-                            //TODO: CHANGE TO TAMAR SKELETON
+                            binding.postImageShimmer.stopShimmer()
+                            binding.postImageShimmer.visibility = View.GONE
+                            Log.e(
+                                "Picasso",
+                                "Failed to load image for: ${post.title}. Error: ${e?.message}"
+                            )
+
                             binding.postImage.setImageResource(android.R.drawable.ic_menu_gallery)
                         }
                     })
             }
         } else {
+            binding.postImageShimmer.stopShimmer()
+            binding.postImageShimmer.visibility = View.GONE
             binding.postImage.setImageResource(android.R.drawable.ic_menu_gallery)
         }
 
@@ -134,7 +158,12 @@ class PostRowViewHolder(
             binding.postSaveButton.setColorFilter(ContextCompat.getColor(context, R.color.orange))
         } else {
             binding.postSaveButton.setImageResource(R.drawable.ic_bookmark_outline)
-            binding.postSaveButton.setColorFilter(ContextCompat.getColor(context, R.color.dark_neutral))
+            binding.postSaveButton.setColorFilter(
+                ContextCompat.getColor(
+                    context,
+                    R.color.dark_neutral
+                )
+            )
         }
     }
 }

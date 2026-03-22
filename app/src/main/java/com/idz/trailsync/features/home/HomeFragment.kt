@@ -51,6 +51,11 @@ class HomeFragment : Fragment() {
                     deletePost(post)
                 }
             }
+
+            override fun onEditClick(post: Post) {
+                val action = HomeFragmentDirections.actionHomeFragmentToEditPostFragment(post)
+                findNavController().navigate(action)
+            }
         }
 
         binding.recyclerView.apply {

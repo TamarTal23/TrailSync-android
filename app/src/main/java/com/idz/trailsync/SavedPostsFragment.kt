@@ -32,12 +32,16 @@ class SavedPostsFragment : Fragment() {
 
         adapter = SavedPostsAdapter(null, object : OnPostClickListener {
             override fun onPostClick(post: Post) {
-                val action = SavedPostsFragmentDirections.actionSavedPostsFragmentToPostDetailsFragment(post)
+                val action =
+                    SavedPostsFragmentDirections.actionSavedPostsFragmentToPostDetailsFragment(post)
                 findNavController().navigate(action)
             }
 
             override fun onDeleteClick(post: Post) {
                 viewModel.refreshSavedPosts()
+            }
+
+            override fun onEditClick(post: Post) {
             }
         })
 

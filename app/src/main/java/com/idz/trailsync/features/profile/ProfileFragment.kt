@@ -73,6 +73,11 @@ class ProfileFragment : Fragment() {
                     deletePost(post)
                 }
             }
+
+            override fun onEditClick(post: Post) {
+                val action = ProfileFragmentDirections.actionProfileFragmentToEditPostFragment(post)
+                findNavController().navigate(action)
+            }
         }
         binding.userPostsRecyclerView.apply {
             layoutManager = LinearLayoutManager(context)

@@ -81,4 +81,5 @@ dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
     implementation(libs.google.maps.places)
     implementation("com.squareup.picasso:picasso:2.8")
+    implementation(libs.shimmer)
 }

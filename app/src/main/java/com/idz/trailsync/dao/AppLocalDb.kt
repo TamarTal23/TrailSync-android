@@ -11,7 +11,7 @@ import com.idz.trailsync.model.Comment
 import com.idz.trailsync.model.SavedPost
 import com.idz.trailsync.model.User
 
-@Database(entities = [User::class, Comment:: class, Post::class, SavedPost::class], version = 8)
+@Database(entities = [User::class, Comment:: class, Post::class, SavedPost::class], version = 9)
 @TypeConverters(Converters::class)
 abstract class AppLocalDbRepository: RoomDatabase(){
     abstract fun UserDao(): UserDao
