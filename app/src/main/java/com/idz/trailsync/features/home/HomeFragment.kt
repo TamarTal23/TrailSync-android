@@ -10,6 +10,7 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.idz.trailsync.databinding.FragmentHomeBinding
+import com.idz.trailsync.features.createPost.location.LocationAutocompleteController
 import com.idz.trailsync.features.post.OnPostClickListener
 import com.idz.trailsync.features.post.PostsAdapter
 import com.idz.trailsync.model.Post
@@ -22,6 +23,7 @@ class HomeFragment : Fragment() {
 
     private val viewModel: HomeViewModel by viewModels()
     private var adapter: PostsAdapter? = null
+    private var locationController: LocationAutocompleteController? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -36,6 +38,7 @@ class HomeFragment : Fragment() {
         setupRecyclerView()
         setupSwipeRefresh()
         setupFilters()
+        setupLocationAutocomplete()
         observePosts()
     }
 
@@ -73,6 +76,17 @@ class HomeFragment : Fragment() {
     private fun setupSwipeRefresh() {
         binding.swipeRefresh.setOnRefreshListener {
             viewModel.refreshPosts()
+        }
+    }
+
+    private fun setupLocationAutocomplete() {
+        locationController = LocationAutocompleteController(
+            requireContext(),
+            binding.locationFilterEditText,
+            binding.locationSuggestionsRecyclerView
+        ) { place ->
+            // We only need to store the selected place if needed, 
+            // the controller already updates the EditText and hides the menu.
         }
     }
 

@@ -5,6 +5,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -25,6 +26,7 @@ class LocationAutocompleteController(
     private val placesClient: PlacesClient = Places.createClient(context)
     private val suggestionsAdapter: LocationSuggestionsAdapter
     private var isSelectingFromSuggestions = false
+    private var lastQuery: String = ""
 
     init {
         suggestionsAdapter = LocationSuggestionsAdapter { prediction ->
@@ -37,6 +39,13 @@ class LocationAutocompleteController(
         }
 
         setupSearchEditText()
+        
+        // Hide suggestions when focus is lost
+        searchEditText.setOnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) {
+                suggestionsRecyclerView.visibility = View.GONE
+            }
+        }
     }
 
     private fun setupSearchEditText() {
@@ -45,10 +54,10 @@ class LocationAutocompleteController(
             override fun onTextChanged(sequence: CharSequence?, start: Int, before: Int, count: Int) {}
             override fun afterTextChanged(sequence: Editable?) {
                 if (isSelectingFromSuggestions) {
-                    isSelectingFromSuggestions = false
                     return
                 }
                 val query = sequence?.toString() ?: ""
+                lastQuery = query
 
                 if (query.length >= 3) {
                     fetchAutocompletePredictions(query)
@@ -66,13 +75,15 @@ class LocationAutocompleteController(
 
         placesClient.findAutocompletePredictions(request)
             .addOnSuccessListener { response ->
-                val predictions = response.autocompletePredictions
-                Log.d("MAPS_API", "Found ${predictions.size} predictions")
-                if (predictions.isNotEmpty()) {
-                    suggestionsAdapter.setSuggestions(predictions)
-                    suggestionsRecyclerView.visibility = View.VISIBLE
-                } else {
-                    suggestionsRecyclerView.visibility = View.GONE
+                // Ensure we only show results for the latest query and not if we just selected something
+                if (query == lastQuery && !isSelectingFromSuggestions && searchEditText.hasFocus()) {
+                    val predictions = response.autocompletePredictions
+                    if (predictions.isNotEmpty()) {
+                        suggestionsAdapter.setSuggestions(predictions)
+                        suggestionsRecyclerView.visibility = View.VISIBLE
+                    } else {
+                        suggestionsRecyclerView.visibility = View.GONE
+                    }
                 }
             }
             .addOnFailureListener { exception ->
@@ -83,8 +94,15 @@ class LocationAutocompleteController(
 
     private fun selectSuggestion(prediction: AutocompletePrediction) {
         isSelectingFromSuggestions = true
-        searchEditText.setText(prediction.getPrimaryText(null))
+        val primaryText = prediction.getPrimaryText(null).toString()
+        lastQuery = primaryText
+        
+        searchEditText.setText(primaryText)
+        searchEditText.setSelection(searchEditText.text.length)
         suggestionsRecyclerView.visibility = View.GONE
+        
+        hideKeyboard()
+        searchEditText.clearFocus()
 
         val placeFields = listOf(
             Place.Field.ID,
@@ -96,12 +114,18 @@ class LocationAutocompleteController(
 
         placesClient.fetchPlace(request)
             .addOnSuccessListener { response ->
-                Log.d("MAPS_API", "Place fetched: ${response.place.name}")
+                isSelectingFromSuggestions = false
                 onPlaceSelected(response.place)
             }
             .addOnFailureListener { exception ->
+                isSelectingFromSuggestions = false
                 Log.e("MAPS_API", "Fetch place failed: ${exception.message}")
                 Toast.makeText(context, "Failed to get location details", Toast.LENGTH_SHORT).show()
             }
+    }
+
+    private fun hideKeyboard() {
+        val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+        imm?.hideSoftInputFromWindow(searchEditText.windowToken, 0)
     }
 }

@@ -18,25 +18,44 @@
             android:layout_height="wrap_content"
             android:padding="16dp">
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/locationFilterLayout"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/locationContainer"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:hint="Location"
-                app:endIconMode="clear_text"
+                android:layout_height="54dp"
+                android:background="@drawable/edit_text_background"
                 app:layout_constraintEnd_toStartOf="@+id/priceFilterLayout"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:startIconDrawable="@drawable/ic_location_outline">
+                app:layout_constraintTop_toTopOf="parent">
 
-                <com.google.android.material.textfield.TextInputEditText
+                <ImageView
+                    android:id="@+id/locationIcon"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginStart="16dp"
+                    android:src="@drawable/ic_location_outline"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:tint="@color/dark_neutral" />
+
+                <EditText
                     android:id="@+id/locationFilterEditText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="16dp"
+                    android:background="@android:color/transparent"
+                    android:hint="Search location"
                     android:inputType="text"
-                    android:padding="12dp" />
-            </com.google.android.material.textfield.TextInputLayout>
+                    android:maxLines="1"
+                    android:paddingHorizontal="4dp"
+                    android:textSize="14sp"
+                    android:textColor="@color/black"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/locationIcon"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/priceFilterLayout"
@@ -46,8 +65,12 @@
                 android:layout_marginStart="8dp"
                 android:hint="Max $"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@id/locationFilterLayout"
-                app:layout_constraintTop_toTopOf="parent">
+                app:layout_constraintStart_toEndOf="@id/locationContainer"
+                app:layout_constraintTop_toTopOf="parent"
+                app:boxCornerRadiusBottomEnd="30dp"
+                app:boxCornerRadiusBottomStart="30dp"
+                app:boxCornerRadiusTopEnd="30dp"
+                app:boxCornerRadiusTopStart="30dp">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/priceFilterEditText"
@@ -57,13 +80,25 @@
                     android:padding="12dp" />
             </com.google.android.material.textfield.TextInputLayout>
 
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/locationSuggestionsRecyclerView"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:background="@drawable/edit_text_background"
+                android:elevation="4dp"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="@id/locationContainer"
+                app:layout_constraintStart_toStartOf="@id/locationContainer"
+                app:layout_constraintTop_toBottomOf="@id/locationContainer" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="16dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                app:layout_constraintTop_toBottomOf="@id/locationFilterLayout">
+                app:layout_constraintTop_toBottomOf="@id/locationContainer">
 
                 <TextView
                     android:layout_width="wrap_content"
