@@ -115,7 +115,7 @@ class PostRowViewHolder(
                         }
 
                         override fun onError(e: Exception?) {
-                            Log.e("Picasso", "Failed to load image for: ${post.title}. Error: ${e?.message}")
+                            //TODO: CHANGE TO TAMAR SKELETON
                             binding.postImage.setImageResource(android.R.drawable.ic_menu_gallery)
                         }
                     })
