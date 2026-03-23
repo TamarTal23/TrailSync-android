@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -7,6 +9,12 @@ plugins {
     alias(libs.plugins.google.services)
     alias(libs.plugins.navigation.safeargs)
     alias(libs.plugins.secrets.gradle.plugin)
+}
+
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(localPropertiesFile.inputStream())
 }
 
 android {
@@ -21,6 +29,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        
+        buildConfigField("String", "GEMINI_API_KEY", "\"${localProperties.getProperty("GEMINI_API_KEY") ?: ""}\"")
+        buildConfigField("String", "GEMINI_MODEL", "\"${localProperties.getProperty("GEMINI_MODEL") ?: ""}\"")
     }
 
     buildTypes {
@@ -82,4 +93,6 @@ dependencies {
     implementation(libs.google.maps.places)
     implementation("com.squareup.picasso:picasso:2.8")
     implementation(libs.shimmer)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.gson)
 }

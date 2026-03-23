@@ -19,7 +19,7 @@
 
     <fragment
         android:id="@+id/chatbotFragment"
-        android:name="com.idz.trailsync.ChatbotFragment"
+        android:name="com.idz.trailsync.features.chatbot.ChatbotFragment"
         android:label="Chatbot" />
 
     <fragment
