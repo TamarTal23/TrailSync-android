@@ -5,7 +5,6 @@ import android.os.Looper
 import androidx.core.os.HandlerCompat
 import com.idz.trailsync.base.BooleanCallback
 import com.idz.trailsync.base.UserCallback
-import com.idz.trailsync.base.UsersCallback
 import com.idz.trailsync.dao.AppLocalDB
 import com.idz.trailsync.dao.AppLocalDbRepository
 import com.idz.trailsync.data.models.FirebaseModel
@@ -21,42 +20,6 @@ class UserRepository private constructor() {
 
     companion object {
         val shared = UserRepository()
-    }
-
-    fun getAllUsers(callback: UsersCallback) {
-        executor.execute {
-            val localUsers = database.UserDao().getAll()
-            HandlerCompat.createAsync(Looper.getMainLooper()).post {
-                callback(localUsers)
-            }
-            firebaseModel.getAllUsers { remoteUsers ->
-                executor.execute {
-                    remoteUsers.forEach { database.UserDao().create(it) }
-                    HandlerCompat.createAsync(Looper.getMainLooper()).post {
-                        callback(remoteUsers)
-                    }
-                }
-            }
-        }
-    }
-
-    fun getUserByEmail(email: String?, callback: UserCallback) {
-        executor.execute {
-            val localUser = database.UserDao().getByEmail(email)
-            HandlerCompat.createAsync(Looper.getMainLooper()).post {
-                callback(localUser)
-            }
-            firebaseModel.getUserByEmail(email ?: "") { remoteUser ->
-                if (remoteUser != null) {
-                    executor.execute {
-                        database.UserDao().create(remoteUser)
-                        HandlerCompat.createAsync(Looper.getMainLooper()).post {
-                            callback(remoteUser)
-                        }
-                    }
-                }
-            }
-        }
     }
 
     fun getUserById(id: String, callback: UserCallback) {

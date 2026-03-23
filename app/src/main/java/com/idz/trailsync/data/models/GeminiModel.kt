@@ -2,7 +2,7 @@ package com.idz.trailsync.data.models
 
 import android.util.Log
 import com.idz.trailsync.BuildConfig
-import com.idz.trailsync.model.Message
+import com.idz.trailsync.model.ChatMessage
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -45,7 +45,7 @@ class GeminiModel {
     private val apiKey = BuildConfig.GEMINI_API_KEY
     private val modelName = BuildConfig.GEMINI_MODEL
 
-    fun fetchGeminiResponse(messageHistory: List<Message>, callback: (String?) -> Unit) {
+    fun fetchGeminiResponse(messageHistory: List<ChatMessage>, callback: (String?) -> Unit) {
         val contents = messageHistory
             .filter { it.role != "system" } 
             .map { msg ->

@@ -1,6 +1,6 @@
 package com.idz.trailsync.model
 
-data class Message(
+data class ChatMessage(
     val content: String,
     val role: String
 )
