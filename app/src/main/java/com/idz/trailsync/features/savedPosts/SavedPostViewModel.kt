@@ -1,4 +1,4 @@
-package com.idz.trailsync.features.saved
+package com.idz.trailsync.features.savedPosts
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData

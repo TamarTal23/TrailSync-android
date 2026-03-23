@@ -17,7 +17,7 @@ class ChatbotViewModel : ViewModel() {
 
     init {
         if (_messages.value?.isEmpty() == true) {
-            _messages.value?.add(Message("You are an assistant for travel planning and route generation. Only respond with related information about destinations, itineraries, and travel tips. Keep responses concise and under 300 words.", "system"))
+            _messages.value?.add(Message("You are an assistant for travel planning and route generation. Only respond with related information about destinations, itineraries, and travel tips. Keep responses concise and under 350 words.Use bullet points when helpful.", "system"))
             addMessage("Hi, let me help you plan your next trip!", "model")
         }
     }

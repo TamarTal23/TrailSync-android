@@ -1,4 +1,4 @@
-package com.idz.trailsync.features.saved
+package com.idz.trailsync.features.savedPosts
 
 import android.util.Log
 import androidx.recyclerview.widget.RecyclerView
