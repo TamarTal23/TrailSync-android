@@ -9,8 +9,8 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.idz.trailsync.databinding.FragmentSavedPostsBinding
 import com.idz.trailsync.features.post.OnPostClickListener
-import com.idz.trailsync.features.saved.SavedPostViewModel
-import com.idz.trailsync.features.saved.SavedPostsAdapter
+import com.idz.trailsync.features.savedPosts.SavedPostViewModel
+import com.idz.trailsync.features.savedPosts.SavedPostsAdapter
 import com.idz.trailsync.model.Post
 
 class SavedPostsFragment : Fragment() {
