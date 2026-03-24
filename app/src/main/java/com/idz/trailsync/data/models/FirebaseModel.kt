@@ -89,21 +89,6 @@ class FirebaseModel {
             }
     }
 
-    fun getUserByEmail(email: String, callback: UserCallback) {
-        database.collection(Constants.COLLECTIONS.USERS).whereEqualTo("email", email).get()
-            .addOnSuccessListener { documents ->
-                if (!documents.isEmpty) {
-                    val user: User = User.fromJSON(documents.documents[0].data ?: mapOf())
-                    callback(user)
-                } else {
-                    callback(null)
-                }
-            }
-            .addOnFailureListener {
-                callback(null)
-            }
-    }
-
     fun getUserById(id: String, callback: UserCallback) {
         database.collection(Constants.COLLECTIONS.USERS).whereEqualTo("id", id).get()
             .addOnSuccessListener { snapshot ->
@@ -164,32 +149,45 @@ class FirebaseModel {
     }
 
     fun deletePost(postId: String, callback: BooleanCallback) {
-        database.collection(Constants.COLLECTIONS.POSTS).document(postId).delete()
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    database.collectionGroup(Constants.COLLECTIONS.SAVED_POSTS)
-                        .whereEqualTo("postId", postId)
-                        .get()
-                        .addOnSuccessListener { snapshot ->
-                            if (!snapshot.isEmpty) {
-                                val batch = database.batch()
-                                for (doc in snapshot.documents) {
-                                    batch.delete(doc.reference)
+        val postRef = database.collection(Constants.COLLECTIONS.POSTS).document(postId)
+        
+        postRef.collection(Comment.SUB_COLLECTION).get()
+            .addOnSuccessListener { commentSnapshot ->
+                val batch = database.batch()
+                for (commentDoc in commentSnapshot.documents) {
+                    batch.delete(commentDoc.reference)
+                }
+                batch.delete(postRef)
+                
+                batch.commit().addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        database.collectionGroup(Constants.COLLECTIONS.SAVED_POSTS)
+                            .whereEqualTo("postId", postId)
+                            .get()
+                            .addOnSuccessListener { snapshot ->
+                                if (!snapshot.isEmpty) {
+                                    val cleanupBatch = database.batch()
+                                    for (doc in snapshot.documents) {
+                                        cleanupBatch.delete(doc.reference)
+                                    }
+                                    cleanupBatch.commit().addOnCompleteListener { cleanupTask ->
+                                        callback(cleanupTask.isSuccessful)
+                                    }
+                                } else {
+                                    callback(true)
                                 }
-                                batch.commit().addOnCompleteListener { cleanupTask ->
-                                    callback(cleanupTask.isSuccessful)
-                                }
-                            } else {
+                            }
+                            .addOnFailureListener { e ->
+                                Log.e("FirebaseModel", "Failed to cleanup saved posts: ${e.message}")
                                 callback(true)
                             }
-                        }
-                        .addOnFailureListener { e ->
-                            Log.e("FirebaseModel", "Failed to cleanup saved posts: ${e.message}")
-                            callback(true)
-                        }
-                } else {
-                    callback(false)
+                    } else {
+                        callback(false)
+                    }
                 }
+            }
+            .addOnFailureListener {
+                callback(false)
             }
     }
 
