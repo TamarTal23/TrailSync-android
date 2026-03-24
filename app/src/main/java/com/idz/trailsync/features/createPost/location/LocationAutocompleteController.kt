@@ -50,13 +50,19 @@ class LocationAutocompleteController(
                 }
                 val query = sequence?.toString() ?: ""
 
-                if (query.length >= 3) {
+                if (query.length >= 3 && searchEditText.hasFocus()) {
                     fetchAutocompletePredictions(query)
                 } else {
                     suggestionsRecyclerView.visibility = View.GONE
                 }
             }
         })
+        
+        searchEditText.setOnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) {
+                suggestionsRecyclerView.visibility = View.GONE
+            }
+        }
     }
 
     private fun fetchAutocompletePredictions(query: String) {
@@ -68,7 +74,7 @@ class LocationAutocompleteController(
             .addOnSuccessListener { response ->
                 val predictions = response.autocompletePredictions
                 Log.d("MAPS_API", "Found ${predictions.size} predictions")
-                if (predictions.isNotEmpty()) {
+                if (predictions.isNotEmpty() && searchEditText.hasFocus()) {
                     suggestionsAdapter.setSuggestions(predictions)
                     suggestionsRecyclerView.visibility = View.VISIBLE
                 } else {
