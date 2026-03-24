@@ -62,6 +62,7 @@ class UpsertPostFragment : Fragment() {
 
             selectedPhotos.addAll(urisToAdd)
             updatePhotosUI()
+            resetPhotosError()
         }
     }
 
@@ -144,6 +145,7 @@ class UpsertPostFragment : Fragment() {
                 binding.locationSuggestionsRecyclerView
             ) { place ->
                 selectedPlace = place
+                resetLocationError()
             }
         }
     }
@@ -312,9 +314,12 @@ class UpsertPostFragment : Fragment() {
         }
 
         if (location.isEmpty()) {
-            context?.let {
-                Toast.makeText(it, "Location is required", Toast.LENGTH_SHORT).show()
-            }
+            showLocationError("Location is required")
+            isValid = false
+        }
+
+        if (selectedPhotos.isEmpty()) {
+            showPhotosError("At least one photo is required")
             isValid = false
         }
 
@@ -334,12 +339,38 @@ class UpsertPostFragment : Fragment() {
         context?.let { ctx ->
             val normalBg = ContextCompat.getDrawable(ctx, R.drawable.edit_text_background)
             val normalTextColor = ContextCompat.getColor(ctx, R.color.black)
+            
             binding.tripTitleLabel.setTextColor(normalTextColor)
             binding.tripTitleEditText.background = normalBg
             binding.tripTitleError.visibility = View.GONE
+            
             binding.googleMapsLabel.setTextColor(normalTextColor)
             binding.googleMapsContainer.background = normalBg
             binding.googleMapsError.visibility = View.GONE
+
+            resetLocationError()
+            resetPhotosError()
+        }
+    }
+
+    private fun resetLocationError() {
+        context?.let { ctx ->
+            val normalBg = ContextCompat.getDrawable(ctx, R.drawable.edit_text_background)
+            val normalTextColor = ContextCompat.getColor(ctx, R.color.black)
+            val normalIconColor = ContextCompat.getColor(ctx, R.color.dark_neutral)
+
+            binding.locationLabel.setTextColor(normalTextColor)
+            binding.locationContainer.background = normalBg
+            binding.locationIcon.setColorFilter(normalIconColor)
+            binding.locationError.visibility = View.GONE
+        }
+    }
+
+    private fun resetPhotosError() {
+        context?.let { ctx ->
+            val normalTextColor = ContextCompat.getColor(ctx, R.color.black)
+            binding.photosLabel.setTextColor(normalTextColor)
+            binding.photosError.visibility = View.GONE
         }
     }
 
@@ -362,6 +393,28 @@ class UpsertPostFragment : Fragment() {
             binding.googleMapsContainer.background = errorBg
             binding.googleMapsError.text = error
             binding.googleMapsError.visibility = View.VISIBLE
+        }
+    }
+
+    private fun showLocationError(error: String) {
+        context?.let { ctx ->
+            val errorBg = ContextCompat.getDrawable(ctx, R.drawable.edit_text_error_background)
+            val errorColor = ContextCompat.getColor(ctx, R.color.error_red)
+            
+            binding.locationLabel.setTextColor(errorColor)
+            binding.locationContainer.background = errorBg
+            binding.locationIcon.setColorFilter(errorColor)
+            binding.locationError.text = error
+            binding.locationError.visibility = View.VISIBLE
+        }
+    }
+
+    private fun showPhotosError(error: String) {
+        context?.let { ctx ->
+            val errorColor = ContextCompat.getColor(ctx, R.color.error_red)
+            binding.photosLabel.setTextColor(errorColor)
+            binding.photosError.text = error
+            binding.photosError.visibility = View.VISIBLE
         }
     }
 
