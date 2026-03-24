@@ -2,8 +2,8 @@ package com.idz.trailsync
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.idz.trailsync.features.Login.LoginFragment
-import com.idz.trailsync.features.Register.RegisterFragment
+import com.idz.trailsync.features.login.LoginFragment
+import com.idz.trailsync.features.register.RegisterFragment
 
 class AuthenticationActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

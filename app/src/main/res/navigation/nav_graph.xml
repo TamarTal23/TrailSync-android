@@ -47,7 +47,7 @@
 
     <fragment
         android:id="@+id/savedPostsFragment"
-        android:name="com.idz.trailsync.SavedPostsFragment"
+        android:name="com.idz.trailsync.features.savedPosts.SavedPostsFragment"
         android:label="Saved Posts"
         tools:layout="@layout/fragment_saved_posts">
         <action
@@ -57,7 +57,7 @@
 
     <fragment
         android:id="@+id/editProfileFragment"
-        android:name="com.idz.trailsync.features.EditProfile.EditProfileFragment"
+        android:name="com.idz.trailsync.features.editProfile.EditProfileFragment"
         android:label="Edit Profile"
         tools:layout="@layout/fragment_edit_profile" />
 
@@ -76,7 +76,7 @@
 
     <fragment
         android:id="@+id/registerFragment"
-        android:name="com.idz.trailsync.features.Register.RegisterFragment"
+        android:name="com.idz.trailsync.features.register.RegisterFragment"
         android:label="Register"
         tools:layout="@layout/fragment_register" />
 
