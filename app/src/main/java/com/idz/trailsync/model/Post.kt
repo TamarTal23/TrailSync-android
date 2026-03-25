@@ -22,7 +22,9 @@ data class Post(
     val createdAt: Date = Date(),
     val updatedAt: Date = Date(),
     val mapLink: String = "",
-    val savedCount: Int = 0
+    val savedCount: Int = 0,
+    val commentsLoaded: Boolean = false,
+    val remoteCommentCount: Int = -1
 ) : Parcelable {
     @Parcelize
     data class Location(
@@ -47,6 +49,7 @@ data class Post(
         private const val UPDATED_AT_KEY = "updatedAt"
         private const val MAP_LINK_KEY = "mapLink"
         private const val SAVED_COUNT_KEY = "savedCount"
+        private const val COMMENT_COUNT_KEY = "commentCount"
 
         fun fromJSON(json: Map<String, Any>): Post {
             val id = json[ID_KEY] as? String ?: UUID.randomUUID().toString()
@@ -71,6 +74,7 @@ data class Post(
             val updatedAt = (json[UPDATED_AT_KEY] as? Timestamp)?.toDate() ?: Date()
             val mapLink = json[MAP_LINK_KEY] as? String ?: ""
             val savedCount = (json[SAVED_COUNT_KEY] as? Number)?.toInt() ?: 0
+            val remoteCommentCount = (json[COMMENT_COUNT_KEY] as? Number)?.toInt() ?: -1
 
             return Post(
                 id = id,
@@ -84,7 +88,9 @@ data class Post(
                 createdAt = createdAt,
                 updatedAt = updatedAt,
                 mapLink = mapLink,
-                savedCount = savedCount
+                savedCount = savedCount,
+                commentsLoaded = false,
+                remoteCommentCount = remoteCommentCount
             )
         }
     }
@@ -114,6 +120,8 @@ data class Post(
                 UPDATED_AT_KEY to Timestamp(updatedAt),
                 MAP_LINK_KEY to mapLink,
                 SAVED_COUNT_KEY to savedCount
+                // remoteCommentCount is managed by Firebase Functions or server-side usually
+                // but if you manage it client side, include it here if needed.
             )
         }
 }

@@ -86,7 +86,17 @@ class PostRowViewHolder(
         binding.postPrice.text = post.price.toString()
 
         binding.saveCount.text = post.savedCount.toString()
-        binding.commentCount.text = postWithComments.commentsCount.toString()
+        
+        if (post.commentsLoaded) {
+            binding.commentCountShimmer.stopShimmer()
+            binding.commentCountShimmer.visibility = View.GONE
+            binding.commentCount.visibility = View.VISIBLE
+            binding.commentCount.text = postWithComments.commentsCount.toString()
+        } else {
+            binding.commentCount.visibility = View.GONE
+            binding.commentCountShimmer.visibility = View.VISIBLE
+            binding.commentCountShimmer.startShimmer()
+        }
 
         val currentUserId = Firebase.auth.currentUser?.uid
         if (post.author == currentUserId) {

@@ -1,4 +1,4 @@
-package com.idz.trailsync.features.EditProfile
+package com.idz.trailsync.features.editProfile
 
 import android.graphics.Bitmap
 import android.graphics.Color

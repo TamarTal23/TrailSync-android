@@ -6,18 +6,18 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.idz.trailsync.databinding.ChatItemBotBinding
 import com.idz.trailsync.databinding.ChatItemUserBinding
-import com.idz.trailsync.model.Message
+import com.idz.trailsync.model.ChatMessage
 
 class ChatAdapter : RecyclerView.Adapter<BaseMessageViewHolder>() {
 
-    private val messages = mutableListOf<Message>()
+    private val messages = mutableListOf<ChatMessage>()
 
     companion object {
         private const val VIEW_TYPE_USER = 1
         private const val VIEW_TYPE_BOT = 2
     }
 
-    fun setMessages(newMessages: List<Message>) {
+    fun setMessages(newMessages: List<ChatMessage>) {
         val diffCallback = MessageDiffCallback(messages, newMessages)
         val diffResult = DiffUtil.calculateDiff(diffCallback)
         messages.clear()
@@ -26,8 +26,8 @@ class ChatAdapter : RecyclerView.Adapter<BaseMessageViewHolder>() {
     }
 
     class MessageDiffCallback(
-        private val oldList: List<Message>,
-        private val newList: List<Message>
+        private val oldList: List<ChatMessage>,
+        private val newList: List<ChatMessage>
     ) : DiffUtil.Callback() {
         override fun getOldListSize(): Int = oldList.size
         override fun getNewListSize(): Int = newList.size
@@ -43,7 +43,7 @@ class ChatAdapter : RecyclerView.Adapter<BaseMessageViewHolder>() {
     }
 
     fun addLoadingMessage(text: String) {
-        messages.add(Message(text, "model"))
+        messages.add(ChatMessage(text, "model"))
         notifyItemInserted(messages.size - 1)
     }
 

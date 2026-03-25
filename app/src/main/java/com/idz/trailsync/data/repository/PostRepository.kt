@@ -33,7 +33,13 @@ class PostRepository private constructor() {
             executor.execute {
                 val postDao = database.PostDao()
                 remotePosts.forEach { post ->
-                    postDao.upsert(post)
+                    val localPost = postDao.getById(post.id)
+                    val postToSave = if (localPost != null) {
+                        post.copy(commentsLoaded = localPost.commentsLoaded)
+                    } else {
+                        post
+                    }
+                    postDao.upsert(postToSave)
                     refreshCommentsForPost(post.id)
                 }
             }
@@ -49,7 +55,13 @@ class PostRepository private constructor() {
             executor.execute {
                 val postDao = database.PostDao()
                 remotePosts.forEach { post ->
-                    postDao.upsert(post)
+                    val localPost = postDao.getById(post.id)
+                    val postToSave = if (localPost != null) {
+                        post.copy(commentsLoaded = localPost.commentsLoaded)
+                    } else {
+                        post
+                    }
+                    postDao.upsert(postToSave)
                     refreshCommentsForPost(post.id)
                 }
             }
@@ -60,6 +72,7 @@ class PostRepository private constructor() {
         firebaseModel.getCommentsForPost(postId) { remoteComments ->
             executor.execute {
                 database.CommentDao().syncCommentsForPost(postId, remoteComments)
+                database.PostDao().updateCommentsLoaded(postId, true)
             }
         }
     }

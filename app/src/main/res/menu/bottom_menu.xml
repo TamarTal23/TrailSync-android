@@ -12,7 +12,7 @@
         android:title="AI planner"/>
 
     <item
-        android:id="@+id/createPostFragment"
+        android:id="@+id/upsertPostFragment"
         android:icon="@drawable/create_icon"
         android:title="Create"
         />

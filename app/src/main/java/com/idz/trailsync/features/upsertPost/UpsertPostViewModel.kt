@@ -1,24 +1,23 @@
-package com.idz.trailsync.features.editPost
+package com.idz.trailsync.features.upsertPost
 
 import android.graphics.Bitmap
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.idz.trailsync.base.BooleanCallback
 import com.idz.trailsync.data.repository.PostRepository
 import com.idz.trailsync.model.Post
 
-class EditPostViewModel : ViewModel() {
+class UpsertPostViewModel : ViewModel() {
     val post = MutableLiveData<Post?>()
-    val isUpdating = MutableLiveData<Boolean>(false)
+    val isProcessing = MutableLiveData<Boolean>(false)
 
-    fun setPost(p: Post) {
+    fun setPost(p: Post?) {
         post.value = p
     }
 
-    fun updatePost(updatedPost: Post, bitmaps: List<Bitmap>?, callback: BooleanCallback) {
-        isUpdating.value = true
+    fun upsertPost(updatedPost: Post, bitmaps: List<Bitmap>?, callback: (Boolean) -> Unit) {
+        isProcessing.value = true
         PostRepository.shared.upsertPost(updatedPost, bitmaps) { success ->
-            isUpdating.value = false
+            isProcessing.value = false
             callback(success)
         }
     }
