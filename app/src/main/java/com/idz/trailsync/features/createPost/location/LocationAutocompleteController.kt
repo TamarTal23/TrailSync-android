@@ -39,19 +39,26 @@ class LocationAutocompleteController(
         }
 
         setupSearchEditText()
-        
-        // Hide suggestions when focus is lost
-        searchEditText.setOnFocusChangeListener { _, hasFocus ->
-            if (!hasFocus) {
-                suggestionsRecyclerView.visibility = View.GONE
-            }
-        }
     }
 
     private fun setupSearchEditText() {
         searchEditText.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(sequence: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(sequence: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun beforeTextChanged(
+                sequence: CharSequence?,
+                start: Int,
+                count: Int,
+                after: Int
+            ) {
+            }
+
+            override fun onTextChanged(
+                sequence: CharSequence?,
+                start: Int,
+                before: Int,
+                count: Int
+            ) {
+            }
+
             override fun afterTextChanged(sequence: Editable?) {
                 if (isSelectingFromSuggestions) {
                     return
@@ -59,13 +66,19 @@ class LocationAutocompleteController(
                 val query = sequence?.toString() ?: ""
                 lastQuery = query
 
-                if (query.length >= 3) {
+                if (query.length >= 3 && searchEditText.hasFocus()) {
                     fetchAutocompletePredictions(query)
                 } else {
                     suggestionsRecyclerView.visibility = View.GONE
                 }
             }
         })
+
+        searchEditText.setOnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) {
+                suggestionsRecyclerView.visibility = View.GONE
+            }
+        }
     }
 
     private fun fetchAutocompletePredictions(query: String) {
@@ -75,9 +88,9 @@ class LocationAutocompleteController(
 
         placesClient.findAutocompletePredictions(request)
             .addOnSuccessListener { response ->
-                // Ensure we only show results for the latest query and not if we just selected something
+                val predictions = response.autocompletePredictions
+
                 if (query == lastQuery && !isSelectingFromSuggestions && searchEditText.hasFocus()) {
-                    val predictions = response.autocompletePredictions
                     if (predictions.isNotEmpty()) {
                         suggestionsAdapter.setSuggestions(predictions)
                         suggestionsRecyclerView.visibility = View.VISIBLE
@@ -96,11 +109,11 @@ class LocationAutocompleteController(
         isSelectingFromSuggestions = true
         val primaryText = prediction.getPrimaryText(null).toString()
         lastQuery = primaryText
-        
+
         searchEditText.setText(primaryText)
         searchEditText.setSelection(searchEditText.text.length)
         suggestionsRecyclerView.visibility = View.GONE
-        
+
         hideKeyboard()
         searchEditText.clearFocus()
 

@@ -1,4 +1,4 @@
-package com.idz.trailsync.features.Register
+package com.idz.trailsync.features.register
 
 import android.content.Intent
 import android.graphics.Bitmap
@@ -16,7 +16,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.idz.trailsync.databinding.FragmentRegisterBinding
-import com.idz.trailsync.features.EditProfile.UserFormViewModel
+import com.idz.trailsync.features.editProfile.UserFormViewModel
 import com.idz.trailsync.utils.BitmapUtils
 import com.idz.trailsync.AuthenticationViewModel
 import com.idz.trailsync.HomeActivity

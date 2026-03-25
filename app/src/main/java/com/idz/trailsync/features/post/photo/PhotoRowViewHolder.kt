@@ -4,7 +4,6 @@ import android.net.Uri
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.idz.trailsync.R
 import com.idz.trailsync.databinding.PhotoItemBinding
 import com.squareup.picasso.Picasso
 

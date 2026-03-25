@@ -75,7 +75,7 @@ class ProfileFragment : Fragment() {
             }
 
             override fun onEditClick(post: Post) {
-                val action = ProfileFragmentDirections.actionProfileFragmentToEditPostFragment(post)
+                val action = ProfileFragmentDirections.actionProfileFragmentToUpsertPostFragment(post)
                 findNavController().navigate(action)
             }
         }

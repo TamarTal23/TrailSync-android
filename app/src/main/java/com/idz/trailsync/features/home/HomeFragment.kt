@@ -65,7 +65,7 @@ class HomeFragment : Fragment() {
             }
 
             override fun onEditClick(post: Post) {
-                val action = HomeFragmentDirections.actionHomeFragmentToEditPostFragment(post)
+                val action = HomeFragmentDirections.actionHomeFragmentToUpsertPostFragment(post)
                 findNavController().navigate(action)
             }
         }

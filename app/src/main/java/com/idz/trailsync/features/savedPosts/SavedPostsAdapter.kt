@@ -1,4 +1,4 @@
-package com.idz.trailsync.features.saved
+package com.idz.trailsync.features.savedPosts
 
 import android.view.LayoutInflater
 import android.view.ViewGroup

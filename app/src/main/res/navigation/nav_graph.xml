@@ -13,23 +13,24 @@
             android:id="@+id/action_profileFragment_to_postDetailsFragment"
             app:destination="@id/postDetailsFragment" />
         <action
-            android:id="@+id/action_profileFragment_to_editPostFragment"
-            app:destination="@id/editPostFragment" />
+            android:id="@+id/action_profileFragment_to_upsertPostFragment"
+            app:destination="@id/upsertPostFragment" />
     </fragment>
 
     <fragment
         android:id="@+id/chatbotFragment"
-        android:name="com.idz.trailsync.ChatbotFragment"
+        android:name="com.idz.trailsync.features.chatbot.ChatbotFragment"
         android:label="Chatbot" />
 
     <fragment
-        android:id="@+id/createPostFragment"
-        android:name="com.idz.trailsync.features.createPost.CreatePostFragment"
-        android:label="Upsert post">
+        android:id="@+id/upsertPostFragment"
+        android:name="com.idz.trailsync.features.upsertPost.UpsertPostFragment"
+        android:label="Post">
         <argument
-            android:name="postId"
-            app:argType="string"
-            app:nullable="true" />
+            android:name="post"
+            app:argType="com.idz.trailsync.model.Post"
+            app:nullable="true"
+            android:defaultValue="@null" />
     </fragment>
 
     <fragment
@@ -41,13 +42,13 @@
             android:id="@+id/action_homeFragment_to_postDetailsFragment"
             app:destination="@+id/postDetailsFragment" />
         <action
-            android:id="@+id/action_homeFragment_to_editPostFragment"
-            app:destination="@id/editPostFragment" />
+            android:id="@+id/action_homeFragment_to_upsertPostFragment"
+            app:destination="@id/upsertPostFragment" />
     </fragment>
 
     <fragment
         android:id="@+id/savedPostsFragment"
-        android:name="com.idz.trailsync.SavedPostsFragment"
+        android:name="com.idz.trailsync.features.savedPosts.SavedPostsFragment"
         android:label="Saved Posts"
         tools:layout="@layout/fragment_saved_posts">
         <action
@@ -57,7 +58,7 @@
 
     <fragment
         android:id="@+id/editProfileFragment"
-        android:name="com.idz.trailsync.features.EditProfile.EditProfileFragment"
+        android:name="com.idz.trailsync.features.editProfile.EditProfileFragment"
         android:label="Edit Profile"
         tools:layout="@layout/fragment_edit_profile" />
 
@@ -70,23 +71,14 @@
             android:name="post"
             app:argType="com.idz.trailsync.model.Post" />
         <action
-            android:id="@+id/action_postDetailsFragment_to_editPostFragment"
-            app:destination="@id/editPostFragment" />
+            android:id="@+id/action_postDetailsFragment_to_upsertPostFragment"
+            app:destination="@id/upsertPostFragment" />
     </fragment>
 
     <fragment
         android:id="@+id/registerFragment"
-        android:name="com.idz.trailsync.features.Register.RegisterFragment"
+        android:name="com.idz.trailsync.features.register.RegisterFragment"
         android:label="Register"
         tools:layout="@layout/fragment_register" />
 
-    <fragment
-        android:id="@+id/editPostFragment"
-        android:name="com.idz.trailsync.features.editPost.EditPostFragment"
-        android:label="Edit Post"
-        tools:layout="@layout/fragment_edit_post">
-        <argument
-            android:name="post"
-            app:argType="com.idz.trailsync.model.Post" />
-    </fragment>
 </navigation>
