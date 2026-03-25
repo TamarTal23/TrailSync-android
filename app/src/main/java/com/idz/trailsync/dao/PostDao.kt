@@ -26,7 +26,8 @@ interface PostDao {
         AND (:maxDays IS NULL OR numberOfDays <= :maxDays)
         AND (:locationQuery IS NULL OR :locationQuery = '' 
              OR location_name LIKE '%' || :locationQuery || '%' 
-             OR location_city LIKE '%' || :locationQuery || '%')
+             OR location_city LIKE '%' || :locationQuery || '%'
+             OR location_country LIKE '%' || :locationQuery || '%')
         ORDER BY createdAt DESC
     """)
     fun getFilteredPosts(

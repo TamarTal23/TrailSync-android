@@ -27,8 +27,18 @@ class HomeViewModel : ViewModel() {
         )
     }
 
-    fun setFilters(maxPrice: Int?, minDays: Int?, maxDays: Int?, location: String?) {
-        _filters.value = PostFilters(maxPrice, minDays, maxDays, location)
+    fun updateLocation(location: String?) {
+        val current = _filters.value ?: PostFilters()
+        _filters.value = current.copy(location = location)
+    }
+
+    fun applyAdvancedFilters(maxPrice: String?, minDays: String?, maxDays: String?) {
+        val current = _filters.value ?: PostFilters()
+        _filters.value = current.copy(
+            maxPrice = maxPrice?.toIntOrNull(),
+            minDays = minDays?.toIntOrNull(),
+            maxDays = maxDays?.toIntOrNull()
+        )
     }
 
     fun clearFilters() {

@@ -1,14 +1,19 @@
 package com.idz.trailsync.features.home
 
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.idz.trailsync.R
 import com.idz.trailsync.databinding.FragmentHomeBinding
 import com.idz.trailsync.features.createPost.location.LocationAutocompleteController
 import com.idz.trailsync.features.post.OnPostClickListener
@@ -21,7 +26,7 @@ class HomeFragment : Fragment() {
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel: HomeViewModel by viewModels()
+    private val viewModel: HomeViewModel by activityViewModels()
     private var adapter: PostsAdapter? = null
     private var locationController: LocationAutocompleteController? = null
 
@@ -37,8 +42,7 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         setupRecyclerView()
         setupSwipeRefresh()
-        setupFilters()
-        setupLocationAutocomplete()
+        setupSearchAndDrawerTrigger()
         observePosts()
     }
 
@@ -56,7 +60,7 @@ class HomeFragment : Fragment() {
 
             override fun onDeleteClick(post: Post) {
                 DialogUtils.showDeletePostConfirmation(requireContext()) {
-                    deletePost(post)
+                    deletePost(post.id)
                 }
             }
 
@@ -79,38 +83,34 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun setupLocationAutocomplete() {
+    private fun setupSearchAndDrawerTrigger() {
+        val drawerLayout = requireActivity().findViewById<DrawerLayout>(R.id.drawer_layout)
+
+        binding.btnOpenDrawer.setOnClickListener {
+            drawerLayout.openDrawer(GravityCompat.START)
+        }
+
         locationController = LocationAutocompleteController(
             requireContext(),
             binding.locationFilterEditText,
             binding.locationSuggestionsRecyclerView
         ) { place ->
-            // We only need to store the selected place if needed, 
-            // the controller already updates the EditText and hides the menu.
+            viewModel.updateLocation(place.name)
         }
+
+        binding.locationFilterEditText.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                if (s.isNullOrEmpty()) {
+                    viewModel.updateLocation(null)
+                }
+            }
+        })
     }
 
-    private fun setupFilters() {
-        binding.btnApplyFilters.setOnClickListener {
-            val location = binding.locationFilterEditText.text.toString().trim().ifEmpty { null }
-            val maxPrice = binding.priceFilterEditText.text.toString().toIntOrNull()
-            val minDays = binding.minDaysFilterEditText.text.toString().toIntOrNull()
-            val maxDays = binding.maxDaysFilterEditText.text.toString().toIntOrNull()
-
-            viewModel.setFilters(maxPrice, minDays, maxDays, location)
-        }
-
-        binding.btnClearFilters.setOnClickListener {
-            binding.locationFilterEditText.text = null
-            binding.priceFilterEditText.text = null
-            binding.minDaysFilterEditText.text = null
-            binding.maxDaysFilterEditText.text = null
-            viewModel.clearFilters()
-        }
-    }
-
-    private fun deletePost(post: Post) {
-        viewModel.deletePost(post.id) { success ->
+    private fun deletePost(postId: String) {
+        viewModel.deletePost(postId) { success ->
             if (success) {
                 Toast.makeText(context, "Post deleted", Toast.LENGTH_SHORT).show()
             } else {
