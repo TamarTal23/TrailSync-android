@@ -1,11 +1,14 @@
 package com.idz.trailsync.features.home
 
+import android.content.Context
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import android.widget.Toast
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
@@ -13,6 +16,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.button.MaterialButton
 import com.idz.trailsync.R
 import com.idz.trailsync.databinding.FragmentHomeBinding
 import com.idz.trailsync.features.createPost.location.LocationAutocompleteController
@@ -43,6 +47,7 @@ class HomeFragment : Fragment() {
         setupRecyclerView()
         setupSwipeRefresh()
         setupSearchAndDrawerTrigger()
+        setupDrawerFilters()
         observePosts()
     }
 
@@ -107,6 +112,42 @@ class HomeFragment : Fragment() {
                 }
             }
         })
+    }
+
+    private fun setupDrawerFilters() {
+        val drawerLayout = requireActivity().findViewById<DrawerLayout>(R.id.drawer_layout)
+        val priceEditText = requireActivity().findViewById<EditText>(R.id.drawerPriceEditText)
+        val minDaysEditText = requireActivity().findViewById<EditText>(R.id.drawerMinDaysEditText)
+        val maxDaysEditText = requireActivity().findViewById<EditText>(R.id.drawerMaxDaysEditText)
+        val btnApply = requireActivity().findViewById<MaterialButton>(R.id.btnApplyFiltersDrawer)
+        val btnClear = requireActivity().findViewById<MaterialButton>(R.id.btnClearFiltersDrawer)
+
+        btnApply?.setOnClickListener {
+            viewModel.applyAdvancedFilters(
+                priceEditText?.text?.toString(),
+                minDaysEditText?.text?.toString(),
+                maxDaysEditText?.text?.toString()
+            )
+            hideKeyboard()
+            drawerLayout.closeDrawer(GravityCompat.START)
+        }
+
+        btnClear?.setOnClickListener {
+            priceEditText?.text = null
+            minDaysEditText?.text = null
+            maxDaysEditText?.text = null
+            viewModel.clearFilters()
+            hideKeyboard()
+            drawerLayout.closeDrawer(GravityCompat.START)
+        }
+    }
+
+    private fun hideKeyboard() {
+        val view = requireActivity().currentFocus
+        if (view != null) {
+            val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(view.windowToken, 0)
+        }
     }
 
     private fun deletePost(postId: String) {
