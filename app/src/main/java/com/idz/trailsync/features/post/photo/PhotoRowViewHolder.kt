@@ -1,5 +1,6 @@
 package com.idz.trailsync.features.post.photo
 
+import android.graphics.Bitmap
 import android.net.Uri
 import android.view.View
 import android.view.ViewGroup
@@ -44,12 +45,13 @@ class PhotoRowViewHolder<T>(
     }
 
     private fun loadPhoto(photo: T) {
+        binding.photoShimmer.stopShimmer()
+        binding.photoShimmer.visibility = View.GONE
+        
         when (photo) {
             is String -> {
                 if (photo.startsWith("android.resource")) {
                     val resId = photo.substringAfterLast("/").toIntOrNull()
-                    binding.photoShimmer.stopShimmer()
-                    binding.photoShimmer.visibility = View.GONE
                     if (resId != null) {
                         binding.photoImage.setImageResource(resId)
                     }
@@ -73,9 +75,10 @@ class PhotoRowViewHolder<T>(
                 }
             }
             is Uri -> {
-                binding.photoShimmer.stopShimmer()
-                binding.photoShimmer.visibility = View.GONE
                 binding.photoImage.setImageURI(photo)
+            }
+            is Bitmap -> {
+                binding.photoImage.setImageBitmap(photo)
             }
         }
     }
