@@ -13,6 +13,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -48,21 +49,38 @@ class UpsertPostFragment : Fragment() {
     private var selectedPlace: Place? = null
     private var locationController: LocationAutocompleteController? = null
 
-    private val pickMultipleMedia = registerForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(10)) { uris ->
+    private val pickMultipleMedia = registerForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(MAX_PHOTOS)) { uris ->
         if (uris.isNotEmpty()) {
-            val totalAllowed = 10
-            val remainingSlots = totalAllowed - selectedPhotos.size
+            val remainingSlots = MAX_PHOTOS - selectedPhotos.size
             val urisToAdd = uris.take(remainingSlots)
 
             if (uris.size > remainingSlots) {
                 context?.let {
-                    Toast.makeText(it, "Maximum $totalAllowed photos allowed", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(it, "Maximum $MAX_PHOTOS photos allowed", Toast.LENGTH_SHORT).show()
                 }
             }
 
             selectedPhotos.addAll(urisToAdd)
             updatePhotosUI()
             resetPhotosError()
+        }
+    }
+
+    private val takePhoto = registerForActivityResult(ActivityResultContracts.TakePicturePreview()) { bitmap ->
+        if (bitmap != null) {
+            if (selectedPhotos.size < MAX_PHOTOS) {
+                selectedPhotos.add(bitmap)
+                updatePhotosUI()
+                resetPhotosError()
+            } else {
+                context?.let {
+                    Toast.makeText(it, "Maximum $MAX_PHOTOS photos reached", Toast.LENGTH_SHORT).show()
+                }
+            }
+        } else {
+            context?.let {
+                Toast.makeText(it, "No image captured", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -121,12 +139,12 @@ class UpsertPostFragment : Fragment() {
         })
 
         binding.addPhotosButton.setOnClickListener {
-            if (selectedPhotos.size >= 10) {
+            if (selectedPhotos.size >= MAX_PHOTOS) {
                 context?.let {
-                    Toast.makeText(it, "Maximum 10 photos reached", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(it, "Maximum $MAX_PHOTOS photos reached", Toast.LENGTH_SHORT).show()
                 }
             } else {
-                pickMultipleMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                showPhotoOptionsPopupMenu(it)
             }
         }
 
@@ -135,6 +153,27 @@ class UpsertPostFragment : Fragment() {
                 handleUpsert()
             }
         }
+    }
+
+    private fun showPhotoOptionsPopupMenu(anchor: View) {
+        val popup = PopupMenu(requireContext(), anchor)
+        popup.menu.add("Take Photo")
+        popup.menu.add("Choose from Gallery")
+        
+        popup.setOnMenuItemClickListener { item ->
+            when (item.title) {
+                "Take Photo" -> {
+                    takePhoto.launch(null)
+                    true
+                }
+                "Choose from Gallery" -> {
+                    pickMultipleMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                    true
+                }
+                else -> false
+            }
+        }
+        popup.show()
     }
 
     private fun setupLocationController() {
@@ -245,7 +284,10 @@ class UpsertPostFragment : Fragment() {
 
         val existingUrls = selectedPhotos.filterIsInstance<String>()
         val newLocalUris = selectedPhotos.filterIsInstance<Uri>()
-        val newBitmaps = newLocalUris.mapNotNull { uriToBitmap(it) }
+        val newCapturedBitmaps = selectedPhotos.filterIsInstance<Bitmap>()
+        
+        val newBitmapsFromUris = newLocalUris.mapNotNull { uriToBitmap(it) }
+        val allNewBitmaps = newBitmapsFromUris + newCapturedBitmaps
 
         val post = Post(
             id = existingPost?.id ?: UUID.randomUUID().toString(),
@@ -260,7 +302,7 @@ class UpsertPostFragment : Fragment() {
             updatedAt = Date()
         )
 
-        viewModel.upsertPost(post, newBitmaps) { success ->
+        viewModel.upsertPost(post, allNewBitmaps) { success ->
             if (isAdded && activity != null) {
                 context?.let { ctx ->
                     if (success) {
@@ -421,5 +463,9 @@ class UpsertPostFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    companion object {
+        private const val MAX_PHOTOS = 10
     }
 }
