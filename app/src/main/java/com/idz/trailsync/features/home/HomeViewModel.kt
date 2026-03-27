@@ -1,13 +1,49 @@
 package com.idz.trailsync.features.home
 
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.switchMap
 import com.idz.trailsync.base.BooleanCallback
 import com.idz.trailsync.data.repository.PostRepository
 import com.idz.trailsync.model.PostWithComments
 
+data class PostFilters(
+    val maxPrice: Int? = null,
+    val minDays: Int? = null,
+    val maxDays: Int? = null,
+    val location: String? = null
+)
+
 class HomeViewModel : ViewModel() {
-    val posts: LiveData<List<PostWithComments>> = PostRepository.shared.getAllPosts()
+    private val _filters = MutableLiveData<PostFilters>(PostFilters())
+    
+    val posts: LiveData<List<PostWithComments>> = _filters.switchMap { filters ->
+        PostRepository.shared.getFilteredPosts(
+            filters.maxPrice,
+            filters.minDays,
+            filters.maxDays,
+            filters.location
+        )
+    }
+
+    fun updateLocation(location: String?) {
+        val current = _filters.value ?: PostFilters()
+        _filters.value = current.copy(location = location)
+    }
+
+    fun applyAdvancedFilters(maxPrice: String?, minDays: String?, maxDays: String?) {
+        val current = _filters.value ?: PostFilters()
+        _filters.value = current.copy(
+            maxPrice = maxPrice?.toIntOrNull(),
+            minDays = minDays?.toIntOrNull(),
+            maxDays = maxDays?.toIntOrNull()
+        )
+    }
+
+    fun clearFilters() {
+        _filters.value = PostFilters()
+    }
 
     fun refreshPosts() {
         PostRepository.shared.refreshAllPosts()

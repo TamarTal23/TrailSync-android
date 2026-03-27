@@ -1,6 +1,7 @@
 package com.idz.trailsync.model
 
 import android.os.Parcelable
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.firebase.Timestamp
@@ -15,7 +16,7 @@ data class Post(
     val title: String,
     val author: String,
     val description: String = "",
-    val location: Location? = null,
+    @Embedded(prefix = "location_") val location: Location? = null,
     val numberOfDays: Int = 0,
     val photos: List<String> = emptyList(),
     val price: Int = 0,

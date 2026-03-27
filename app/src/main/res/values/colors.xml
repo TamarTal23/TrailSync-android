@@ -23,5 +23,6 @@
     <color name="dark_gray_text">#57534E</color>
     <color name="gray_text">#888888</color>
     <color name="light_gray">#F5F7F9</color>
+    <color name="neutral_blue">#406F8C</color>
 
 </resources>
