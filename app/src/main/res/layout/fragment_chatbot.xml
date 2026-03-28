@@ -12,11 +12,54 @@
         android:layout_height="0dp"
         android:clipToPadding="false"
         android:padding="16dp"
-        app:layout_constraintBottom_toTopOf="@+id/inputContainer"
+        app:layout_constraintBottom_toTopOf="@+id/shimmerContainer"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:listitem="@layout/chat_item_bot" />
+
+    <com.facebook.shimmer.ShimmerFrameLayout
+        android:id="@+id/shimmerContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/inputContainer"
+        app:layout_constraintStart_toStartOf="parent"
+        app:shimmer_auto_start="true"
+        tools:visibility="visible">
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:cardBackgroundColor="@color/chat_bubble_bot"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="0dp">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="10dp">
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_marginEnd="8dp"
+                    android:src="@drawable/bot_icon"
+                    app:tint="@color/bot_green" />
+
+                <View
+                    android:layout_width="60dp"
+                    android:layout_height="14dp"
+                    android:background="#DDDDDD" />
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+    </com.facebook.shimmer.ShimmerFrameLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/inputContainer"
