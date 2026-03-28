@@ -1,4 +1,4 @@
-package com.idz.trailsync.data.models
+package com.idz.trailsync.data.Networking
 
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit

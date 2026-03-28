@@ -2,14 +2,11 @@ package com.idz.trailsync.data.models
 
 import android.util.Log
 import com.idz.trailsync.BuildConfig
+import com.idz.trailsync.data.Networking.GeminiClient
 import com.idz.trailsync.model.ChatMessage
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import retrofit2.http.Body
-import retrofit2.http.POST
-import retrofit2.http.Path
-import retrofit2.http.Query
 
 data class GeminiRequest(
     val contents: List<Content>,
@@ -32,15 +29,6 @@ data class GeminiResponse(
 data class Candidate(
     val content: Content?
 )
-
-interface GeminiAPI {
-    @POST("v1beta/models/{model}:generateContent")
-    fun getChatResponse(
-        @Path("model") model: String,
-        @Query("key") apiKey: String,
-        @Body request: GeminiRequest
-    ): Call<GeminiResponse>
-}
 
 class GeminiModel {
     private val apiKey = BuildConfig.GEMINI_API_KEY
