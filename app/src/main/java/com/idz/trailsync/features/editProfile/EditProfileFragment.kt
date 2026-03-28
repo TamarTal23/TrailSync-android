@@ -9,6 +9,7 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
@@ -46,6 +47,14 @@ class EditProfileFragment : Fragment() {
             }
         }
 
+    private val takePhotoLauncher =
+        registerForActivityResult(ActivityResultContracts.TakePicturePreview()) { bitmap ->
+            if (bitmap != null) {
+                binding.profileImageView.setImageBitmap(bitmap)
+                profileBitmap = bitmap
+            }
+        }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
@@ -63,7 +72,7 @@ class EditProfileFragment : Fragment() {
         userFormViewModel.setMode(FormMode.EDIT_PROFILE)
 
         binding.buttonPickProfilePicture.setOnClickListener {
-            galleryLauncher.launch("image/*")
+            showPhotoOptionsPopupMenu(it)
         }
 
         binding.editTextEmail.isEnabled = false
@@ -166,6 +175,29 @@ class EditProfileFragment : Fragment() {
                 authViewModel.updateProfile(username, profileBitmap)
             }
         }
+    }
+
+    private fun showPhotoOptionsPopupMenu(anchor: View) {
+        val popup = PopupMenu(requireContext(), anchor)
+        popup.menu.add("Take Photo")
+        popup.menu.add("Choose from Gallery")
+
+        popup.setOnMenuItemClickListener { item ->
+            when (item.title) {
+                "Take Photo" -> {
+                    takePhotoLauncher.launch(null)
+                    true
+                }
+
+                "Choose from Gallery" -> {
+                    galleryLauncher.launch("image/*")
+                    true
+                }
+
+                else -> false
+            }
+        }
+        popup.show()
     }
 
     override fun onDestroyView() {
