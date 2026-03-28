@@ -22,8 +22,10 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import com.idz.trailsync.R
 import com.idz.trailsync.databinding.FragmentPostDetailsBinding
 import com.idz.trailsync.features.post.photo.PhotoCarouselController
+import com.google.android.libraries.places.api.model.Place
 import com.idz.trailsync.model.Comment
 import com.idz.trailsync.model.Post
 import com.idz.trailsync.data.repository.UserRepository
@@ -62,6 +64,23 @@ class PostDetailsFragment : Fragment() {
 
         binding.backButton.setOnClickListener {
             findNavController().popBackStack()
+        }
+
+        UserRepository.shared.getUserById(post.author) { author ->
+            _binding?.let { safeBinding ->
+                safeBinding.authorName.text = author?.username ?: "Anonymous"
+                if (!author?.profilePicture.isNullOrBlank()) {
+                    Picasso.get()
+                        .load(author?.profilePicture)
+                        .placeholder(R.drawable.user_icon_small)
+                        .error(R.drawable.user_icon_small)
+                        .fit()
+                        .centerCrop()
+                        .into(safeBinding.authorImage)
+                } else {
+                    safeBinding.authorImage.setImageResource(R.drawable.user_icon_small)
+                }
+            }
         }
 
         photoCarouselController = PhotoCarouselController(
@@ -103,15 +122,29 @@ class PostDetailsFragment : Fragment() {
 
                     currentBinding.addCommentLayout.commentInput.addTextChangedListener(object :
                         TextWatcher {
-                        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-                        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                        override fun beforeTextChanged(
+                            s: CharSequence?,
+                            start: Int,
+                            count: Int,
+                            after: Int
+                        ) {
+                        }
+
+                        override fun onTextChanged(
+                            s: CharSequence?,
+                            start: Int,
+                            before: Int,
+                            count: Int
+                        ) {
                             _binding?.addCommentLayout?.sendButton?.isEnabled = !s.isNullOrBlank()
                         }
+
                         override fun afterTextChanged(s: Editable?) {}
                     })
 
                     currentBinding.addCommentLayout.sendButton.setOnClickListener {
-                        val text = currentBinding.addCommentLayout.commentInput.text.toString().trim()
+                        val text =
+                            currentBinding.addCommentLayout.commentInput.text.toString().trim()
                         if (text.isNotEmpty()) {
                             val comment = Comment(
                                 id = UUID.randomUUID().toString(),
@@ -125,7 +158,11 @@ class PostDetailsFragment : Fragment() {
                                         safeBinding.addCommentLayout.commentInput.text?.clear()
                                         hideKeyboard()
                                     } else {
-                                        Toast.makeText(requireContext(), "Failed to add comment", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(
+                                            requireContext(),
+                                            "Failed to add comment",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
                                     }
                                 }
                             }
@@ -141,7 +178,8 @@ class PostDetailsFragment : Fragment() {
     private fun hideKeyboard() {
         val view = activity?.currentFocus
         if (view != null) {
-            val inputMethodManager = activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+            val inputMethodManager =
+                activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
             inputMethodManager?.hideSoftInputFromWindow(view.windowToken, 0)
             view.clearFocus()
         }
@@ -179,7 +217,10 @@ class PostDetailsFragment : Fragment() {
                     _binding?.mapProgressBar?.visibility = View.GONE
                 }
 
-                override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+                override fun shouldOverrideUrlLoading(
+                    view: WebView?,
+                    request: WebResourceRequest?
+                ): Boolean {
                     val url = request?.url?.toString() ?: return false
                     if (url.startsWith("http://") || url.startsWith("https://")) {
                         return !isGoogleMapsUrl(url)
@@ -193,7 +234,8 @@ class PostDetailsFragment : Fragment() {
                             Intent(Intent.ACTION_VIEW, Uri.parse(url))
                         }
 
-                        val isMapIntent = intent.`package`?.contains("com.google.android.apps.maps") == true ||
+                        val isMapIntent =
+                            intent.`package`?.contains("com.google.android.apps.maps") == true ||
                                     intent.action?.contains("geo") == true ||
                                     intent.dataString?.let { isGoogleMapsUrl(it) } == true
 
