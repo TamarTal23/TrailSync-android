@@ -15,10 +15,12 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.NavigationUI
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.idz.trailsync.features.home.HomeViewModel
+import com.idz.trailsync.shared.viewModels.AuthenticationViewModel
 
 class HomeActivity : AppCompatActivity() {
     var navController: NavController? = null
     private val homeViewModel: HomeViewModel by viewModels()
+    private val authenticationViewModel: AuthenticationViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,7 +38,6 @@ class HomeActivity : AppCompatActivity() {
         logout.visibility = View.GONE
 
         logout.setOnClickListener {
-            val authenticationViewModel = AuthenticationViewModel()
             authenticationViewModel.logout()
             val intent = Intent(this, AuthenticationActivity::class.java)
             startActivity(intent)
@@ -66,14 +67,6 @@ class HomeActivity : AppCompatActivity() {
                 NavigationUI.onNavDestinationSelected(item, it)
                 true
             }
-        }
-    }
-
-    fun hideKeyboard() {
-        val view = this.currentFocus
-        if (view != null) {
-            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.hideSoftInputFromWindow(view.windowToken, 0)
         }
     }
 

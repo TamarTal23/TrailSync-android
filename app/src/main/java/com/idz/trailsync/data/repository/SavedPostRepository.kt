@@ -2,6 +2,7 @@ package com.idz.trailsync.data.repository
 
 import android.os.Looper
 import androidx.core.os.HandlerCompat
+import androidx.lifecycle.LiveData
 import com.idz.trailsync.base.BooleanCallback
 import com.idz.trailsync.dao.AppLocalDB
 import com.idz.trailsync.dao.AppLocalDbRepository
@@ -18,21 +19,14 @@ class SavedPostRepository private constructor() {
         val shared = SavedPostRepository()
     }
 
-    fun getSavedPostsForUser(userId: String, callback: (List<SavedPost>) -> Unit) {
-        executor.execute {
-            val localSavedPosts = database.SavedPostDao().getSavedPostsByUser(userId)
-            HandlerCompat.createAsync(Looper.getMainLooper()).post {
-                callback(localSavedPosts)
-            }
+    fun getSavedPostsForUser(userId: String): LiveData<List<SavedPost>> {
+        return database.SavedPostDao().getSavedPostsByUser(userId)
+    }
 
-            firebaseModel.getSavedPostsForUser(userId) { remoteSavedPosts ->
-                executor.execute {
-                    database.SavedPostDao().clearAndInsertAll(userId, remoteSavedPosts)
-                    val updatedLocalSavedPosts = database.SavedPostDao().getSavedPostsByUser(userId)
-                    HandlerCompat.createAsync(Looper.getMainLooper()).post {
-                        callback(updatedLocalSavedPosts)
-                    }
-                }
+    fun refreshSavedPostsForUser(userId: String) {
+        firebaseModel.getSavedPostsForUser(userId) { remoteSavedPosts ->
+            executor.execute {
+                database.SavedPostDao().clearAndInsertAll(userId, remoteSavedPosts)
             }
         }
     }
@@ -88,7 +82,7 @@ class SavedPostRepository private constructor() {
 
     fun isPostSaved(userId: String, postId: String, callback: (Boolean) -> Unit) {
         executor.execute {
-            val savedPost = database.SavedPostDao().getSavedPost(userId, postId)
+            val savedPost = database.SavedPostDao().getSavedPostById(userId, postId)
             HandlerCompat.createAsync(Looper.getMainLooper()).post {
                 callback(savedPost != null)
             }

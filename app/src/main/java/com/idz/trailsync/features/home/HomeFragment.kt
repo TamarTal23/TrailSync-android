@@ -16,13 +16,15 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
 import com.idz.trailsync.R
 import com.idz.trailsync.databinding.FragmentHomeBinding
-import com.idz.trailsync.features.createPost.location.LocationAutocompleteController
+import com.idz.trailsync.shared.location.LocationAutocompleteController
 import com.idz.trailsync.features.post.OnPostClickListener
 import com.idz.trailsync.features.post.PostsAdapter
 import com.idz.trailsync.model.Post
+import com.idz.trailsync.shared.viewModels.PostSharedViewModel
 import com.idz.trailsync.utils.DialogUtils
 
 class HomeFragment : Fragment() {
@@ -31,6 +33,7 @@ class HomeFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: HomeViewModel by activityViewModels()
+    private val postSharedViewModel: PostSharedViewModel by activityViewModels()
     private var adapter: PostsAdapter? = null
     private var locationController: LocationAutocompleteController? = null
 
@@ -54,6 +57,7 @@ class HomeFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         viewModel.refreshPosts()
+        postSharedViewModel.refreshSavedPosts()
     }
 
     private fun setupRecyclerView() {
@@ -73,18 +77,41 @@ class HomeFragment : Fragment() {
                 val action = HomeFragmentDirections.actionHomeFragmentToUpsertPostFragment(post)
                 findNavController().navigate(action)
             }
+
+            override fun onSaveClick(post: Post) {
+                postSharedViewModel.toggleSavePost(post) { success ->
+                    if (!success) {
+                        Toast.makeText(context, "Failed to update saved status", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
         }
 
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(context)
             setHasFixedSize(true)
             adapter = this@HomeFragment.adapter
+
+            addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    super.onScrolled(recyclerView, dx, dy)
+                    
+                    val layoutManager = layoutManager as LinearLayoutManager
+                    val totalItemCount = layoutManager.itemCount
+                    val lastVisibleItem = layoutManager.findLastVisibleItemPosition()
+
+                    if (lastVisibleItem >= totalItemCount - 2) {
+                        viewModel.loadNextPage()
+                    }
+                }
+            })
         }
     }
 
     private fun setupSwipeRefresh() {
         binding.swipeRefresh.setOnRefreshListener {
             viewModel.refreshPosts()
+            postSharedViewModel.refreshSavedPosts()
         }
     }
 
@@ -151,7 +178,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun deletePost(postId: String) {
-        viewModel.deletePost(postId) { success ->
+        postSharedViewModel.deletePost(postId) { success ->
             if (success) {
                 Toast.makeText(context, "Post deleted", Toast.LENGTH_SHORT).show()
             } else {
@@ -165,6 +192,17 @@ class HomeFragment : Fragment() {
             adapter?.posts = posts
             adapter?.notifyDataSetChanged()
             binding.swipeRefresh.isRefreshing = false
+        }
+
+        adapter?.currentUserId = postSharedViewModel.currentUserId
+        
+        postSharedViewModel.savedPostIds.observe(viewLifecycleOwner) { ids ->
+            adapter?.savedPostIds = ids
+            adapter?.notifyDataSetChanged()
+        }
+
+        viewModel.isPagingLoading.observe(viewLifecycleOwner) { isLoading ->
+            // You could show a small progress bar at the bottom here
         }
     }
 

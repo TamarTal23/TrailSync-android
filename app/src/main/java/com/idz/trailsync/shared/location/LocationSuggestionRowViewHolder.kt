@@ -1,4 +1,4 @@
-package com.idz.trailsync.features.createPost.location
+package com.idz.trailsync.shared.location
 
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.libraries.places.api.model.AutocompletePrediction

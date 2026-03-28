@@ -5,17 +5,18 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.idz.trailsync.databinding.FragmentSavedPostsBinding
 import com.idz.trailsync.features.post.OnPostClickListener
 import com.idz.trailsync.model.Post
+import com.idz.trailsync.shared.viewModels.PostSharedViewModel
 
 class SavedPostsFragment : Fragment() {
     private var _binding: FragmentSavedPostsBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel: SavedPostViewModel by viewModels()
+    private val sharedViewModel: PostSharedViewModel by activityViewModels()
     private lateinit var adapter: SavedPostsAdapter
 
     override fun onCreateView(
@@ -36,16 +37,20 @@ class SavedPostsFragment : Fragment() {
             }
 
             override fun onDeleteClick(post: Post) {
-                viewModel.refreshSavedPosts()
+                sharedViewModel.refreshSavedPosts()
             }
 
             override fun onEditClick(post: Post) {
+            }
+
+            override fun onSaveClick(post: Post) {
+                sharedViewModel.toggleSavePost(post) { }
             }
         })
 
         binding.recyclerViewSavedPosts.adapter = adapter
 
-        viewModel.savedPosts.observe(viewLifecycleOwner) { posts ->
+        sharedViewModel.savedPosts.observe(viewLifecycleOwner) { posts ->
             if (posts.isNullOrEmpty()) {
                 binding.textNoSavedPosts.visibility = View.VISIBLE
                 binding.recyclerViewSavedPosts.visibility = View.GONE
@@ -57,7 +62,7 @@ class SavedPostsFragment : Fragment() {
             }
         }
 
-        viewModel.refreshSavedPosts()
+        sharedViewModel.refreshSavedPosts()
     }
 
     override fun onDestroyView() {

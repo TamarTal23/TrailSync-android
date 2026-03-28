@@ -2,8 +2,11 @@ package com.idz.trailsync.data.models
 
 import android.util.Log
 import com.google.firebase.Firebase
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.firestoreSettings
 import com.google.firebase.firestore.memoryCacheSettings
@@ -44,24 +47,10 @@ class FirebaseModel {
             }
     }
 
-    fun getAllUsers(callback: UsersCallback) {
-        database.collection(Constants.COLLECTIONS.USERS).get()
-            .addOnCompleteListener {
-                when (it.isSuccessful) {
-                    true -> {
-                        val users: MutableList<User> = mutableListOf()
-                        for (doc in it.result) {
-                            users.add(User.fromJSON(doc.data))
-                        }
-                        callback(users)
-                    }
-                    false -> callback(listOf())
-                }
-            }
-    }
-
     fun getAllPosts(callback: PostsCallback) {
-        database.collection(Constants.COLLECTIONS.POSTS).get()
+        database.collection(Constants.COLLECTIONS.POSTS)
+            .orderBy("createdAt", Query.Direction.DESCENDING)
+            .get()
             .addOnCompleteListener {
                 if (it.isSuccessful) {
                     val posts: MutableList<Post> = mutableListOf()
@@ -75,9 +64,44 @@ class FirebaseModel {
             }
     }
 
+    fun getPostsSince(since: Long, callback: PostsCallback) {
+        database.collection(Constants.COLLECTIONS.POSTS)
+            .whereGreaterThan("updatedAt", Timestamp(since / 1000, ((since % 1000) * 1000000).toInt()))
+            .get()
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val posts = task.result.map { Post.fromJSON(it.data) }
+                    callback(posts)
+                } else {
+                    callback(listOf())
+                }
+            }
+    }
+
+    fun getPostsPaged(limit: Long, lastDocument: DocumentSnapshot?, callback: (List<Post>, DocumentSnapshot?) -> Unit) {
+        var query = database.collection(Constants.COLLECTIONS.POSTS)
+            .orderBy("createdAt", Query.Direction.DESCENDING)
+            .limit(limit)
+
+        if (lastDocument != null) {
+            query = query.startAfter(lastDocument)
+        }
+
+        query.get().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val posts = task.result.map { Post.fromJSON(it.data) }
+                val lastVisible = if (task.result.isEmpty) null else task.result.documents[task.result.size() - 1]
+                callback(posts, lastVisible)
+            } else {
+                callback(listOf(), null)
+            }
+        }
+    }
+
     fun getPostsByAuthor(authorId: String, callback: PostsCallback) {
         database.collection(Constants.COLLECTIONS.POSTS)
             .whereEqualTo("author", authorId)
+            .orderBy("createdAt", Query.Direction.DESCENDING)
             .get()
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {

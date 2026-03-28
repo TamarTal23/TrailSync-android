@@ -45,7 +45,6 @@ class CommentRepository private constructor() {
                     completedCount++
                     
                     if (completedCount == comments.size) {
-                        // Maintain original order
                         val orderedList = comments.mapNotNull { c ->
                             commentWithUsers.find { it.comment.id == c.id }
                         }

@@ -1,13 +1,9 @@
 package com.idz.trailsync.features.post
 
-import android.util.Log
 import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
-import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
 import com.idz.trailsync.R
-import com.idz.trailsync.data.repository.SavedPostRepository
 import com.idz.trailsync.databinding.PostListItemBinding
 import com.idz.trailsync.model.Post
 import com.idz.trailsync.model.PostWithComments
@@ -29,38 +25,8 @@ class PostRowViewHolder(
         }
 
         binding.postSaveButton.setOnClickListener {
-            val currentPost = post ?: return@setOnClickListener
-            val currentUserId = Firebase.auth.currentUser?.uid ?: return@setOnClickListener
-
-            isSaved = !isSaved
-
-            val newSavedCount =
-                if (isSaved) currentPost.savedCount + 1 else (currentPost.savedCount - 1).coerceAtLeast(
-                    0
-                )
-            binding.saveCount.text = newSavedCount.toString()
-            updateSaveButton()
-
-            if (!isSaved) {
-                SavedPostRepository.shared.unsavePost(currentUserId, currentPost.id) { success ->
-                    if (!success) {
-                        isSaved = true
-                        binding.saveCount.text = currentPost.savedCount.toString()
-                        updateSaveButton()
-                    } else {
-                        post = currentPost.copy(savedCount = newSavedCount)
-                    }
-                }
-            } else {
-                SavedPostRepository.shared.savePost(currentUserId, currentPost.id) { success ->
-                    if (!success) {
-                        isSaved = false
-                        binding.saveCount.text = currentPost.savedCount.toString()
-                        updateSaveButton()
-                    } else {
-                        post = currentPost.copy(savedCount = newSavedCount)
-                    }
-                }
+            post?.let {
+                listener?.onSaveClick(it)
             }
         }
 
@@ -77,10 +43,11 @@ class PostRowViewHolder(
         }
     }
 
-    fun bind(postWithComments: PostWithComments) {
+    fun bind(postWithComments: PostWithComments, currentUserId: String?, isSaved: Boolean) {
         val post = postWithComments.post
         this.post = post
         val author = postWithComments.author
+        this.isSaved = isSaved
 
         binding.postTitle.text = post.title
         binding.postLocation.text = post.location?.name ?: "Unknown"
@@ -102,7 +69,7 @@ class PostRowViewHolder(
         }
 
         binding.saveCount.text = post.savedCount.toString()
-
+        
         if (post.commentsLoaded) {
             binding.commentCountShimmer.stopShimmer()
             binding.commentCountShimmer.visibility = View.GONE
@@ -114,22 +81,12 @@ class PostRowViewHolder(
             binding.commentCountShimmer.startShimmer()
         }
 
-        val currentUserId = Firebase.auth.currentUser?.uid
         if (post.author == currentUserId) {
             binding.postDeleteButton.visibility = View.VISIBLE
             binding.postEditButton.visibility = View.VISIBLE
         } else {
             binding.postDeleteButton.visibility = View.GONE
             binding.postEditButton.visibility = View.GONE
-        }
-
-        if (currentUserId != null) {
-            SavedPostRepository.shared.isPostSaved(currentUserId, post.id) { saved ->
-                if (this.post?.id == post.id) {
-                    isSaved = saved
-                    updateSaveButton()
-                }
-            }
         }
 
         val firstPhotoUrl = post.photos.firstOrNull()
@@ -153,17 +110,11 @@ class PostRowViewHolder(
                         override fun onSuccess() {
                             binding.postImageShimmer.stopShimmer()
                             binding.postImageShimmer.visibility = View.GONE
-                            Log.d("Picasso", "Successfully loaded image for: ${post.title}")
                         }
 
                         override fun onError(e: Exception?) {
                             binding.postImageShimmer.stopShimmer()
                             binding.postImageShimmer.visibility = View.GONE
-                            Log.e(
-                                "Picasso",
-                                "Failed to load image for: ${post.title}. Error: ${e?.message}"
-                            )
-
                             binding.postImage.setImageResource(android.R.drawable.ic_menu_gallery)
                         }
                     })
@@ -174,10 +125,10 @@ class PostRowViewHolder(
             binding.postImage.setImageResource(android.R.drawable.ic_menu_gallery)
         }
 
-        updateSaveButton()
+        updateSaveButtonUI()
     }
 
-    private fun updateSaveButton() {
+    private fun updateSaveButtonUI() {
         val context = itemView.context
         if (isSaved) {
             binding.postSaveButton.setImageResource(R.drawable.ic_bookmark_filled)

@@ -42,29 +42,17 @@ class ChatAdapter : RecyclerView.Adapter<BaseMessageViewHolder>() {
         }
     }
 
-    fun addLoadingMessage(text: String) {
-        messages.add(ChatMessage(text, "model"))
-        notifyItemInserted(messages.size - 1)
-    }
-
-    fun removeLoadingMessage() {
-        if (messages.isNotEmpty() && (messages.last().content == "Thinking..." || messages.last().content == "Typing...")) {
-            val index = messages.size - 1
-            messages.removeAt(index)
-            notifyItemRemoved(index)
-        }
-    }
-
     override fun getItemViewType(position: Int): Int {
         return if (messages[position].role == "user") VIEW_TYPE_USER else VIEW_TYPE_BOT
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseMessageViewHolder {
         val inflater = LayoutInflater.from(parent.context)
+
         return if (viewType == VIEW_TYPE_USER) {
-            UserRowViewHolder(ChatItemUserBinding.inflate(inflater, parent, false))
+            UserChatRowViewHolder(ChatItemUserBinding.inflate(inflater, parent, false))
         } else {
-            BotRowViewHolder(ChatItemBotBinding.inflate(inflater, parent, false))
+            BotChatRowViewHolder(ChatItemBotBinding.inflate(inflater, parent, false))
         }
     }
 

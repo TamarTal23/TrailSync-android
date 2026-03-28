@@ -8,7 +8,9 @@ import com.idz.trailsync.model.PostWithComments
 
 class PostsAdapter(
     var posts: List<PostWithComments>? = null,
-    var listener: OnPostClickListener? = null
+    var listener: OnPostClickListener? = null,
+    var currentUserId: String? = null,
+    var savedPostIds: Set<String> = emptySet()
 ) : RecyclerView.Adapter<PostRowViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostRowViewHolder {
@@ -24,7 +26,8 @@ class PostsAdapter(
 
     override fun onBindViewHolder(holder: PostRowViewHolder, position: Int) {
         posts?.get(position)?.let {
-            holder.bind(it)
+            val isSaved = savedPostIds.contains(it.post.id)
+            holder.bind(it, currentUserId, isSaved)
         }
     }
 

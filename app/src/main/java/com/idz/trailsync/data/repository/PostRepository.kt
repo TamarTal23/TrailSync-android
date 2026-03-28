@@ -1,10 +1,14 @@
 package com.idz.trailsync.data.repository
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.os.Looper
 import androidx.core.os.HandlerCompat
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import com.google.firebase.firestore.DocumentSnapshot
 import com.idz.trailsync.base.BooleanCallback
+import com.idz.trailsync.base.MyApplication
 import com.idz.trailsync.data.models.FirebaseModel
 import com.idz.trailsync.data.models.FirebaseStorageModel
 import com.idz.trailsync.model.Post
@@ -20,8 +24,14 @@ class PostRepository private constructor() {
     private val database: AppLocalDbRepository = AppLocalDB.database
     private val mainHandler = HandlerCompat.createAsync(Looper.getMainLooper())
 
+    private var lastDocument: DocumentSnapshot? = null
+    private val _isPagingLoading = MutableLiveData<Boolean>(false)
+    val isPagingLoading: LiveData<Boolean> = _isPagingLoading
+
     companion object {
         val shared = PostRepository()
+        private const val PAGE_SIZE = 5L
+        private const val POSTS_LAST_UPDATED = "posts_last_updated"
     }
 
     fun getAllPosts(): LiveData<List<PostWithComments>> {
@@ -33,7 +43,41 @@ class PostRepository private constructor() {
     }
 
     fun refreshAllPosts() {
-        firebaseModel.getAllPosts { remotePosts ->
+        val context = MyApplication.Globals.context ?: return
+        val sharedPrefs = context.getSharedPreferences("TAG", Context.MODE_PRIVATE)
+        val lastUpdated = sharedPrefs.getLong(POSTS_LAST_UPDATED, 0L)
+
+        firebaseModel.getPostsSince(lastUpdated) { remotePosts ->
+            executor.execute {
+                val postDao = database.PostDao()
+                var latestTime = lastUpdated
+                
+                remotePosts.forEach { post ->
+                    val localPost = postDao.getById(post.id)
+                    val postToSave = if (localPost != null) {
+                        post.copy(commentsLoaded = localPost.commentsLoaded)
+                    } else {
+                        post
+                    }
+                    postDao.upsert(postToSave)
+                    refreshCommentsForPost(post.id)
+                    
+                    if (post.updatedAt.time > latestTime) {
+                        latestTime = post.updatedAt.time
+                    }
+                }
+                
+                sharedPrefs.edit().putLong(POSTS_LAST_UPDATED, latestTime).apply()
+            }
+        }
+    }
+
+    fun loadNextPage() {
+        if (_isPagingLoading.value == true) return
+        
+        _isPagingLoading.value = true
+        firebaseModel.getPostsPaged(PAGE_SIZE, lastDocument) { remotePosts, lastDoc ->
+            lastDocument = lastDoc
             executor.execute {
                 val postDao = database.PostDao()
                 remotePosts.forEach { post ->
@@ -45,6 +89,9 @@ class PostRepository private constructor() {
                     }
                     postDao.upsert(postToSave)
                     refreshCommentsForPost(post.id)
+                }
+                mainHandler.post {
+                    _isPagingLoading.value = false
                 }
             }
         }
@@ -120,21 +167,24 @@ class PostRepository private constructor() {
     }
 
     fun deletePost(postId: String, callback: BooleanCallback) {
-        firebaseModel.deletePost(postId) { success ->
-            if (success) {
-                firebaseStorageModel.deletePostImages(postId) { storageSuccess ->
-                    executor.execute {
-                        database.PostDao().deleteById(postId)
-                        mainHandler.post {
-                            callback(true)
-                        }
+        executor.execute {
+            database.PostDao().deleteById(postId)
+            
+            mainHandler.post {
+                callback(true)
+                
+                firebaseModel.deletePost(postId) { success ->
+                    if (success) {
+                        firebaseStorageModel.deletePostImages(postId) { }
                     }
                 }
-            } else {
-                mainHandler.post {
-                    callback(false)
-                }
             }
+        }
+    }
+
+    fun clearLocalDatabase() {
+        executor.execute {
+            database.clearAllTables()
         }
     }
 }
