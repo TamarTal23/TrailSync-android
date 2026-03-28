@@ -27,7 +27,6 @@ import com.idz.trailsync.features.post.photo.PhotoCarouselController
 import com.idz.trailsync.model.Comment
 import com.idz.trailsync.model.Post
 import com.idz.trailsync.data.repository.UserRepository
-import com.idz.trailsync.features.comment.CommentAdapter
 import com.squareup.picasso.Picasso
 import java.util.UUID
 
@@ -118,8 +117,6 @@ class PostDetailsFragment : Fragment() {
                                 id = UUID.randomUUID().toString(),
                                 text = text,
                                 author = loggedInUser.id,
-                                authorName = loggedInUser.username,
-                                authorImage = loggedInUser.profilePicture,
                                 postId = postId
                             )
                             viewModel.addComment(comment) { success ->

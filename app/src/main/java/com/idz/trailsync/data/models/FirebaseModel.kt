@@ -110,9 +110,39 @@ class FirebaseModel {
     fun upsertUser(user: User, callback: BooleanCallback) {
         getUserDocument(user.id) { docRef ->
             docRef.set(user.json).addOnCompleteListener { task ->
-                callback(task.isSuccessful)
+                if (task.isSuccessful) {
+                    updateUserComments(user) {
+                        callback(true)
+                    }
+                } else {
+                    callback(false)
+                }
             }
         }
+    }
+
+    private fun updateUserComments(user: User, callback: () -> Unit) {
+        database.collectionGroup(Comment.SUB_COLLECTION)
+            .whereEqualTo("author", user.id)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                if (querySnapshot.isEmpty) {
+                    callback()
+                    return@addOnSuccessListener
+                }
+
+                val batch = database.batch()
+                for (document in querySnapshot.documents) {
+                    batch.update(document.reference, "authorImage", user.profilePicture)
+                }
+
+                batch.commit().addOnCompleteListener {
+                    callback()
+                }
+            }
+            .addOnFailureListener {
+                callback()
+            }
     }
 
     fun upsertPost(post: Post, callback: BooleanCallback) {
