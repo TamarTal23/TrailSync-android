@@ -4,6 +4,8 @@ import android.graphics.Bitmap
 import android.os.Looper
 import androidx.core.os.HandlerCompat
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import com.google.firebase.firestore.DocumentSnapshot
 import com.idz.trailsync.base.BooleanCallback
 import com.idz.trailsync.data.models.FirebaseModel
 import com.idz.trailsync.data.models.FirebaseStorageModel
@@ -20,8 +22,13 @@ class PostRepository private constructor() {
     private val database: AppLocalDbRepository = AppLocalDB.database
     private val mainHandler = HandlerCompat.createAsync(Looper.getMainLooper())
 
+    private var lastDocument: DocumentSnapshot? = null
+    private val _isPagingLoading = MutableLiveData<Boolean>(false)
+    val isPagingLoading: LiveData<Boolean> = _isPagingLoading
+
     companion object {
         val shared = PostRepository()
+        private const val PAGE_SIZE = 5L
     }
 
     fun getAllPosts(): LiveData<List<PostWithComments>> {
@@ -33,7 +40,16 @@ class PostRepository private constructor() {
     }
 
     fun refreshAllPosts() {
-        firebaseModel.getAllPosts { remotePosts ->
+        lastDocument = null
+        loadNextPage()
+    }
+
+    fun loadNextPage() {
+        if (_isPagingLoading.value == true) return
+        
+        _isPagingLoading.value = true
+        firebaseModel.getPostsPaged(PAGE_SIZE, lastDocument) { remotePosts, lastDoc ->
+            lastDocument = lastDoc
             executor.execute {
                 val postDao = database.PostDao()
                 remotePosts.forEach { post ->
@@ -45,6 +61,9 @@ class PostRepository private constructor() {
                     }
                     postDao.upsert(postToSave)
                     refreshCommentsForPost(post.id)
+                }
+                mainHandler.post {
+                    _isPagingLoading.value = false
                 }
             }
         }
@@ -125,13 +144,19 @@ class PostRepository private constructor() {
             
             mainHandler.post {
                 callback(true)
-
+                
                 firebaseModel.deletePost(postId) { success ->
                     if (success) {
                         firebaseStorageModel.deletePostImages(postId) { }
                     }
                 }
             }
+        }
+    }
+
+    fun clearLocalDatabase() {
+        executor.execute {
+            database.clearAllTables()
         }
     }
 }

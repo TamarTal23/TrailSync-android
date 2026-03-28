@@ -16,6 +16,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
 import com.idz.trailsync.R
 import com.idz.trailsync.databinding.FragmentHomeBinding
@@ -50,7 +51,7 @@ class HomeFragment : Fragment() {
         setupSwipeRefresh()
         setupSearchAndDrawerTrigger()
         setupDrawerFilters()
-        observeViewModel()
+        observePosts()
     }
 
     override fun onResume() {
@@ -90,6 +91,20 @@ class HomeFragment : Fragment() {
             layoutManager = LinearLayoutManager(context)
             setHasFixedSize(true)
             adapter = this@HomeFragment.adapter
+
+            addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    super.onScrolled(recyclerView, dx, dy)
+                    
+                    val layoutManager = layoutManager as LinearLayoutManager
+                    val totalItemCount = layoutManager.itemCount
+                    val lastVisibleItem = layoutManager.findLastVisibleItemPosition()
+
+                    if (lastVisibleItem >= totalItemCount - 2) {
+                        viewModel.loadNextPage()
+                    }
+                }
+            })
         }
     }
 
@@ -172,7 +187,7 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun observeViewModel() {
+    private fun observePosts() {
         viewModel.posts.observe(viewLifecycleOwner) { posts ->
             adapter?.posts = posts
             adapter?.notifyDataSetChanged()
@@ -184,6 +199,10 @@ class HomeFragment : Fragment() {
         postSharedViewModel.savedPostIds.observe(viewLifecycleOwner) { ids ->
             adapter?.savedPostIds = ids
             adapter?.notifyDataSetChanged()
+        }
+
+        viewModel.isPagingLoading.observe(viewLifecycleOwner) { isLoading ->
+            // You could show a small progress bar at the bottom here
         }
     }
 

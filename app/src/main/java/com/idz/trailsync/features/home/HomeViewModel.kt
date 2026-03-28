@@ -26,6 +26,8 @@ class HomeViewModel : ViewModel() {
         )
     }
 
+    val isPagingLoading: LiveData<Boolean> = PostRepository.shared.isPagingLoading
+
     fun updateLocation(location: String?) {
         val current = _filters.value ?: PostFilters()
         _filters.value = current.copy(location = location)
@@ -46,5 +48,9 @@ class HomeViewModel : ViewModel() {
 
     fun refreshPosts() {
         PostRepository.shared.refreshAllPosts()
+    }
+
+    fun loadNextPage() {
+        PostRepository.shared.loadNextPage()
     }
 }
