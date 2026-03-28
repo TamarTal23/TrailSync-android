@@ -121,8 +121,6 @@ data class Post(
                 UPDATED_AT_KEY to Timestamp(updatedAt),
                 MAP_LINK_KEY to mapLink,
                 SAVED_COUNT_KEY to savedCount
-                // remoteCommentCount is managed by Firebase Functions or server-side usually
-                // but if you manage it client side, include it here if needed.
             )
         }
 }
