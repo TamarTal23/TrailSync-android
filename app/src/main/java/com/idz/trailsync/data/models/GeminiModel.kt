@@ -44,7 +44,7 @@ interface GeminiAPI {
 
 class GeminiModel {
     private val apiKey = BuildConfig.GEMINI_API_KEY
-    private val modelName = "gemini-3.1-flash-lite-preview"
+    private val modelName = BuildConfig.GEMINI_MODEL
 
     fun fetchGeminiResponse(messageHistory: List<ChatMessage>, callback: (String?) -> Unit) {
         val systemMsg = messageHistory.find { it.role == "system" }
