@@ -3,8 +3,6 @@ package com.idz.trailsync
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import com.idz.trailsync.features.login.LoginFragment
-import com.idz.trailsync.features.register.RegisterFragment
 import com.idz.trailsync.shared.viewModels.AuthenticationViewModel
 
 class AuthenticationActivity : AppCompatActivity() {
@@ -20,18 +18,10 @@ class AuthenticationActivity : AppCompatActivity() {
             return
         }
         setContentView(R.layout.activity_authentication)
-
-        if (savedInstanceState == null) {
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.auth_fragment_container, LoginFragment())
-                .commit()
-        }
     }
 
+    // This method can now be removed as navigation is handled within fragments
     fun showRegisterFragment() {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.auth_fragment_container, RegisterFragment())
-            .addToBackStack(null)
-            .commit()
+        // Navigation is handled by findNavController().navigate() in LoginFragment
     }
 }
