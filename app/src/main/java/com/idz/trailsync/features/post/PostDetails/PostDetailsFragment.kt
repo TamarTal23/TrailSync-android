@@ -21,10 +21,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.idz.trailsync.R
 import com.idz.trailsync.databinding.FragmentPostDetailsBinding
 import com.idz.trailsync.features.post.photo.PhotoCarouselController
 import com.idz.trailsync.model.Post
 import com.idz.trailsync.shared.viewModels.AuthenticationViewModel
+import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 
 class PostDetailsFragment : Fragment() {
@@ -47,6 +49,8 @@ class PostDetailsFragment : Fragment() {
         setupUI(post)
         setupComments(post.id)
         observeViewModel(post.id)
+
+        viewModel.fetchPostAuthor(post.author)
 
         return binding.root
     }
@@ -88,6 +92,21 @@ class PostDetailsFragment : Fragment() {
     }
 
     private fun observeViewModel(postId: String) {
+        viewModel.postAuthor.observe(viewLifecycleOwner) { author ->
+            binding.authorName.text = author?.username ?: "Anonymous"
+            if (!author?.profilePicture.isNullOrBlank()) {
+                Picasso.get()
+                    .load(author?.profilePicture)
+                    .placeholder(R.drawable.user_icon_small)
+                    .error(R.drawable.user_icon_small)
+                    .fit()
+                    .centerCrop()
+                    .into(binding.authorImage)
+            } else {
+                binding.authorImage.setImageResource(R.drawable.user_icon_small)
+            }
+        }
+
         authViewModel.currentUserProfile.observe(viewLifecycleOwner) { user ->
             if (user != null) {
                 binding.addCommentContainer.visibility = View.VISIBLE
@@ -95,7 +114,7 @@ class PostDetailsFragment : Fragment() {
                     Picasso.get().load(user.profilePicture)
                         .into(binding.addCommentLayout.profileImage)
                 }
-                
+
                 binding.addCommentLayout.sendButton.setOnClickListener {
                     val text = binding.addCommentLayout.commentInput.text.toString().trim()
                     if (text.isNotEmpty()) {
@@ -130,7 +149,8 @@ class PostDetailsFragment : Fragment() {
     private fun hideKeyboard() {
         val view = activity?.currentFocus
         if (view != null) {
-            val inputMethodManager = activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+            val inputMethodManager =
+                activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
             inputMethodManager?.hideSoftInputFromWindow(view.windowToken, 0)
             view.clearFocus()
         }
@@ -182,7 +202,8 @@ class PostDetailsFragment : Fragment() {
                             Intent(Intent.ACTION_VIEW, Uri.parse(url))
                         }
 
-                        val isMapIntent = intent.`package`?.contains("com.google.android.apps.maps") == true ||
+                        val isMapIntent =
+                            intent.`package`?.contains("com.google.android.apps.maps") == true ||
                                     intent.action?.contains("geo") == true ||
                                     intent.dataString?.let { isGoogleMapsUrl(it) } == true
 

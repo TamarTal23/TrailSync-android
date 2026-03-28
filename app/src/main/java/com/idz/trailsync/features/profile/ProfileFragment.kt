@@ -28,7 +28,7 @@ class ProfileFragment : Fragment() {
     private val viewModel: ProfileViewModel by viewModels()
     private val authViewModel: AuthenticationViewModel by activityViewModels()
     private val postSharedViewModel: PostSharedViewModel by activityViewModels()
-    
+
     private var adapter: PostsAdapter? = null
 
     override fun onCreateView(
@@ -127,7 +127,7 @@ class ProfileFragment : Fragment() {
         }
 
         adapter?.currentUserId = postSharedViewModel.currentUserId
-        
+
         postSharedViewModel.savedPostIds.observe(viewLifecycleOwner) { ids ->
             adapter?.savedPostIds = ids
             adapter?.notifyDataSetChanged()
