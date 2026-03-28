@@ -80,13 +80,29 @@ class PostRowViewHolder(
     fun bind(postWithComments: PostWithComments) {
         val post = postWithComments.post
         this.post = post
+        val author = postWithComments.author
+
         binding.postTitle.text = post.title
         binding.postLocation.text = post.location?.name ?: "Unknown"
         binding.postDays.text = "${post.numberOfDays} days"
         binding.postPrice.text = post.price.toString()
 
+        binding.authorName.text = author?.username ?: "Anonymous"
+
+        if (!author?.profilePicture.isNullOrBlank()) {
+            Picasso.get()
+                .load(author?.profilePicture)
+                .placeholder(R.drawable.user_icon_small)
+                .error(R.drawable.user_icon_small)
+                .fit()
+                .centerCrop()
+                .into(binding.authorImage)
+        } else {
+            binding.authorImage.setImageResource(R.drawable.user_icon_small)
+        }
+
         binding.saveCount.text = post.savedCount.toString()
-        
+
         if (post.commentsLoaded) {
             binding.commentCountShimmer.stopShimmer()
             binding.commentCountShimmer.visibility = View.GONE
