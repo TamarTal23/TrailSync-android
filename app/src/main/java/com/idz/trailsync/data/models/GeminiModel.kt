@@ -12,7 +12,8 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 data class GeminiRequest(
-    val contents: List<Content>
+    val contents: List<Content>,
+    val system_instruction: Content? = null
 )
 
 data class Content(
@@ -43,19 +44,30 @@ interface GeminiAPI {
 
 class GeminiModel {
     private val apiKey = BuildConfig.GEMINI_API_KEY
-    private val modelName = BuildConfig.GEMINI_MODEL
+    private val modelName = "gemini-3.1-flash-lite-preview"
 
     fun fetchGeminiResponse(messageHistory: List<ChatMessage>, callback: (String?) -> Unit) {
+        val systemMsg = messageHistory.find { it.role == "system" }
+        val systemInstruction = systemMsg?.let {
+            Content(
+                role = "system",
+                parts = listOf(Part(it.content))
+            )
+        }
+
         val contents = messageHistory
             .filter { it.role != "system" } 
             .map { msg ->
                 Content(
-                    role = msg.role,
+                    role = if (msg.role == "model") "model" else "user",
                     parts = listOf(Part(msg.content))
                 )
             }
         
-        val request = GeminiRequest(contents = contents)
+        val request = GeminiRequest(
+            contents = contents,
+            system_instruction = systemInstruction
+        )
 
         GeminiClient.geminiApiClient.getChatResponse(modelName, apiKey, request).enqueue(object : Callback<GeminiResponse> {
             override fun onResponse(call: Call<GeminiResponse>, response: Response<GeminiResponse>) {

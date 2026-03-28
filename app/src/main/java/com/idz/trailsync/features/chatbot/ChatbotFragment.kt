@@ -15,7 +15,6 @@ class ChatbotFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: ChatbotViewModel by activityViewModels()
-    private val loadingText = "Thinking..."
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -57,7 +56,7 @@ class ChatbotFragment : Fragment() {
     private fun observeViewModel() {
         viewModel.messages.observe(viewLifecycleOwner) { messages ->
             val visibleMessages = messages.filter {
-                it.content != "Thinking..." && !it.content.startsWith("You are an assistant") && !it.content.startsWith("I understand. I am your TrailSync")
+                it.role != "system"
             }
             chatAdapter.setMessages(visibleMessages)
             binding.chatRecyclerView.scrollToPosition(chatAdapter.itemCount - 1)
@@ -65,10 +64,12 @@ class ChatbotFragment : Fragment() {
 
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
             if (isLoading) {
-                chatAdapter.addLoadingMessage(loadingText)
+                binding.shimmerContainer.visibility = View.VISIBLE
+                binding.shimmerContainer.startShimmer()
                 binding.chatRecyclerView.scrollToPosition(chatAdapter.itemCount - 1)
             } else {
-                chatAdapter.removeLoadingMessage()
+                binding.shimmerContainer.stopShimmer()
+                binding.shimmerContainer.visibility = View.GONE
             }
         }
     }
