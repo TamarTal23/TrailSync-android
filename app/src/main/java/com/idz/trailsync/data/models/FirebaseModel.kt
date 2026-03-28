@@ -2,6 +2,7 @@ package com.idz.trailsync.data.models
 
 import android.util.Log
 import com.google.firebase.Firebase
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
@@ -56,6 +57,20 @@ class FirebaseModel {
                     for (json in it.result) {
                         posts.add(Post.fromJSON(json.data))
                     }
+                    callback(posts)
+                } else {
+                    callback(listOf())
+                }
+            }
+    }
+
+    fun getPostsSince(since: Long, callback: PostsCallback) {
+        database.collection(Constants.COLLECTIONS.POSTS)
+            .whereGreaterThan("updatedAt", Timestamp(since / 1000, ((since % 1000) * 1000000).toInt()))
+            .get()
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val posts = task.result.map { Post.fromJSON(it.data) }
                     callback(posts)
                 } else {
                     callback(listOf())
