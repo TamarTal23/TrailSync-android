@@ -1,4 +1,4 @@
-package com.idz.trailsync.features.editProfile
+package com.idz.trailsync.shared.viewModels
 
 import android.util.Patterns
 import androidx.lifecycle.LiveData

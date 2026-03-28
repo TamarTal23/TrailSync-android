@@ -1,5 +1,6 @@
 package com.idz.trailsync.dao
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -13,10 +14,10 @@ interface SavedPostDao {
     fun upsert(vararg savedPost: SavedPost)
 
     @Query("SELECT * FROM SavedPost WHERE userId = :userId ORDER BY createdAt DESC")
-    fun getSavedPostsByUser(userId: String): List<SavedPost>
+    fun getSavedPostsByUser(userId: String): LiveData<List<SavedPost>>
 
     @Query("SELECT * FROM SavedPost WHERE userId = :userId AND postId = :postId LIMIT 1")
-    fun getSavedPost(userId: String, postId: String): SavedPost?
+    fun getSavedPostById(userId: String, postId: String): SavedPost?
 
     @Query("DELETE FROM SavedPost WHERE userId = :userId AND postId = :postId")
     fun delete(userId: String, postId: String)
@@ -27,6 +28,8 @@ interface SavedPostDao {
     @Transaction
     fun clearAndInsertAll(userId: String, savedPosts: List<SavedPost>) {
         deleteAllByUser(userId)
-        upsert(*savedPosts.toTypedArray())
+        if (savedPosts.isNotEmpty()) {
+            upsert(*savedPosts.toTypedArray())
+        }
     }
 }

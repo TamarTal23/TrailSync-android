@@ -2,9 +2,6 @@ package com.idz.trailsync.features.savedPosts
 
 import android.util.Log
 import androidx.recyclerview.widget.RecyclerView
-import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
-import com.idz.trailsync.data.repository.SavedPostRepository
 import com.idz.trailsync.databinding.SavedPostListItemBinding
 import com.idz.trailsync.features.post.OnPostClickListener
 import com.idz.trailsync.model.Post
@@ -25,13 +22,8 @@ class SavedPostRowViewHolder(
         }
 
         binding.postSaveButton.setOnClickListener {
-            val currentPost = post ?: return@setOnClickListener
-            val currentUserId = Firebase.auth.currentUser?.uid ?: return@setOnClickListener
-            
-            SavedPostRepository.shared.unsavePost(currentUserId, currentPost.id) { success ->
-                if (success) {
-                    listener?.onDeleteClick(currentPost)
-                }
+            post?.let {
+                listener?.onSaveClick(it)
             }
         }
     }

@@ -1,4 +1,4 @@
-package com.idz.trailsync.features.post
+package com.idz.trailsync.features.post.PostDetails
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -32,9 +32,9 @@ class CommentAdapter : ListAdapter<CommentWithUser, CommentAdapter.CommentViewHo
 
             binding.commentTextView.text = comment.text
             binding.authorNameTextView.text = user?.username ?: "Anonymous"
-            
+
             binding.commentTimeTextView.text = formatTimestamp(comment.createdAt)
-            
+
             val profilePicture = user?.profilePicture
             if (!profilePicture.isNullOrEmpty()) {
                 Picasso.get()
@@ -50,7 +50,7 @@ class CommentAdapter : ListAdapter<CommentWithUser, CommentAdapter.CommentViewHo
         private fun formatTimestamp(createdAt: Date): String {
             val now = Date()
             val diffInMs = now.time - createdAt.time
-            
+
             val minutes = TimeUnit.MILLISECONDS.toMinutes(diffInMs)
             val hours = TimeUnit.MILLISECONDS.toHours(diffInMs)
             val days = TimeUnit.MILLISECONDS.toDays(diffInMs)

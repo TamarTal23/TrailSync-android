@@ -1,4 +1,4 @@
-package com.idz.trailsync
+package com.idz.trailsync.shared.viewModels
 
 import android.graphics.Bitmap
 import androidx.lifecycle.LiveData
@@ -33,6 +33,8 @@ sealed class LoginResult {
 }
 
 class AuthenticationViewModel : ViewModel() {
+    private val userRepository = UserRepository.shared
+    
     private val _loginResult = MutableLiveData<LoginResult>()
     val loginResult: LiveData<LoginResult> = _loginResult
 
@@ -42,12 +44,36 @@ class AuthenticationViewModel : ViewModel() {
     private val _updateProfileResult = MutableLiveData<Event<LoginResult>?>()
     val updateProfileResult: LiveData<Event<LoginResult>?> = _updateProfileResult
 
+    private val _currentUserId = MutableLiveData<String?>(Firebase.auth.currentUser?.uid)
+    val currentUserId: LiveData<String?> = _currentUserId
+
+    private val _currentUserProfile = MutableLiveData<User?>()
+    val currentUserProfile: LiveData<User?> = _currentUserProfile
+
+    init {
+        fetchCurrentUserProfile()
+    }
+
+    fun fetchCurrentUserProfile() {
+        val uid = Firebase.auth.currentUser?.uid
+        if (uid != null) {
+            userRepository.getUserById(uid) { user ->
+                _currentUserProfile.postValue(user)
+            }
+        } else {
+            _currentUserProfile.value = null
+        }
+    }
+
     fun login(email: String, password: String) {
         val auth = Firebase.auth
         if (email.isNotEmpty() && password.isNotEmpty()) {
             auth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
+                        val uid = auth.currentUser?.uid
+                        _currentUserId.value = uid
+                        fetchCurrentUserProfile()
                         _loginResult.value = LoginResult.Success
                     } else {
                         val exception = task.exception
@@ -71,10 +97,15 @@ class AuthenticationViewModel : ViewModel() {
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
                         val uid = auth.currentUser?.uid ?: ""
+                        _currentUserId.value = uid
                         val user = User(id = uid, email = email, username = username, profilePicture = null)
-                        UserRepository.shared.upsertUser(user, profileBitmap) { success ->
-                            _registrationResult.value = if (success) LoginResult.Success 
-                            else LoginResult.Error("Failed to save user to database")
+                        userRepository.upsertUser(user, profileBitmap) { success ->
+                            if (success) {
+                                fetchCurrentUserProfile()
+                                _registrationResult.value = LoginResult.Success 
+                            } else {
+                                _registrationResult.value = LoginResult.Error("Failed to save user to database")
+                            }
                         }
                     } else {
                         val exception = task.exception
@@ -92,20 +123,22 @@ class AuthenticationViewModel : ViewModel() {
     }
 
     fun updateProfile(newUsername: String?, newProfileBitmap: Bitmap?) {
-        val authUser = Firebase.auth.currentUser ?: run {
+        val uid = _currentUserId.value ?: run {
             _updateProfileResult.value = Event(LoginResult.Error("User not logged in"))
             return
         }
 
-        var isUpdateStarted = false
-        UserRepository.shared.getUserById(authUser.uid) { user ->
-            if (isUpdateStarted || user == null) return@getUserById
-            isUpdateStarted = true
+        userRepository.getUserById(uid) { user ->
+            if (user == null) return@getUserById
 
             val updatedUser = user.copy(username = newUsername ?: user.username)
-            UserRepository.shared.upsertUser(updatedUser, newProfileBitmap) { success ->
-                _updateProfileResult.value = if (success) Event(LoginResult.Success)
-                else Event(LoginResult.Error("Failed to update profile"))
+            userRepository.upsertUser(updatedUser, newProfileBitmap) { success ->
+                if (success) {
+                    fetchCurrentUserProfile()
+                    _updateProfileResult.value = Event(LoginResult.Success)
+                } else {
+                    _updateProfileResult.value = Event(LoginResult.Error("Failed to update profile"))
+                }
             }
         }
     }
@@ -114,6 +147,11 @@ class AuthenticationViewModel : ViewModel() {
         _updateProfileResult.value = null
     }
 
-    fun isUserLoggedIn(): Boolean = Firebase.auth.currentUser != null
-    fun logout() = Firebase.auth.signOut()
+    fun isUserLoggedIn(): Boolean = _currentUserId.value != null
+    
+    fun logout() {
+        Firebase.auth.signOut()
+        _currentUserId.value = null
+        _currentUserProfile.value = null
+    }
 }

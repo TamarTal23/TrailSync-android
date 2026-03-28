@@ -17,11 +17,11 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.idz.trailsync.databinding.FragmentRegisterBinding
-import com.idz.trailsync.features.editProfile.UserFormViewModel
+import com.idz.trailsync.shared.viewModels.UserFormViewModel
 import com.idz.trailsync.utils.BitmapUtils
-import com.idz.trailsync.AuthenticationViewModel
+import com.idz.trailsync.shared.viewModels.AuthenticationViewModel
 import com.idz.trailsync.HomeActivity
-import com.idz.trailsync.LoginResult
+import com.idz.trailsync.shared.viewModels.LoginResult
 
 class RegisterFragment : Fragment() {
     private var _binding: FragmentRegisterBinding? = null

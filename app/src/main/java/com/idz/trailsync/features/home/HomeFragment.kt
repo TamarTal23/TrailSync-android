@@ -19,10 +19,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.button.MaterialButton
 import com.idz.trailsync.R
 import com.idz.trailsync.databinding.FragmentHomeBinding
-import com.idz.trailsync.features.createPost.location.LocationAutocompleteController
+import com.idz.trailsync.shared.location.LocationAutocompleteController
 import com.idz.trailsync.features.post.OnPostClickListener
 import com.idz.trailsync.features.post.PostsAdapter
 import com.idz.trailsync.model.Post
+import com.idz.trailsync.shared.viewModels.PostSharedViewModel
 import com.idz.trailsync.utils.DialogUtils
 
 class HomeFragment : Fragment() {
@@ -31,6 +32,7 @@ class HomeFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: HomeViewModel by activityViewModels()
+    private val postSharedViewModel: PostSharedViewModel by activityViewModels()
     private var adapter: PostsAdapter? = null
     private var locationController: LocationAutocompleteController? = null
 
@@ -48,12 +50,13 @@ class HomeFragment : Fragment() {
         setupSwipeRefresh()
         setupSearchAndDrawerTrigger()
         setupDrawerFilters()
-        observePosts()
+        observeViewModel()
     }
 
     override fun onResume() {
         super.onResume()
         viewModel.refreshPosts()
+        postSharedViewModel.refreshSavedPosts()
     }
 
     private fun setupRecyclerView() {
@@ -73,6 +76,14 @@ class HomeFragment : Fragment() {
                 val action = HomeFragmentDirections.actionHomeFragmentToUpsertPostFragment(post)
                 findNavController().navigate(action)
             }
+
+            override fun onSaveClick(post: Post) {
+                postSharedViewModel.toggleSavePost(post) { success ->
+                    if (!success) {
+                        Toast.makeText(context, "Failed to update saved status", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
         }
 
         binding.recyclerView.apply {
@@ -85,6 +96,7 @@ class HomeFragment : Fragment() {
     private fun setupSwipeRefresh() {
         binding.swipeRefresh.setOnRefreshListener {
             viewModel.refreshPosts()
+            postSharedViewModel.refreshSavedPosts()
         }
     }
 
@@ -151,7 +163,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun deletePost(postId: String) {
-        viewModel.deletePost(postId) { success ->
+        postSharedViewModel.deletePost(postId) { success ->
             if (success) {
                 Toast.makeText(context, "Post deleted", Toast.LENGTH_SHORT).show()
             } else {
@@ -160,11 +172,18 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun observePosts() {
+    private fun observeViewModel() {
         viewModel.posts.observe(viewLifecycleOwner) { posts ->
             adapter?.posts = posts
             adapter?.notifyDataSetChanged()
             binding.swipeRefresh.isRefreshing = false
+        }
+
+        adapter?.currentUserId = postSharedViewModel.currentUserId
+        
+        postSharedViewModel.savedPostIds.observe(viewLifecycleOwner) { ids ->
+            adapter?.savedPostIds = ids
+            adapter?.notifyDataSetChanged()
         }
     }
 

@@ -29,7 +29,7 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.idz.trailsync.R
 import com.idz.trailsync.databinding.FragmentUpsertPostBinding
-import com.idz.trailsync.features.createPost.location.LocationAutocompleteController
+import com.idz.trailsync.shared.location.LocationAutocompleteController
 import com.idz.trailsync.features.post.photo.PhotoAdapter
 import com.idz.trailsync.model.Post
 import java.util.Date

@@ -1,15 +1,18 @@
 package com.idz.trailsync
 
 import android.os.Bundle
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.idz.trailsync.features.login.LoginFragment
 import com.idz.trailsync.features.register.RegisterFragment
+import com.idz.trailsync.shared.viewModels.AuthenticationViewModel
 
 class AuthenticationActivity : AppCompatActivity() {
+    private val authenticationViewModel: AuthenticationViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val authenticationViewModel = AuthenticationViewModel()
         if (authenticationViewModel.isUserLoggedIn()) {
             val intent = android.content.Intent(this, HomeActivity::class.java)
             startActivity(intent)

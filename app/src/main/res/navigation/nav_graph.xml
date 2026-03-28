@@ -15,6 +15,9 @@
         <action
             android:id="@+id/action_profileFragment_to_upsertPostFragment"
             app:destination="@id/upsertPostFragment" />
+        <action
+            android:id="@+id/action_profileFragment_to_editProfileFragment"
+            app:destination="@id/editProfileFragment" />
     </fragment>
 
     <fragment
@@ -64,7 +67,7 @@
 
     <fragment
         android:id="@+id/postDetailsFragment"
-        android:name="com.idz.trailsync.features.post.PostDetailsFragment"
+        android:name="com.idz.trailsync.features.post.PostDetails.PostDetailsFragment"
         android:label="Post Details"
         tools:layout="@layout/fragment_post_details">
         <argument

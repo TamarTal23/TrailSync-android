@@ -44,22 +44,6 @@ class FirebaseModel {
             }
     }
 
-    fun getAllUsers(callback: UsersCallback) {
-        database.collection(Constants.COLLECTIONS.USERS).get()
-            .addOnCompleteListener {
-                when (it.isSuccessful) {
-                    true -> {
-                        val users: MutableList<User> = mutableListOf()
-                        for (doc in it.result) {
-                            users.add(User.fromJSON(doc.data))
-                        }
-                        callback(users)
-                    }
-                    false -> callback(listOf())
-                }
-            }
-    }
-
     fun getAllPosts(callback: PostsCallback) {
         database.collection(Constants.COLLECTIONS.POSTS).get()
             .addOnCompleteListener {
@@ -268,3 +252,4 @@ class FirebaseModel {
         }
     }
 }
+

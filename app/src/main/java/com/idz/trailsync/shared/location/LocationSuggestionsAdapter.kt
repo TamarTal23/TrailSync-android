@@ -1,4 +1,4 @@
-package com.idz.trailsync.features.createPost.location
+package com.idz.trailsync.shared.location
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
