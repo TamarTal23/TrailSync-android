@@ -3,7 +3,7 @@ package com.idz.trailsync.features.comment
 import androidx.recyclerview.widget.RecyclerView
 import com.idz.trailsync.R
 import com.idz.trailsync.databinding.CommentItemBinding
-import com.idz.trailsync.model.Comment
+import com.idz.trailsync.model.CommentWithUser
 import com.squareup.picasso.Picasso
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -13,16 +13,20 @@ import java.util.concurrent.TimeUnit
 class CommentRowViewHolder(private val binding: CommentItemBinding) :
     RecyclerView.ViewHolder(binding.root) {
 
-    fun bind(comment: Comment) {
-        binding.commentTextView.text = comment.text
-        binding.authorNameTextView.text = comment.authorName
+    fun bind(commentWithUser: CommentWithUser) {
+        val comment = commentWithUser.comment
+        val user = commentWithUser.user
 
+        binding.commentTextView.text = comment.text
+        binding.authorNameTextView.text = user?.username ?: "Anonymous"
         binding.commentTimeTextView.text = formatTimestamp(comment.createdAt)
 
-        if (!comment.authorImage.isNullOrEmpty()) {
+        val profilePicture = user?.profilePicture
+        if (!profilePicture.isNullOrEmpty()) {
             Picasso.get()
-                .load(comment.authorImage)
+                .load(profilePicture)
                 .placeholder(R.drawable.user_icon_small)
+                .error(R.drawable.user_icon_small)
                 .into(binding.authorImageView)
         } else {
             binding.authorImageView.setImageResource(R.drawable.user_icon_small)
