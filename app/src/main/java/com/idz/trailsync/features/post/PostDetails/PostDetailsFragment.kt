@@ -93,43 +93,54 @@ class PostDetailsFragment : Fragment() {
 
     private fun observeViewModel(postId: String) {
         viewModel.postAuthor.observe(viewLifecycleOwner) { author ->
-            binding.authorName.text = author?.username ?: "Anonymous"
-            if (!author?.profilePicture.isNullOrBlank()) {
-                Picasso.get()
-                    .load(author?.profilePicture)
-                    .placeholder(R.drawable.user_icon_small)
-                    .error(R.drawable.user_icon_small)
-                    .fit()
-                    .centerCrop()
-                    .into(binding.authorImage)
-            } else {
-                binding.authorImage.setImageResource(R.drawable.user_icon_small)
+            _binding?.let { b ->
+                b.authorName.text = author?.username ?: "Anonymous"
+
+                if (!author?.profilePicture.isNullOrBlank()) {
+                    Picasso.get()
+                        .load(author?.profilePicture)
+                        .placeholder(R.drawable.user_icon_small)
+                        .error(R.drawable.user_icon_small)
+                        .fit()
+                        .centerCrop()
+                        .into(b.authorImage)
+                } else {
+                    b.authorImage.setImageResource(R.drawable.user_icon_small)
+                }
             }
         }
 
         authViewModel.currentUserProfile.observe(viewLifecycleOwner) { user ->
-            if (user != null) {
-                binding.addCommentContainer.visibility = View.VISIBLE
-                if (!user.profilePicture.isNullOrEmpty()) {
-                    Picasso.get().load(user.profilePicture)
-                        .into(binding.addCommentLayout.profileImage)
-                }
+            _binding?.let { b ->
+                if (user != null) {
+                    b.addCommentContainer.visibility = View.VISIBLE
+                    if (!user.profilePicture.isNullOrEmpty()) {
+                        Picasso.get().load(user.profilePicture)
+                            .into(b.addCommentLayout.profileImage)
+                    }
 
-                binding.addCommentLayout.sendButton.setOnClickListener {
-                    val text = binding.addCommentLayout.commentInput.text.toString().trim()
-                    if (text.isNotEmpty()) {
-                        viewModel.addComment(text, postId, user) { success ->
-                            if (success) {
-                                binding.addCommentLayout.commentInput.text?.clear()
-                                hideKeyboard()
-                            } else {
-                                Toast.makeText(requireContext(), "Failed to add comment", Toast.LENGTH_SHORT).show()
+                    b.addCommentLayout.sendButton.setOnClickListener {
+                        val text = b.addCommentLayout.commentInput.text.toString().trim()
+                        if (text.isNotEmpty()) {
+                            viewModel.addComment(text, postId, user) { success ->
+                                if (success) {
+                                    _binding?.addCommentLayout?.commentInput?.text?.clear()
+                                    hideKeyboard()
+                                } else {
+                                    context?.let { ctx ->
+                                        Toast.makeText(
+                                            ctx,
+                                            "Failed to add comment",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                }
                             }
                         }
                     }
+                } else {
+                    b.addCommentContainer.visibility = View.GONE
                 }
-            } else {
-                binding.addCommentContainer.visibility = View.GONE
             }
         }
     }
@@ -140,8 +151,9 @@ class PostDetailsFragment : Fragment() {
         binding.addCommentLayout.commentInput.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                binding.addCommentLayout.sendButton.isEnabled = !s.isNullOrBlank()
+                _binding?.addCommentLayout?.sendButton?.isEnabled = !s.isNullOrBlank()
             }
+
             override fun afterTextChanged(s: Editable?) {}
         })
     }
@@ -188,7 +200,10 @@ class PostDetailsFragment : Fragment() {
                     _binding?.mapProgressBar?.visibility = View.GONE
                 }
 
-                override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+                override fun shouldOverrideUrlLoading(
+                    view: WebView?,
+                    request: WebResourceRequest?
+                ): Boolean {
                     val url = request?.url?.toString() ?: return false
                     if (url.startsWith("http://") || url.startsWith("https://")) {
                         return !isGoogleMapsUrl(url)
