@@ -47,30 +47,13 @@ class FirebaseModel {
             }
     }
 
-    fun getAllPosts(callback: PostsCallback) {
-        database.collection(Constants.COLLECTIONS.POSTS)
-            .orderBy("createdAt", Query.Direction.DESCENDING)
-            .get()
-            .addOnCompleteListener {
-                if (it.isSuccessful) {
-                    val posts: MutableList<Post> = mutableListOf()
-                    for (json in it.result) {
-                        posts.add(Post.fromJSON(json.data))
-                    }
-                    callback(posts)
-                } else {
-                    callback(listOf())
-                }
-            }
-    }
-
     fun getPostsSince(since: Long, callback: PostsCallback) {
         database.collection(Constants.COLLECTIONS.POSTS)
             .whereGreaterThan("updatedAt", Timestamp(since / 1000, ((since % 1000) * 1000000).toInt()))
             .get()
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    val posts = task.result.map { Post.fromJSON(it.data) }
+                    val posts = task.result.map { Post.fromJSON(it.data, it.id) }
                     callback(posts)
                 } else {
                     callback(listOf())
@@ -89,7 +72,7 @@ class FirebaseModel {
 
         query.get().addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                val posts = task.result.map { Post.fromJSON(it.data) }
+                val posts = task.result.map { Post.fromJSON(it.data, it.id) }
                 val lastVisible = if (task.result.isEmpty) null else task.result.documents[task.result.size() - 1]
                 callback(posts, lastVisible)
             } else {
@@ -105,7 +88,7 @@ class FirebaseModel {
             .get()
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    val posts = task.result.map { Post.fromJSON(it.data) }
+                    val posts = task.result.map { Post.fromJSON(it.data, it.id) }
                     callback(posts)
                 } else {
                     callback(listOf())
@@ -114,15 +97,18 @@ class FirebaseModel {
     }
 
     fun getUserById(id: String, callback: UserCallback) {
-        database.collection(Constants.COLLECTIONS.USERS).whereEqualTo("id", id).get()
-            .addOnSuccessListener { snapshot ->
-                if (!snapshot.isEmpty) {
-                    callback(User.fromJSON(snapshot.documents[0].data ?: mapOf()))
-                } else {
-                    database.collection(Constants.COLLECTIONS.USERS).document(id).get()
-                        .addOnSuccessListener { doc ->
-                            if (doc.exists()) callback(User.fromJSON(doc.data ?: mapOf()))
-                            else callback(null)
+        database.collection(Constants.COLLECTIONS.USERS).document(id).get()
+            .addOnSuccessListener { doc ->
+                if (doc.exists()) callback(User.fromJSON(doc.data ?: mapOf(), doc.id))
+                else {
+                    // Fallback to searching by field if document ID doesn't match
+                    database.collection(Constants.COLLECTIONS.USERS).whereEqualTo("id", id).get()
+                        .addOnSuccessListener { snapshot ->
+                            if (!snapshot.isEmpty) {
+                                callback(User.fromJSON(snapshot.documents[0].data ?: mapOf(), snapshot.documents[0].id))
+                            } else {
+                                callback(null)
+                            }
                         }
                 }
             }
@@ -199,6 +185,7 @@ class FirebaseModel {
         database.runTransaction { transaction ->
             transaction.set(commentRef, comment.json)
             transaction.update(postRef, "updatedAt", FieldValue.serverTimestamp())
+            transaction.update(postRef, "commentCount", FieldValue.increment(1))
             null
         }.addOnCompleteListener { task ->
             callback(task.isSuccessful)

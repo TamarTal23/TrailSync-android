@@ -116,7 +116,10 @@ class ProfileFragment : Fragment() {
         viewModel.userPosts.observe(viewLifecycleOwner) { posts ->
             adapter?.posts = posts
             adapter?.notifyDataSetChanged()
-            binding.profileSwipeRefresh.isRefreshing = false
+        }
+
+        viewModel.isRefreshing.observe(viewLifecycleOwner) { isRefreshing ->
+            binding.profileSwipeRefresh.isRefreshing = isRefreshing
         }
 
         authViewModel.currentUserProfile.observe(viewLifecycleOwner) { user ->

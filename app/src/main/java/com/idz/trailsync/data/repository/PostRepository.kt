@@ -35,6 +35,7 @@ class PostRepository private constructor() {
         val shared = PostRepository()
         private const val PAGE_SIZE = 5L
         private const val POSTS_LAST_UPDATED = "posts_last_updated"
+        private const val PREFS_NAME = "TAG"
     }
 
     fun getAllPosts(): LiveData<List<PostWithComments>> {
@@ -45,15 +46,21 @@ class PostRepository private constructor() {
         return database.PostDao().getFilteredPosts(maxPrice, minDays, maxDays, location)
     }
 
-    fun refreshAllPosts() {
-        val context = MyApplication.Globals.context ?: return
-        val sharedPrefs = context.getSharedPreferences("TAG", Context.MODE_PRIVATE)
+    fun refreshAllPosts(callback: () -> Unit = {}) {
+        val context = MyApplication.Globals.context ?: run {
+            callback()
+            return
+        }
+        val sharedPrefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val lastUpdated = sharedPrefs.getLong(POSTS_LAST_UPDATED, 0L)
 
         _isRefreshing.postValue(true)
         firebaseModel.getPostsSince(lastUpdated) { remotePosts ->
             if (remotePosts.isEmpty()) {
-                mainHandler.post { _isRefreshing.value = false }
+                mainHandler.post { 
+                    _isRefreshing.value = false
+                    callback()
+                }
                 return@getPostsSince
             }
 
@@ -62,6 +69,8 @@ class PostRepository private constructor() {
                 var latestTime = lastUpdated
                 
                 remotePosts.forEach { post ->
+                    refreshAuthorForPost(post.author)
+                    
                     val localPost = postDao.getById(post.id)
                     val postToSave = if (localPost != null) {
                         post.copy(commentsLoaded = localPost.commentsLoaded)
@@ -77,9 +86,16 @@ class PostRepository private constructor() {
                 }
                 
                 sharedPrefs.edit().putLong(POSTS_LAST_UPDATED, latestTime).apply()
-                mainHandler.post { _isRefreshing.value = false }
+                mainHandler.post { 
+                    _isRefreshing.value = false
+                    callback()
+                }
             }
         }
+    }
+
+    private fun refreshAuthorForPost(authorId: String) {
+        UserRepository.shared.getUserById(authorId) { }
     }
 
     fun loadNextPage() {
@@ -91,6 +107,7 @@ class PostRepository private constructor() {
             executor.execute {
                 val postDao = database.PostDao()
                 remotePosts.forEach { post ->
+                    refreshAuthorForPost(post.author)
                     val localPost = postDao.getById(post.id)
                     val postToSave = if (localPost != null) {
                         post.copy(commentsLoaded = localPost.commentsLoaded)
@@ -111,11 +128,16 @@ class PostRepository private constructor() {
         return database.PostDao().getPostsByAuthorWithComments(authorId)
     }
 
-    fun refreshPostsByAuthor(authorId: String) {
+    fun refreshPostsByAuthor(authorId: String, callback: () -> Unit = {}) {
         firebaseModel.getPostsByAuthor(authorId) { remotePosts ->
+            if (remotePosts.isEmpty()) {
+                mainHandler.post { callback() }
+                return@getPostsByAuthor
+            }
             executor.execute {
                 val postDao = database.PostDao()
                 remotePosts.forEach { post ->
+                    refreshAuthorForPost(post.author)
                     val localPost = postDao.getById(post.id)
                     val postToSave = if (localPost != null) {
                         post.copy(commentsLoaded = localPost.commentsLoaded)
@@ -125,6 +147,7 @@ class PostRepository private constructor() {
                     postDao.upsert(postToSave)
                     refreshCommentsForPost(post.id)
                 }
+                mainHandler.post { callback() }
             }
         }
     }
@@ -195,6 +218,8 @@ class PostRepository private constructor() {
     fun clearLocalDatabase() {
         executor.execute {
             database.clearAllTables()
+            val context = MyApplication.Globals.context
+            context?.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)?.edit()?.remove(POSTS_LAST_UPDATED)?.apply()
         }
     }
 }

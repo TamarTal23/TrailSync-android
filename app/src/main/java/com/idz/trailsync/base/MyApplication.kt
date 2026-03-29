@@ -7,12 +7,14 @@ import com.google.firebase.appcheck.appCheck
 import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory
 import com.google.firebase.initialize
 import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.net.PlacesClient
 import com.idz.trailsync.BuildConfig
 
 
 class MyApplication : Application() {
     object Globals {
         var context: Context? = null
+        lateinit var placesClient: PlacesClient
     }
 
     override fun onCreate() {
@@ -27,5 +29,6 @@ class MyApplication : Application() {
         if (!Places.isInitialized()) {
             Places.initialize(applicationContext, BuildConfig.MAPS_API_KEY)
         }
+        Globals.placesClient = Places.createClient(this)
     }
 }

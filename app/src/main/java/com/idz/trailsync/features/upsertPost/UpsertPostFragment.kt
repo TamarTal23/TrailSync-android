@@ -2,14 +2,10 @@ package com.idz.trailsync.features.upsertPost
 
 import android.graphics.Bitmap
 import android.graphics.Color
-import android.graphics.ImageDecoder
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.provider.MediaStore
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -285,9 +281,6 @@ class UpsertPostFragment : Fragment() {
         val existingUrls = selectedPhotos.filterIsInstance<String>()
         val newLocalUris = selectedPhotos.filterIsInstance<Uri>()
         val newCapturedBitmaps = selectedPhotos.filterIsInstance<Bitmap>()
-        
-        val newBitmapsFromUris = newLocalUris.mapNotNull { uriToBitmap(it) }
-        val allNewBitmaps = newBitmapsFromUris + newCapturedBitmaps
 
         val post = Post(
             id = existingPost?.id ?: UUID.randomUUID().toString(),
@@ -302,7 +295,12 @@ class UpsertPostFragment : Fragment() {
             updatedAt = Date()
         )
 
-        viewModel.upsertPost(post, allNewBitmaps) { success ->
+        viewModel.upsertPost(
+            requireContext(),
+            post,
+            newLocalUris,
+            newCapturedBitmaps
+        ) { success ->
             if (isAdded && activity != null) {
                 context?.let { ctx ->
                     if (success) {
@@ -315,22 +313,6 @@ class UpsertPostFragment : Fragment() {
                     }
                 }
             }
-        }
-    }
-
-    private fun uriToBitmap(uri: Uri): Bitmap? {
-        return try {
-            val ctx = context ?: return null
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                val source = ImageDecoder.createSource(ctx.contentResolver, uri)
-                ImageDecoder.decodeBitmap(source)
-            } else {
-                @Suppress("DEPRECATION")
-                MediaStore.Images.Media.getBitmap(ctx.contentResolver, uri)
-            }
-        } catch (e: Exception) {
-            Log.d("UpsertPostFragment", "Error converting URI to bitmap: ${e.message}")
-            null
         }
     }
 

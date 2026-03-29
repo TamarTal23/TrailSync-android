@@ -16,9 +16,9 @@ data class User (
         private const val USERNAME_KEY = "username"
         private const val PROFILE_PICTURE_KEY = "profilePicture"
 
-        fun fromJSON(json: Map<String, Any>): User {
+        fun fromJSON(json: Map<String, Any>, documentId: String? = null): User {
             val email = json[EMAIL_KEY] as? String ?: ""
-            val id = json[ID_KEY] as? String ?: ""
+            val id = documentId ?: (json[ID_KEY] as? String ?: "")
             val profilePicture = json[PROFILE_PICTURE_KEY] as? String ?: ""
             val username = json[USERNAME_KEY] as? String ?: ""
 

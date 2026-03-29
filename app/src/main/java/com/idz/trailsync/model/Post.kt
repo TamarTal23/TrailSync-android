@@ -52,8 +52,8 @@ data class Post(
         private const val SAVED_COUNT_KEY = "savedCount"
         private const val COMMENT_COUNT_KEY = "commentCount"
 
-        fun fromJSON(json: Map<String, Any>): Post {
-            val id = json[ID_KEY] as? String ?: UUID.randomUUID().toString()
+        fun fromJSON(json: Map<String, Any>, documentId: String? = null): Post {
+            val id = documentId ?: (json[ID_KEY] as? String ?: UUID.randomUUID().toString())
             val title = json[TITLE_KEY] as? String ?: ""
             val author = json[AUTHOR_KEY] as? String ?: ""
             val description = json[DESCRIPTION_KEY] as? String ?: ""

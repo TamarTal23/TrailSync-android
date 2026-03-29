@@ -10,12 +10,12 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.AutocompletePrediction
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.net.FetchPlaceRequest
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
 import com.google.android.libraries.places.api.net.PlacesClient
+import com.idz.trailsync.base.MyApplication
 
 class LocationAutocompleteController(
     private val context: Context,
@@ -23,7 +23,7 @@ class LocationAutocompleteController(
     private val suggestionsRecyclerView: RecyclerView,
     private val onPlaceSelected: (Place) -> Unit
 ) {
-    private val placesClient: PlacesClient = Places.createClient(context)
+    private val placesClient: PlacesClient = MyApplication.Globals.placesClient
     private val suggestionsAdapter: LocationSuggestionsAdapter
     private var isSelectingFromSuggestions = false
     private var lastQuery: String = ""

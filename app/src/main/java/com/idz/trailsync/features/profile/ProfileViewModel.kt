@@ -14,9 +14,15 @@ class ProfileViewModel : ViewModel() {
         PostRepository.shared.getPostsByAuthor(id)
     }
 
+    private val _isRefreshing = MutableLiveData<Boolean>(false)
+    val isRefreshing: LiveData<Boolean> = _isRefreshing
+
     fun refreshPosts() {
         _userId.value?.let { uid ->
-            PostRepository.shared.refreshPostsByAuthor(uid)
+            _isRefreshing.value = true
+            PostRepository.shared.refreshPostsByAuthor(uid) {
+                _isRefreshing.postValue(false)
+            }
         }
     }
 

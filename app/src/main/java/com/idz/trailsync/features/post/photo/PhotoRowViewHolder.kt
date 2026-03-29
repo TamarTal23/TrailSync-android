@@ -56,31 +56,40 @@ class PhotoRowViewHolder<T>(
                         binding.photoImage.setImageResource(resId)
                     }
                 } else {
-                    binding.photoShimmer.visibility = View.VISIBLE
-                    binding.photoShimmer.startShimmer()
-                    Picasso.get()
-                        .load(photo)
-                        .into(binding.photoImage, object : com.squareup.picasso.Callback {
-                            override fun onSuccess() {
-                                binding.photoShimmer.stopShimmer()
-                                binding.photoShimmer.visibility = View.GONE
-                            }
-
-                            override fun onError(e: Exception?) {
-                                binding.photoShimmer.stopShimmer()
-                                binding.photoShimmer.visibility = View.GONE
-                                binding.photoImage.setImageResource(android.R.drawable.ic_menu_gallery)
-                            }
-                        })
+                    loadWithPicasso(photo)
                 }
             }
             is Uri -> {
-                binding.photoImage.setImageURI(photo)
+                loadWithPicasso(photo)
             }
             is Bitmap -> {
                 binding.photoImage.setImageBitmap(photo)
             }
         }
+    }
+
+    private fun loadWithPicasso(data: Any) {
+        binding.photoShimmer.visibility = View.VISIBLE
+        binding.photoShimmer.startShimmer()
+        
+        val creator = when (data) {
+            is String -> Picasso.get().load(data)
+            is Uri -> Picasso.get().load(data)
+            else -> null
+        }
+
+        creator?.into(binding.photoImage, object : com.squareup.picasso.Callback {
+            override fun onSuccess() {
+                binding.photoShimmer.stopShimmer()
+                binding.photoShimmer.visibility = View.GONE
+            }
+
+            override fun onError(e: Exception?) {
+                binding.photoShimmer.stopShimmer()
+                binding.photoShimmer.visibility = View.GONE
+                binding.photoImage.setImageResource(android.R.drawable.ic_menu_gallery)
+            }
+        })
     }
 
     private fun setupRemoveButton(photo: T) {
