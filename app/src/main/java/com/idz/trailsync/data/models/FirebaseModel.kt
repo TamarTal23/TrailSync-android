@@ -193,13 +193,16 @@ class FirebaseModel {
     }
 
     fun addComment(comment: Comment, callback: BooleanCallback) {
-        database.collection(Constants.COLLECTIONS.POSTS)
-            .document(comment.postId)
-            .collection(Comment.SUB_COLLECTION)
-            .add(comment.json)
-            .addOnCompleteListener { task ->
-                callback(task.isSuccessful)
-            }
+        val postRef = database.collection(Constants.COLLECTIONS.POSTS).document(comment.postId)
+        val commentRef = postRef.collection(Comment.SUB_COLLECTION).document()
+
+        database.runTransaction { transaction ->
+            transaction.set(commentRef, comment.json)
+            transaction.update(postRef, "updatedAt", FieldValue.serverTimestamp())
+            null
+        }.addOnCompleteListener { task ->
+            callback(task.isSuccessful)
+        }
     }
 
     fun deletePost(postId: String, callback: BooleanCallback) {
@@ -254,6 +257,7 @@ class FirebaseModel {
             database.runTransaction { transaction ->
                 transaction.set(savedPostRef, savedPost.json)
                 transaction.update(postRef, "savedCount", FieldValue.increment(1))
+                transaction.update(postRef, "updatedAt", FieldValue.serverTimestamp())
                 null
             }.addOnCompleteListener { task ->
                 callback(task.isSuccessful)
@@ -269,6 +273,7 @@ class FirebaseModel {
             database.runTransaction { transaction ->
                 transaction.delete(savedPostRef)
                 transaction.update(postRef, "savedCount", FieldValue.increment(-1))
+                transaction.update(postRef, "updatedAt", FieldValue.serverTimestamp())
                 null
             }.addOnCompleteListener { task ->
                 callback(task.isSuccessful)
