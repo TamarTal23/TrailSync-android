@@ -42,12 +42,20 @@ class PostRepository private constructor() {
         return database.PostDao().getFilteredPosts(maxPrice, minDays, maxDays, location)
     }
 
-    fun refreshAllPosts() {
-        val context = MyApplication.Globals.context ?: return
+    fun refreshAllPosts(callback: () -> Unit = {}) {
+        val context = MyApplication.Globals.context ?: run {
+            callback()
+            return
+        }
         val sharedPrefs = context.getSharedPreferences("TAG", Context.MODE_PRIVATE)
         val lastUpdated = sharedPrefs.getLong(POSTS_LAST_UPDATED, 0L)
 
         firebaseModel.getPostsSince(lastUpdated) { remotePosts ->
+            if (remotePosts.isEmpty()) {
+                mainHandler.post { callback() }
+                return@getPostsSince
+            }
+
             executor.execute {
                 val postDao = database.PostDao()
                 var latestTime = lastUpdated
@@ -68,6 +76,7 @@ class PostRepository private constructor() {
                 }
                 
                 sharedPrefs.edit().putLong(POSTS_LAST_UPDATED, latestTime).apply()
+                mainHandler.post { callback() }
             }
         }
     }
