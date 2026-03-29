@@ -292,7 +292,11 @@ class UpsertPostFragment : Fragment() {
             price = price,
             mapLink = mapLink,
             photos = existingUrls,
-            updatedAt = Date()
+            createdAt = existingPost?.createdAt ?: Date(),
+            updatedAt = Date(),
+            savedCount = existingPost?.savedCount ?: 0,
+            commentsLoaded = existingPost?.commentsLoaded ?: false,
+            remoteCommentCount = existingPost?.remoteCommentCount ?: -1
         )
 
         viewModel.upsertPost(
