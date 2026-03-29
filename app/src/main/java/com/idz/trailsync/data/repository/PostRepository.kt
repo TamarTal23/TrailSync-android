@@ -138,13 +138,7 @@ class PostRepository private constructor() {
                 val postDao = database.PostDao()
                 remotePosts.forEach { post ->
                     refreshAuthorForPost(post.author)
-                    val localPost = postDao.getById(post.id)
-                    val postToSave = if (localPost != null) {
-                        post.copy(commentsLoaded = localPost.commentsLoaded)
-                    } else {
-                        post
-                    }
-                    postDao.upsert(postToSave)
+                    postDao.upsert(post)
                     refreshCommentsForPost(post.id)
                 }
                 mainHandler.post { callback() }
@@ -195,6 +189,9 @@ class PostRepository private constructor() {
     private fun upsertLocal(post: Post, onComplete: () -> Unit = {}) {
         executor.execute {
             database.PostDao().upsert(post)
+            // Immediately refresh comments and author to ensure data consistency
+            refreshAuthorForPost(post.author)
+            refreshCommentsForPost(post.id)
             onComplete()
         }
     }
