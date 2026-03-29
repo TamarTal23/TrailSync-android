@@ -141,9 +141,16 @@ class PostRepository private constructor() {
 
                 remotePosts.forEach { post ->
                     refreshAuthorForPost(post.author)
-                    postDao.upsert(post)
+
+                    val localPost = postDao.getById(post.id)
+                    val normalized = post.copy(
+                        commentsLoaded = localPost?.commentsLoaded ?: false
+                    )
+
+                    postDao.upsert(normalized)
                     refreshCommentsForPost(post.id)
                 }
+
                 mainHandler.post { callback() }
             }
         }

@@ -97,7 +97,6 @@ class FirebaseModel {
     fun getPostsByAuthor(authorId: String, callback: PostsCallback) {
         database.collection(Constants.COLLECTIONS.POSTS)
             .whereEqualTo("author", authorId)
-            .orderBy("createdAt", Query.Direction.DESCENDING)
             .get()
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
