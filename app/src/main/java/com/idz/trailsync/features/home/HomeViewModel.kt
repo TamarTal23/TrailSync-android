@@ -26,6 +26,9 @@ class HomeViewModel : ViewModel() {
         )
     }
 
+    private val _isRefreshing = MutableLiveData<Boolean>(false)
+    val isRefreshing: LiveData<Boolean> = _isRefreshing
+
     val isPagingLoading: LiveData<Boolean> = PostRepository.shared.isPagingLoading
 
     fun updateLocation(location: String?) {
@@ -47,7 +50,10 @@ class HomeViewModel : ViewModel() {
     }
 
     fun refreshPosts() {
-        PostRepository.shared.refreshAllPosts()
+        _isRefreshing.value = true
+        PostRepository.shared.refreshAllPosts {
+            _isRefreshing.postValue(false)
+        }
     }
 
     fun loadNextPage() {

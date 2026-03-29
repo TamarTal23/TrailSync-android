@@ -51,7 +51,7 @@ class HomeFragment : Fragment() {
         setupSwipeRefresh()
         setupSearchAndDrawerTrigger()
         setupDrawerFilters()
-        observePosts()
+        observeViewModel()
     }
 
     override fun onResume() {
@@ -187,11 +187,14 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun observePosts() {
+    private fun observeViewModel() {
         viewModel.posts.observe(viewLifecycleOwner) { posts ->
             adapter?.posts = posts
             adapter?.notifyDataSetChanged()
-            binding.swipeRefresh.isRefreshing = false
+        }
+
+        viewModel.isRefreshing.observe(viewLifecycleOwner) { isRefreshing ->
+            binding.swipeRefresh.isRefreshing = isRefreshing
         }
 
         adapter?.currentUserId = postSharedViewModel.currentUserId
@@ -199,10 +202,6 @@ class HomeFragment : Fragment() {
         postSharedViewModel.savedPostIds.observe(viewLifecycleOwner) { ids ->
             adapter?.savedPostIds = ids
             adapter?.notifyDataSetChanged()
-        }
-
-        viewModel.isPagingLoading.observe(viewLifecycleOwner) { isLoading ->
-            // You could show a small progress bar at the bottom here
         }
     }
 
