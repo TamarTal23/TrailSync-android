@@ -61,6 +61,19 @@ class FirebaseModel {
             }
     }
 
+    fun getAllPostIds(callback: (List<String>) -> Unit) {
+        database.collection(Constants.COLLECTIONS.POSTS)
+            .get()
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val ids = task.result.map { it.id }
+                    callback(ids)
+                } else {
+                    callback(listOf())
+                }
+            }
+    }
+
     fun getPostsPaged(limit: Long, lastDocument: DocumentSnapshot?, callback: (List<Post>, DocumentSnapshot?) -> Unit) {
         var query = database.collection(Constants.COLLECTIONS.POSTS)
             .orderBy("createdAt", Query.Direction.DESCENDING)

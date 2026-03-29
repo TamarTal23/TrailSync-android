@@ -55,22 +55,14 @@ class PostRepository private constructor() {
         val lastUpdated = sharedPrefs.getLong(POSTS_LAST_UPDATED, 0L)
 
         _isRefreshing.postValue(true)
+        
         firebaseModel.getPostsSince(lastUpdated) { remotePosts ->
-            if (remotePosts.isEmpty()) {
-                mainHandler.post { 
-                    _isRefreshing.value = false
-                    callback()
-                }
-                return@getPostsSince
-            }
-
             executor.execute {
                 val postDao = database.PostDao()
                 var latestTime = lastUpdated
                 
                 remotePosts.forEach { post ->
                     refreshAuthorForPost(post.author)
-                    
                     val localPost = postDao.getById(post.id)
                     val postToSave = if (localPost != null) {
                         post.copy(commentsLoaded = localPost.commentsLoaded)
@@ -86,9 +78,23 @@ class PostRepository private constructor() {
                 }
                 
                 sharedPrefs.edit().putLong(POSTS_LAST_UPDATED, latestTime).apply()
-                mainHandler.post { 
-                    _isRefreshing.value = false
-                    callback()
+                
+                firebaseModel.getAllPostIds { remoteIds ->
+                    executor.execute {
+                        val localIds = postDao.getAllIds()
+                        val remoteIdsSet = remoteIds.toSet()
+                        
+                        localIds.forEach { localId ->
+                            if (!remoteIdsSet.contains(localId)) {
+                                postDao.deleteById(localId)
+                            }
+                        }
+                        
+                        mainHandler.post { 
+                            _isRefreshing.value = false
+                            callback()
+                        }
+                    }
                 }
             }
         }
@@ -130,12 +136,9 @@ class PostRepository private constructor() {
 
     fun refreshPostsByAuthor(authorId: String, callback: () -> Unit = {}) {
         firebaseModel.getPostsByAuthor(authorId) { remotePosts ->
-            if (remotePosts.isEmpty()) {
-                mainHandler.post { callback() }
-                return@getPostsByAuthor
-            }
             executor.execute {
                 val postDao = database.PostDao()
+
                 remotePosts.forEach { post ->
                     refreshAuthorForPost(post.author)
                     postDao.upsert(post)
@@ -189,7 +192,6 @@ class PostRepository private constructor() {
     private fun upsertLocal(post: Post, onComplete: () -> Unit = {}) {
         executor.execute {
             database.PostDao().upsert(post)
-            // Immediately refresh comments and author to ensure data consistency
             refreshAuthorForPost(post.author)
             refreshCommentsForPost(post.id)
             onComplete()
