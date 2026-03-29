@@ -10,12 +10,17 @@ import android.os.Build
 import android.provider.MediaStore
 import java.io.IOException
 
-
 class BitmapUtils {
     private fun rotateBitmap(bitmap: Bitmap, degrees: Float): Bitmap {
         val matrix = Matrix()
         matrix.postRotate(degrees)
-        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+        val rotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+
+        if (rotated != bitmap) {
+            bitmap.recycle()
+        }
+
+        return rotated
     }
 
     fun getRotatedBitmap(
@@ -23,17 +28,17 @@ class BitmapUtils {
         contentResolver: ContentResolver
     ): Bitmap? {
         if (uri == null) return null
-        
+
         return try {
-            val bitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 val source = ImageDecoder.createSource(contentResolver, uri)
-                ImageDecoder.decodeBitmap(source) { decoder, _, _ ->
+                return ImageDecoder.decodeBitmap(source) { decoder, _, _ ->
                     decoder.isMutableRequired = true
                 }
-            } else {
-                @Suppress("DEPRECATION")
-                MediaStore.Images.Media.getBitmap(contentResolver, uri)
             }
+
+            @Suppress("DEPRECATION")
+            val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, uri) ?: return null
 
             val inputStream = contentResolver.openInputStream(uri)
             val exif = inputStream?.use { ExifInterface(it) }
@@ -41,14 +46,14 @@ class BitmapUtils {
                 ExifInterface.TAG_ORIENTATION,
                 ExifInterface.ORIENTATION_NORMAL
             )
-            
+
             when (orientation) {
                 ExifInterface.ORIENTATION_ROTATE_90 -> rotateBitmap(bitmap, 90f)
                 ExifInterface.ORIENTATION_ROTATE_180 -> rotateBitmap(bitmap, 180f)
                 ExifInterface.ORIENTATION_ROTATE_270 -> rotateBitmap(bitmap, 270f)
                 else -> bitmap
             }
-        } catch (e: IOException) {
+        } catch (e: Exception) {
             e.printStackTrace()
             null
         }

@@ -18,7 +18,6 @@ import androidx.lifecycle.Observer
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.idz.trailsync.databinding.FragmentRegisterBinding
 import com.idz.trailsync.shared.viewModels.UserFormViewModel
-import com.idz.trailsync.utils.BitmapUtils
 import com.idz.trailsync.shared.viewModels.AuthenticationViewModel
 import com.idz.trailsync.HomeActivity
 import com.idz.trailsync.shared.viewModels.LoginResult
@@ -27,24 +26,22 @@ class RegisterFragment : Fragment() {
     private var _binding: FragmentRegisterBinding? = null
     private val binding get() = _binding!!
 
-    private var profileBitmap: Bitmap? = null
+    private var selectedImage: Any? = null
     private val authenticationViewModel: AuthenticationViewModel by activityViewModels()
     private val userFormViewModel: UserFormViewModel by activityViewModels()
-    private val bitmapUtils = BitmapUtils()
 
     private val galleryLauncher =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-            val rotatedBitmap = bitmapUtils.getRotatedBitmap(uri, requireActivity().contentResolver)
-            if (rotatedBitmap != null) {
-                binding.profileImageView.setImageBitmap(rotatedBitmap)
-                profileBitmap = rotatedBitmap
+            if (uri != null) {
+                binding.profileImageView.setImageURI(uri)
+                selectedImage = uri
             }
         }
 
     private val takePhotoLauncher = registerForActivityResult(ActivityResultContracts.TakePicturePreview()) { bitmap ->
         if (bitmap != null) {
             binding.profileImageView.setImageBitmap(bitmap)
-            profileBitmap = bitmap
+            selectedImage = bitmap
         }
     }
 
@@ -120,7 +117,7 @@ class RegisterFragment : Fragment() {
         binding.buttonSignUp.setOnClickListener {
             userFormViewModel.touchAll()
 
-            if (profileBitmap == null) {
+            if (selectedImage == null) {
                 Toast.makeText(
                     requireContext(),
                     "Please select a profile picture",
@@ -139,7 +136,7 @@ class RegisterFragment : Fragment() {
                 val username = userFormViewModel.formState.value?.username ?: ""
                 val password = userFormViewModel.formState.value?.password ?: ""
 
-                authenticationViewModel.register(email, username, password, profileBitmap)
+                authenticationViewModel.register(requireContext(), email, username, password, selectedImage)
             }
         }
 

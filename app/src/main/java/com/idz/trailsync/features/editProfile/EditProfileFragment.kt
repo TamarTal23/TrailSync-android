@@ -2,6 +2,7 @@ package com.idz.trailsync.features.editProfile
 
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -21,7 +22,6 @@ import com.idz.trailsync.shared.viewModels.LoginResult
 import com.idz.trailsync.shared.viewModels.UserFormViewModel
 import com.idz.trailsync.shared.viewModels.FormMode
 import com.idz.trailsync.databinding.FragmentEditProfileBinding
-import com.idz.trailsync.utils.BitmapUtils
 import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 
@@ -32,8 +32,7 @@ class EditProfileFragment : Fragment() {
     private var _binding: FragmentEditProfileBinding? = null
     private val binding get() = _binding!!
 
-    private var profileBitmap: Bitmap? = null
-    private val bitmapUtils = BitmapUtils()
+    private var selectedImage: Any? = null
 
     private val loadingDrawable by lazy {
         CircularProgressDrawable(requireContext()).apply {
@@ -47,13 +46,8 @@ class EditProfileFragment : Fragment() {
     private val pickMedia =
         registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
             if (uri != null) {
-                val rotatedBitmap =
-                    bitmapUtils.getRotatedBitmap(uri, requireActivity().contentResolver)
-
-                if (rotatedBitmap != null) {
-                    binding.profileImageView.setImageBitmap(rotatedBitmap)
-                    profileBitmap = rotatedBitmap
-                }
+                binding.profileImageView.setImageURI(uri)
+                selectedImage = uri
             }
         }
 
@@ -61,7 +55,7 @@ class EditProfileFragment : Fragment() {
         registerForActivityResult(ActivityResultContracts.TakePicturePreview()) { bitmap ->
             if (bitmap != null) {
                 binding.profileImageView.setImageBitmap(bitmap)
-                profileBitmap = bitmap
+                selectedImage = bitmap
             }
         }
 
@@ -109,7 +103,7 @@ class EditProfileFragment : Fragment() {
                 loadingDrawable.start()
                 binding.buttonSaveChanges.isEnabled = false
 
-                authViewModel.updateProfile(username, profileBitmap)
+                authViewModel.updateProfile(requireContext(), username, selectedImage)
             }
         }
     }
