@@ -138,24 +138,26 @@ class ProfileFragment : Fragment() {
     }
 
     private fun loadProfileImage(url: String?) {
+        val currentBinding = _binding ?: return
+
         if (url.isNullOrBlank()) {
-            binding.profileImageView.setImageResource(R.drawable.user_icon_small)
+            currentBinding.profileImageView.setImageResource(R.drawable.user_icon_small)
             return
         }
 
-        binding.profileProgressBar.visibility = View.VISIBLE
+        currentBinding.profileProgressBar.visibility = View.VISIBLE
         Picasso.get()
             .load(url)
             .resize(240, 240)
             .centerCrop()
-            .into(binding.profileImageView, object : Callback {
+            .into(currentBinding.profileImageView, object : Callback {
                 override fun onSuccess() {
-                    binding.profileProgressBar.visibility = View.GONE
+                    _binding?.profileProgressBar?.visibility = View.GONE
                 }
 
                 override fun onError(e: Exception?) {
-                    binding.profileProgressBar.visibility = View.GONE
-                    binding.profileImageView.setImageResource(R.drawable.user_icon_small)
+                    _binding?.profileProgressBar?.visibility = View.GONE
+                    _binding?.profileImageView?.setImageResource(R.drawable.user_icon_small)
                 }
             })
     }
