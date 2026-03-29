@@ -8,10 +8,12 @@ import com.idz.trailsync.base.BooleanCallback
 import com.idz.trailsync.base.StringCallback
 import java.io.ByteArrayOutputStream
 import java.util.UUID
+import java.util.concurrent.Executors
 
 class FirebaseStorageModel {
 
     private val storage = Firebase.storage
+    private val executor = Executors.newSingleThreadExecutor()
 
     fun uploadUserImage(image: Bitmap, userId: String, completion: StringCallback) {
         val storageRef = storage.reference
@@ -79,18 +81,21 @@ class FirebaseStorageModel {
     }
 
     private fun uploadImage(image: Bitmap, ref: StorageReference, completion: StringCallback) {
-        val baos = ByteArrayOutputStream()
-        image.compress(Bitmap.CompressFormat.JPEG, 100, baos)
-        val data = baos.toByteArray()
+        executor.execute {
+            val baos = ByteArrayOutputStream()
+            // Compression is a heavy task, must be on background thread
+            image.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+            val data = baos.toByteArray()
 
-        val uploadTask = ref.putBytes(data)
-        uploadTask.addOnFailureListener {
-            completion(null)
-        }.addOnSuccessListener { _ ->
-            ref.downloadUrl.addOnSuccessListener { uri ->
-                completion(uri.toString())
-            }.addOnFailureListener {
+            val uploadTask = ref.putBytes(data)
+            uploadTask.addOnFailureListener {
                 completion(null)
+            }.addOnSuccessListener { _ ->
+                ref.downloadUrl.addOnSuccessListener { uri ->
+                    completion(uri.toString())
+                }.addOnFailureListener {
+                    completion(null)
+                }
             }
         }
     }

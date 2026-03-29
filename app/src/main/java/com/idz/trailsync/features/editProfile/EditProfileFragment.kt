@@ -2,7 +2,6 @@ package com.idz.trailsync.features.editProfile
 
 import android.graphics.Bitmap
 import android.graphics.Color
-import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -11,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
 import android.widget.Toast
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -34,15 +34,26 @@ class EditProfileFragment : Fragment() {
 
     private var profileBitmap: Bitmap? = null
     private val bitmapUtils = BitmapUtils()
+    
+    private val loadingDrawable by lazy {
+        CircularProgressDrawable(requireContext()).apply {
+            strokeWidth = 6f
+            centerRadius = 24f
+            setColorSchemeColors(Color.WHITE)
+            setBounds(0, 0, 100, 100)
+        }
+    }
 
-    private val galleryLauncher =
-        registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-            val rotatedBitmap =
-                bitmapUtils.getRotatedBitmap(uri, requireActivity().contentResolver)
+    private val pickMedia =
+        registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+            if (uri != null) {
+                val rotatedBitmap =
+                    bitmapUtils.getRotatedBitmap(uri, requireActivity().contentResolver)
 
-            if (rotatedBitmap != null) {
-                binding.profileImageView.setImageBitmap(rotatedBitmap)
-                profileBitmap = rotatedBitmap
+                if (rotatedBitmap != null) {
+                    binding.profileImageView.setImageBitmap(rotatedBitmap)
+                    profileBitmap = rotatedBitmap
+                }
             }
         }
 
@@ -94,8 +105,8 @@ class EditProfileFragment : Fragment() {
                 val username = userFormViewModel.formState.value?.username
 
                 binding.buttonSaveChanges.text = ""
-                binding.buttonSaveChanges.icon = loadingDrawable()
-                loadingDrawable().start()
+                binding.buttonSaveChanges.icon = loadingDrawable
+                loadingDrawable.start()
                 binding.buttonSaveChanges.isEnabled = false
 
                 authViewModel.updateProfile(username, profileBitmap)
@@ -138,8 +149,7 @@ class EditProfileFragment : Fragment() {
         authViewModel.updateProfileResult.observe(viewLifecycleOwner) { event ->
             val result = event?.getContentIfNotHandled() ?: return@observe
 
-            val loader = loadingDrawable()
-            loader.stop()
+            loadingDrawable.stop()
             binding.buttonSaveChanges.icon = null
             binding.buttonSaveChanges.text = "Save Changes"
             binding.buttonSaveChanges.isEnabled = true
@@ -157,13 +167,6 @@ class EditProfileFragment : Fragment() {
         }
     }
 
-    private fun loadingDrawable() = CircularProgressDrawable(requireContext()).apply {
-        strokeWidth = 6f
-        centerRadius = 24f
-        setColorSchemeColors(Color.WHITE)
-        setBounds(0, 0, 100, 100)
-    }
-
     private fun showPhotoOptionsPopupMenu(anchor: View) {
         val popup = PopupMenu(requireContext(), anchor)
         popup.menu.add("Take Photo")
@@ -176,7 +179,7 @@ class EditProfileFragment : Fragment() {
                     true
                 }
                 "Choose from Gallery" -> {
-                    galleryLauncher.launch("image/*")
+                    pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                     true
                 }
                 else -> false
