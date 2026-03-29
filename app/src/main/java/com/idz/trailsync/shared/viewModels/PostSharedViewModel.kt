@@ -4,7 +4,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.map
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.idz.trailsync.base.BooleanCallback
@@ -54,11 +53,38 @@ class PostSharedViewModel : ViewModel() {
 
     fun toggleSavePost(post: Post, callback: BooleanCallback) {
         val uid = currentUserId ?: return
-        savedPostRepository.isPostSaved(uid, post.id) { isSaved ->
-            if (isSaved) {
-                savedPostRepository.unsavePost(uid, post.id, callback)
-            } else {
-                savedPostRepository.savePost(uid, post.id, callback)
+        val currentIds = _savedPostIds.value?.toMutableSet() ?: mutableSetOf()
+        val isCurrentlySaved = currentIds.contains(post.id)
+
+        if (isCurrentlySaved) {
+            currentIds.remove(post.id)
+        } else {
+            currentIds.add(post.id)
+        }
+        _savedPostIds.value = currentIds
+
+        if (isCurrentlySaved) {
+            savedPostRepository.unsavePost(uid, post.id) { success ->
+                if (!success) {
+                    val rollbackIds = _savedPostIds.value?.toMutableSet() ?: mutableSetOf()
+                    rollbackIds.add(post.id)
+                    _savedPostIds.value = rollbackIds
+                    callback(false)
+                } else {
+                    callback(true)
+                }
+            }
+        } else {
+            savedPostRepository.savePost(uid, post.id) { success ->
+                if (!success) {
+                    // Rollback on failure
+                    val rollbackIds = _savedPostIds.value?.toMutableSet() ?: mutableSetOf()
+                    rollbackIds.remove(post.id)
+                    _savedPostIds.value = rollbackIds
+                    callback(false)
+                } else {
+                    callback(true)
+                }
             }
         }
     }
