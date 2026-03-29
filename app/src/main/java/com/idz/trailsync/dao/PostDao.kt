@@ -55,6 +55,9 @@ interface PostDao {
     @Query("SELECT * FROM Post WHERE id = :postId")
     fun getById(postId: String): Post?
 
+    @Query("SELECT id FROM Post")
+    fun getAllIds(): List<String>
+
     @Query("UPDATE Post SET commentsLoaded = :loaded WHERE id = :postId")
     fun updateCommentsLoaded(postId: String, loaded: Boolean)
 

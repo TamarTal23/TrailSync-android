@@ -48,10 +48,7 @@ class FirebaseModel {
 
     fun getPostsSince(since: Long, callback: PostsCallback) {
         database.collection(Constants.COLLECTIONS.POSTS)
-            .whereGreaterThan(
-                "updatedAt",
-                Timestamp(since / 1000, ((since % 1000) * 1000000).toInt())
-            )
+            .whereGreaterThan("updatedAt", Timestamp(since / 1000, ((since % 1000) * 1000000).toInt()))
             .get()
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
@@ -63,11 +60,20 @@ class FirebaseModel {
             }
     }
 
-    fun getPostsPaged(
-        limit: Long,
-        lastDocument: DocumentSnapshot?,
-        callback: (List<Post>, DocumentSnapshot?) -> Unit
-    ) {
+    fun getAllPostIds(callback: (List<String>) -> Unit) {
+        database.collection(Constants.COLLECTIONS.POSTS)
+            .get()
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val ids = task.result.map { it.id }
+                    callback(ids)
+                } else {
+                    callback(listOf())
+                }
+            }
+    }
+
+    fun getPostsPaged(limit: Long, lastDocument: DocumentSnapshot?, callback: (List<Post>, DocumentSnapshot?) -> Unit) {
         var query = database.collection(Constants.COLLECTIONS.POSTS)
             .orderBy("createdAt", Query.Direction.DESCENDING)
             .limit(limit)
@@ -108,6 +114,7 @@ class FirebaseModel {
             .addOnSuccessListener { doc ->
                 if (doc.exists()) callback(User.fromJSON(doc.data ?: mapOf(), doc.id))
                 else {
+                    // Fallback to searching by field if document ID doesn't match
                     database.collection(Constants.COLLECTIONS.USERS).whereEqualTo("id", id).get()
                         .addOnSuccessListener { snapshot ->
                             if (!snapshot.isEmpty) {
@@ -204,7 +211,7 @@ class FirebaseModel {
 
     fun deletePost(postId: String, callback: BooleanCallback) {
         val postRef = database.collection(Constants.COLLECTIONS.POSTS).document(postId)
-
+        
         postRef.collection(Comment.SUB_COLLECTION).get()
             .addOnSuccessListener { commentSnapshot ->
                 val batch = database.batch()
@@ -212,7 +219,7 @@ class FirebaseModel {
                     batch.delete(commentDoc.reference)
                 }
                 batch.delete(postRef)
-
+                
                 batch.commit().addOnCompleteListener { task ->
                     if (task.isSuccessful) {
                         database.collectionGroup(Constants.COLLECTIONS.SAVED_POSTS)
