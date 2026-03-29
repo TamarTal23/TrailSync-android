@@ -83,7 +83,6 @@ class FirebaseStorageModel {
     private fun uploadImage(image: Bitmap, ref: StorageReference, completion: StringCallback) {
         executor.execute {
             val baos = ByteArrayOutputStream()
-            // Compression is a heavy task, must be on background thread
             image.compress(Bitmap.CompressFormat.JPEG, 100, baos)
             val data = baos.toByteArray()
 
