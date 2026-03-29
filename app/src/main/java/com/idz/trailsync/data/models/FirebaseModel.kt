@@ -11,7 +11,6 @@ import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.firestoreSettings
 import com.google.firebase.firestore.memoryCacheSettings
 import com.idz.trailsync.base.BooleanCallback
-import com.idz.trailsync.base.UsersCallback
 import com.idz.trailsync.base.Constants
 import com.idz.trailsync.base.PostsCallback
 import com.idz.trailsync.base.UserCallback
@@ -86,7 +85,8 @@ class FirebaseModel {
         query.get().addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 val posts = task.result.map { Post.fromJSON(it.data, it.id) }
-                val lastVisible = if (task.result.isEmpty) null else task.result.documents[task.result.size() - 1]
+                val lastVisible =
+                    if (task.result.isEmpty) null else task.result.documents[task.result.size() - 1]
                 callback(posts, lastVisible)
             } else {
                 callback(listOf(), null)
@@ -97,6 +97,7 @@ class FirebaseModel {
     fun getPostsByAuthor(authorId: String, callback: PostsCallback) {
         database.collection(Constants.COLLECTIONS.POSTS)
             .whereEqualTo("author", authorId)
+            .orderBy("createdAt", Query.Direction.DESCENDING)
             .get()
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
@@ -117,7 +118,12 @@ class FirebaseModel {
                     database.collection(Constants.COLLECTIONS.USERS).whereEqualTo("id", id).get()
                         .addOnSuccessListener { snapshot ->
                             if (!snapshot.isEmpty) {
-                                callback(User.fromJSON(snapshot.documents[0].data ?: mapOf(), snapshot.documents[0].id))
+                                callback(
+                                    User.fromJSON(
+                                        snapshot.documents[0].data ?: mapOf(),
+                                        snapshot.documents[0].id
+                                    )
+                                )
                             } else {
                                 callback(null)
                             }
@@ -133,9 +139,8 @@ class FirebaseModel {
         getUserDocument(user.id) { docRef ->
             docRef.set(user.json).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    updateUserComments(user) {
-                        callback(true)
-                    }
+                    callback(true)
+                    updateUserComments(user) {}
                 } else {
                     callback(false)
                 }
@@ -234,7 +239,10 @@ class FirebaseModel {
                                 }
                             }
                             .addOnFailureListener { e ->
-                                Log.e("FirebaseModel", "Failed to cleanup saved posts: ${e.message}")
+                                Log.e(
+                                    "FirebaseModel",
+                                    "Failed to cleanup saved posts: ${e.message}"
+                                )
                                 callback(true)
                             }
                     } else {
@@ -251,7 +259,8 @@ class FirebaseModel {
         getUserDocument(userId) { userRef ->
             val savedPost = SavedPost(postId = postId, userId = userId)
             val postRef = database.collection(Constants.COLLECTIONS.POSTS).document(postId)
-            val savedPostRef = userRef.collection(Constants.COLLECTIONS.SAVED_POSTS).document(postId)
+            val savedPostRef =
+                userRef.collection(Constants.COLLECTIONS.SAVED_POSTS).document(postId)
 
             database.runTransaction { transaction ->
                 transaction.set(savedPostRef, savedPost.json)
@@ -267,7 +276,8 @@ class FirebaseModel {
     fun unsavePost(userId: String, postId: String, callback: BooleanCallback) {
         getUserDocument(userId) { userRef ->
             val postRef = database.collection(Constants.COLLECTIONS.POSTS).document(postId)
-            val savedPostRef = userRef.collection(Constants.COLLECTIONS.SAVED_POSTS).document(postId)
+            val savedPostRef =
+                userRef.collection(Constants.COLLECTIONS.SAVED_POSTS).document(postId)
 
             database.runTransaction { transaction ->
                 transaction.delete(savedPostRef)
