@@ -19,9 +19,4 @@ class AuthenticationActivity : AppCompatActivity() {
         }
         setContentView(R.layout.activity_authentication)
     }
-
-    // This method can now be removed as navigation is handled within fragments
-    fun showRegisterFragment() {
-        // Navigation is handled by findNavController().navigate() in LoginFragment
-    }
 }
