@@ -34,7 +34,7 @@ class EditProfileFragment : Fragment() {
 
     private var profileBitmap: Bitmap? = null
     private val bitmapUtils = BitmapUtils()
-    
+
     private val loadingDrawable by lazy {
         CircularProgressDrawable(requireContext()).apply {
             strokeWidth = 6f
@@ -131,10 +131,11 @@ class EditProfileFragment : Fragment() {
                         .centerCrop()
                         .into(binding.profileImageView, object : Callback {
                             override fun onSuccess() {
-                                binding.profileProgressBar.visibility = View.GONE
+                                _binding?.profileProgressBar?.visibility = View.GONE
                             }
+
                             override fun onError(e: Exception?) {
-                                binding.profileProgressBar.visibility = View.GONE
+                                _binding?.profileProgressBar?.visibility = View.GONE
                             }
                         })
                 }
@@ -156,12 +157,15 @@ class EditProfileFragment : Fragment() {
 
             when (result) {
                 is LoginResult.Success -> {
-                    Toast.makeText(context, "Profile updated successfully", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Profile updated successfully", Toast.LENGTH_SHORT)
+                        .show()
                     findNavController().navigateUp()
                 }
+
                 is LoginResult.Error -> {
                     Toast.makeText(context, "Error: ${result.message}", Toast.LENGTH_LONG).show()
                 }
+
                 else -> {}
             }
         }
@@ -178,10 +182,12 @@ class EditProfileFragment : Fragment() {
                     takePhotoLauncher.launch(null)
                     true
                 }
+
                 "Choose from Gallery" -> {
                     pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                     true
                 }
+
                 else -> false
             }
         }
