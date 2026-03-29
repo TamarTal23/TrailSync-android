@@ -3,6 +3,7 @@ package com.idz.trailsync.features.home
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.map
 import androidx.lifecycle.switchMap
 import com.idz.trailsync.data.repository.PostRepository
 import com.idz.trailsync.model.PostWithComments
@@ -26,10 +27,12 @@ class HomeViewModel : ViewModel() {
         )
     }
 
-    private val _isRefreshing = MutableLiveData<Boolean>(false)
-    val isRefreshing: LiveData<Boolean> = _isRefreshing
-
+    val isRefreshing: LiveData<Boolean> = PostRepository.shared.isRefreshing
     val isPagingLoading: LiveData<Boolean> = PostRepository.shared.isPagingLoading
+    
+    val isAnyFilterApplied: LiveData<Boolean> = _filters.map { filters ->
+        filters.maxPrice != null || filters.minDays != null || filters.maxDays != null || !filters.location.isNullOrEmpty()
+    }
 
     fun updateLocation(location: String?) {
         val current = _filters.value ?: PostFilters()
@@ -50,10 +53,7 @@ class HomeViewModel : ViewModel() {
     }
 
     fun refreshPosts() {
-        _isRefreshing.value = true
-        PostRepository.shared.refreshAllPosts {
-            _isRefreshing.postValue(false)
-        }
+        PostRepository.shared.refreshAllPosts()
     }
 
     fun loadNextPage() {

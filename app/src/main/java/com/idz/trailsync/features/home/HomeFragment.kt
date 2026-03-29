@@ -191,10 +191,21 @@ class HomeFragment : Fragment() {
         viewModel.posts.observe(viewLifecycleOwner) { posts ->
             adapter?.posts = posts
             adapter?.notifyDataSetChanged()
+            updateListVisibility()
         }
 
         viewModel.isRefreshing.observe(viewLifecycleOwner) { isRefreshing ->
             binding.swipeRefresh.isRefreshing = isRefreshing
+            if (isRefreshing) {
+                binding.shimmerViewContainer.visibility = View.VISIBLE
+                binding.shimmerViewContainer.startShimmer()
+                binding.recyclerView.visibility = View.GONE
+                binding.emptyView.visibility = View.GONE
+            } else {
+                binding.shimmerViewContainer.stopShimmer()
+                binding.shimmerViewContainer.visibility = View.GONE
+                updateListVisibility()
+            }
         }
 
         adapter?.currentUserId = postSharedViewModel.currentUserId
@@ -202,6 +213,20 @@ class HomeFragment : Fragment() {
         postSharedViewModel.savedPostIds.observe(viewLifecycleOwner) { ids ->
             adapter?.savedPostIds = ids
             adapter?.notifyDataSetChanged()
+        }
+    }
+
+    private fun updateListVisibility() {
+        val posts = viewModel.posts.value
+        val isRefreshing = viewModel.isRefreshing.value ?: false
+        if (isRefreshing) return
+
+        if (posts.isNullOrEmpty()) {
+            binding.recyclerView.visibility = View.GONE
+            binding.emptyView.visibility = View.VISIBLE
+        } else {
+            binding.recyclerView.visibility = View.VISIBLE
+            binding.emptyView.visibility = View.GONE
         }
     }
 

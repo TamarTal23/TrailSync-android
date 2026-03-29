@@ -11,10 +11,11 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
+import com.idz.trailsync.R
 import com.idz.trailsync.databinding.FragmentLoginBinding
 import com.idz.trailsync.shared.viewModels.UserFormViewModel
-import com.idz.trailsync.AuthenticationActivity
 import com.idz.trailsync.shared.viewModels.AuthenticationViewModel
 import com.idz.trailsync.HomeActivity
 import com.idz.trailsync.shared.viewModels.LoginResult
@@ -41,7 +42,7 @@ class LoginFragment : Fragment() {
         userFormViewModel.setRegistration(false)
 
         binding.textSignUp.setOnClickListener {
-            (requireActivity() as? AuthenticationActivity)?.showRegisterFragment()
+            findNavController().navigate(R.id.action_loginFragment_to_registerFragment)
         }
 
         binding.editTextEmail.addTextChangedListener(object : TextWatcher {

@@ -27,6 +27,9 @@ class PostRepository private constructor() {
     private var lastDocument: DocumentSnapshot? = null
     private val _isPagingLoading = MutableLiveData<Boolean>(false)
     val isPagingLoading: LiveData<Boolean> = _isPagingLoading
+    
+    private val _isRefreshing = MutableLiveData<Boolean>(false)
+    val isRefreshing: LiveData<Boolean> = _isRefreshing
 
     companion object {
         val shared = PostRepository()
@@ -42,17 +45,15 @@ class PostRepository private constructor() {
         return database.PostDao().getFilteredPosts(maxPrice, minDays, maxDays, location)
     }
 
-    fun refreshAllPosts(callback: () -> Unit = {}) {
-        val context = MyApplication.Globals.context ?: run {
-            callback()
-            return
-        }
+    fun refreshAllPosts() {
+        val context = MyApplication.Globals.context ?: return
         val sharedPrefs = context.getSharedPreferences("TAG", Context.MODE_PRIVATE)
         val lastUpdated = sharedPrefs.getLong(POSTS_LAST_UPDATED, 0L)
 
+        _isRefreshing.postValue(true)
         firebaseModel.getPostsSince(lastUpdated) { remotePosts ->
             if (remotePosts.isEmpty()) {
-                mainHandler.post { callback() }
+                mainHandler.post { _isRefreshing.value = false }
                 return@getPostsSince
             }
 
@@ -76,7 +77,7 @@ class PostRepository private constructor() {
                 }
                 
                 sharedPrefs.edit().putLong(POSTS_LAST_UPDATED, latestTime).apply()
-                mainHandler.post { callback() }
+                mainHandler.post { _isRefreshing.value = false }
             }
         }
     }
