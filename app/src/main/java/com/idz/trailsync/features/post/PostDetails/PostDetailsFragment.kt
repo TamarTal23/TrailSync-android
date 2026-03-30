@@ -122,17 +122,21 @@ class PostDetailsFragment : Fragment() {
                     b.addCommentLayout.sendButton.setOnClickListener {
                         val text = b.addCommentLayout.commentInput.text.toString().trim()
                         if (text.isNotEmpty()) {
+                            setCommentLoading(true)
                             viewModel.addComment(text, postId, user) { success ->
-                                if (success) {
-                                    _binding?.addCommentLayout?.commentInput?.text?.clear()
-                                    hideKeyboard()
-                                } else {
-                                    context?.let { ctx ->
-                                        Toast.makeText(
-                                            ctx,
-                                            "Failed to add comment",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
+                                activity?.runOnUiThread {
+                                    setCommentLoading(false)
+                                    if (success) {
+                                        _binding?.addCommentLayout?.commentInput?.text?.clear()
+                                        hideKeyboard()
+                                    } else {
+                                        context?.let { ctx ->
+                                            Toast.makeText(
+                                                ctx,
+                                                "Failed to add comment",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
                                     }
                                 }
                             }
@@ -141,6 +145,20 @@ class PostDetailsFragment : Fragment() {
                 } else {
                     b.addCommentContainer.visibility = View.GONE
                 }
+            }
+        }
+    }
+
+    private fun setCommentLoading(isLoading: Boolean) {
+        _binding?.addCommentLayout?.let { layout ->
+            if (isLoading) {
+                layout.sendButton.visibility = View.INVISIBLE
+                layout.commentProgressBar.visibility = View.VISIBLE
+                layout.commentInput.isEnabled = false
+            } else {
+                layout.sendButton.visibility = View.VISIBLE
+                layout.commentProgressBar.visibility = View.GONE
+                layout.commentInput.isEnabled = true
             }
         }
     }

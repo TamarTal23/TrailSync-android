@@ -2,13 +2,11 @@ package com.idz.trailsync.data.repository
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
-import androidx.lifecycle.MutableLiveData
 import com.idz.trailsync.base.BooleanCallback
 import com.idz.trailsync.dao.AppLocalDB
 import com.idz.trailsync.data.models.FirebaseModel
 import com.idz.trailsync.model.Comment
 import com.idz.trailsync.model.CommentWithUser
-import com.idz.trailsync.model.User
 import java.util.concurrent.Executors
 
 class CommentRepository private constructor() {
@@ -56,20 +54,28 @@ class CommentRepository private constructor() {
         return result
     }
 
-    fun refreshComments(postId: String) {
+    fun refreshComments(postId: String, onComplete: (() -> Unit)? = null) {
         firebaseModel.getCommentsForPost(postId) { remoteComments ->
             executor.execute {
                 database.CommentDao().syncCommentsForPost(postId, remoteComments)
+                onComplete?.invoke()
             }
         }
     }
 
     fun addComment(comment: Comment, callback: BooleanCallback) {
-        firebaseModel.addComment(comment) { success ->
-            if (success) {
-                refreshComments(comment.postId)
+        executor.execute {
+            database.CommentDao().insertAll(comment)
+
+            firebaseModel.addComment(comment) { success ->
+                if (success) {
+                    refreshComments(comment.postId) {
+                        callback(true)
+                    }
+                } else {
+                    callback(false)
+                }
             }
-            callback(success)
         }
     }
 }

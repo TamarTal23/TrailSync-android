@@ -114,7 +114,6 @@ class FirebaseModel {
             .addOnSuccessListener { doc ->
                 if (doc.exists()) callback(User.fromJSON(doc.data ?: mapOf(), doc.id))
                 else {
-                    // Fallback to searching by field if document ID doesn't match
                     database.collection(Constants.COLLECTIONS.USERS).whereEqualTo("id", id).get()
                         .addOnSuccessListener { snapshot ->
                             if (!snapshot.isEmpty) {
