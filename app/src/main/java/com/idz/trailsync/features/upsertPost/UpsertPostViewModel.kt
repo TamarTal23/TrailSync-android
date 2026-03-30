@@ -20,7 +20,8 @@ class UpsertPostViewModel : ViewModel() {
     private val _post = MutableLiveData<Post?>()
     val post: LiveData<Post?> = _post
     
-    val isProcessing = MutableLiveData<Boolean>(false)
+    private val _isProcessing = MutableLiveData<Boolean>(false)
+    val isProcessing: LiveData<Boolean> = _isProcessing
 
     fun setPost(p: Post?) {
         _post.value = p
@@ -33,7 +34,7 @@ class UpsertPostViewModel : ViewModel() {
         capturedBitmaps: List<Bitmap>,
         callback: (Boolean) -> Unit
     ) {
-        isProcessing.value = true
+        _isProcessing.value = true
         viewModelScope.launch {
             val allBitmaps = withContext(Dispatchers.IO) {
                 val decodedBitmaps = uris.mapNotNull { uri ->
@@ -52,9 +53,13 @@ class UpsertPostViewModel : ViewModel() {
                 decodedBitmaps + capturedBitmaps
             }
 
-            PostRepository.shared.upsertPost(updatedPost, allBitmaps) { success ->
-                isProcessing.value = false
-                callback(success)
+            withContext(Dispatchers.IO) {
+                PostRepository.shared.upsertPost(updatedPost, allBitmaps) { success ->
+                    viewModelScope.launch(Dispatchers.Main) {
+                        _isProcessing.value = false
+                        callback(success)
+                    }
+                }
             }
         }
     }
