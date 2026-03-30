@@ -24,7 +24,7 @@ android {
     defaultConfig {
         applicationId = "com.idz.trailsync"
         minSdk = 31
-        targetSdk = 36
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -59,7 +59,7 @@ android {
 
 dependencies {
     implementation(libs.androidx.core.ktx)
-    implementation(platform(libs.firebase.bom))
+    implementation(platform("com.google.firebase:firebase-bom:33.10.0"))
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.auth)
     implementation(libs.firebase.appcheck.debug)
